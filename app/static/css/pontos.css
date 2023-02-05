@@ -1,0 +1,53 @@
+.importar-items {
+    margin-top: 1rem;
+    padding: 1rem;
+    width: 100%;
+    border: solid 1px rgb(230, 230, 230);
+    border-radius: 1rem;
+    box-shadow: 3px 2px 5px rgba(20, 20, 20, 0.2);
+}
+.importar-input {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.importar-input p {
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+.importar-input input {
+    cursor: pointer;
+    width: 35%;
+}
+.importar-input .description {
+    font-weight: normal;
+    font-size: 12px;
+    margin-top: .5rem;
+}
+.importar-bt {
+    margin-top: 2rem;
+    width: 100%;
+}
+.importar-bt button {
+    width: 48%;
+    border: none;
+}
+.divBookNameImportar, .divBookClientImportar, .divBookPessoaImportar {
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.labelBookClientImportar, .labelBookNameImportar, .labelBookPessoaImportar {
+    margin-bottom: .5rem!important;
+}
+.inputBookNameImportar, .selectBookClientImportar, .inputBookPessoaImportar {
+    width: 100%!important;
+    padding: 3px;
+}
+.inputBookNameImportar, .inputBookPessoaImportar {
+    cursor: text!important;
+}
+.selectBookClientImportar {
+    text-align: center;
+}

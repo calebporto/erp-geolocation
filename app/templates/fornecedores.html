@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="{{ texts['lang'] }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/media/favicon.ico" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/fornecedores.css">
+    <link rel="stylesheet" href="/static/css/patterns.css">
+    <title>{{ texts['titulo-pagina'] }}</title>
+</head>
+<body>
+    <div class="top-navbar">
+        <div class="container">
+            <img class="top-navbar-logo" src="/static/media/logo.png" alt="m souza logotipo">
+            <p class="top-navbar-title">{{ texts['titulo'] }}</p>
+            <div class="empty">
+                <div class="btn-group" role="group">
+                    {% if texts['lang'] == 'pt-br' %}
+                    <button id="ptBt" type="button" class="btn btn-warning btn-sm lang-active">Português</button>
+                    <button id="esBt" type="button" class="btn btn-info btn-sm">Español</button>
+                    <button id="enBt" type="button" class="btn btn-danger btn-sm">English</button>
+                    {% elif texts['lang'] == 'es' %}
+                    <button id="ptBt" type="button" class="btn btn-warning btn-sm">Português</button>
+                    <button id="esBt" type="button" class="btn btn-info btn-sm lang-active">Español</button>
+                    <button id="enBt" type="button" class="btn btn-danger btn-sm">English</button>
+                    {% elif texts['lang'] == 'en' %}
+                    <button id="ptBt" type="button" class="btn btn-warning btn-sm">Português</button>
+                    <button id="esBt" type="button" class="btn btn-info btn-sm">Español</button>
+                    <button id="enBt" type="button" class="btn btn-danger btn-sm lang-active">English</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="aside">
+        <div class="aside-header">
+            <div class="user-name">{{ texts['aside']['user-name'] }} {{ ((current_user.name).rsplit(" ")[0]).title() }}!</div>
+            <div class="aside-header-sair"><a href="/logout">{{ texts['aside']['aside-sair'] }}</a></div>
+        </div>
+        <div class="aside-option" id="pontos">{{ texts['aside']['pontos'] }}</div>
+        <div class="aside-option" id="books">{{ texts['aside']['books'] }}</div>
+        <div class="aside-option" id="fornecedores">{{ texts['aside']['fornecedores'] }}</div>
+        <div class="aside-option" id="clientes">{{ texts['aside']['clientes'] }}</div>
+        <div class="aside-option" id="equipe">{{ texts['aside']['equipe'] }}</div>
+    </div>
+    <div class="body" id="body">
+        {% set messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="body-header" id="body-header">
+        </div>
+        <div class="body-content" id="body-content">
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy 2023 M SOUZA - Desenvolvido por Caléb Rangel Porto - RJ</p>
+    </div>
+    <script type="text/javascript" src="/static/js/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/static/js/classes.js"></script>
+    <script type="module" src="/static/js/patternFunctions.js"></script>
+    <script type="module" src="/static/js/fornecedores.js"></script>
+    <script type="module" src="/static/js/fornecedoresFunctions.js"></script>
+    <script type="module" src="/static/js/btActions.js"></script>
+</body>
+</html>

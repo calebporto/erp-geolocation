@@ -1,0 +1,90 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+body {
+    background-color: rgba(0, 0, 0, 0.95);
+    display: flex;
+    height: 100vh;
+}
+.login-box {
+    margin: auto;
+    height: auto;
+    background-color: rgb(255, 240, 37);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+    border-radius: 1rem;
+}
+.title {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+.title p {
+    max-width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    background: linear-gradient(black, rgb(31, 31, 31));
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.login-input {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.login-input label {
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+.login-input input {
+    padding: 5px;
+    outline: 0;
+}
+.lembrar-me {
+    width: 100%;
+    display: flex;
+}
+.lembrar-me input {
+    margin-right: .5rem;
+}
+.login-bt {
+    width: 100%;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+}
+.login-bt button {
+    width: 100%;
+    border: none;
+    padding: .7rem;
+    background: linear-gradient(black, rgb(31, 31, 31));
+    border-radius: .5rem;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0px 5px 3px rgba(5, 0, 0, 0.3);
+}
+.login-bt button:hover {
+    opacity: .98;
+    cursor: pointer;
+}
+.login-bt button:active {
+    position: relative;
+    top: 3px;
+    box-shadow: 0px 2px 3px rgba(255, 255, 255, 0.3);    
+}

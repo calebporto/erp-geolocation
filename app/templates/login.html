@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="{{ texts['lang'] }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/media/favicon.ico" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/patterns.css">
+    <title>Login - M Souza</title>
+</head>
+<body>
+    <div class="login-box" id="login-box">
+        {% set messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="title"><p>{{ texts['titulo'] }}</p></div>
+        <form action="/login" method="post" id="login-form">
+            <div class="login-input">
+                <label for="email">{{ texts['email'] }}</label>
+                <input type="email" name="email" id="email" minlength="6">
+            </div>
+            <div class="login-input">
+                <label for="senha">{{ texts['senha'] }}</label>
+                <input type="password" name="senha" id="senha" minlength="8">
+            </div>
+            <div class="lembrar-me">
+                <input type="checkbox" name="lembrar-me" id="lembrar-me">
+                <label for="lembrar-me">Manter-me conectado</label>
+            </div>
+            <div class="login-bt">
+                <button type="submit" id="login-bt">{{ texts['entrar-bt'] }}</button>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript" src="/static/js/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="/static/js/login.js"></script>
+</body>
+</html>

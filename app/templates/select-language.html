@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/media/favicon.ico" type="image/png">
+    <link rel="stylesheet" href="/static/css/select-language.css">
+    <title>Select a Language - M Souza</title>
+</head>
+<body>
+    <div class="language-box">
+        <div id="pt" class="language portugues">
+            <img src="/static/media/brasil.png" alt="">
+            <p>Português (Brasil)</p>
+        </div>
+        <div id="es" class="language espanol">
+            <img src="/static/media/argentina.png" alt="">
+            <p>Español (Argentina)</p>
+        </div>
+        <div id="en" class="language english">
+            <img src="/static/media/england.png" alt="">
+            <p>English (England)</p>
+        </div>
+    </div>
+    <script type="text/javascript">
+        let portugues = document.querySelector('#pt')
+        portugues.addEventListener('click', () => {
+            window.location.href = '/select-language?selected=pt'
+        })
+
+        let espanhol = document.querySelector('#es')
+        espanhol.addEventListener('click', () => {
+            window.location.href = '/select-language?selected=es'
+        })
+
+        let ingles = document.querySelector('#en')
+        ingles.addEventListener('click', () => {
+            window.location.href = '/select-language?selected=en'
+        })
+    </script>
+</body>
+</html>
