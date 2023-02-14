@@ -166,7 +166,7 @@ function carregarLista(divLista) {
             books = []
             return response.json()
             .then(function(data) {
-                data.forEach(element => {
+                data.books.forEach(element => {
                     let ano = element.creation_date.substring(0, 4)
                     let mes = element.creation_date.substring(5, 7)
                     let dia = element.creation_date.substring(8, 10)
@@ -179,6 +179,9 @@ function carregarLista(divLista) {
                     )
                     books.push(book)
                 });
+                data.messages.forEach((message) => {
+                    alertGenerate(body, message)
+                })
                 atualizarLista(divLista)
             })
         } else {
@@ -397,41 +400,12 @@ export var criarBooks = function() {
                                 }
                                 labelBookClient.className = 'labelBookClientCriar'
                                 divBookClient.appendChild(labelBookClient)
-                                let selectBookClient = document.createElement('select')
-                                selectBookClient.id = 'bookClient'
-                                selectBookClient.className = 'selectBookClientCriar'
-                                let disabledOption = document.createElement('option')
-                                disabledOption.disabled = true
-                                disabledOption.selected = true
-                                disabledOption.value = -1
-                                if (lang == 'es' || lang == 'es-ar') {
-                                    disabledOption.innerHTML = '--- Seleccione un Cliente ---'
-                                } else if (lang == 'en') {
-                                    disabledOption.innerHTML = '--- Select a Client ---'
-                                } else {
-                                    disabledOption.innerHTML = '--- Selecione um Cliente ---'
-                                }
-                                selectBookClient.appendChild(disabledOption)
+                                let inputBookClient = document.createElement('input')
+                                inputBookClient.id = 'inputBookClientCriar'
+                                inputBookClient.className = 'inputBookNameCriar'
+                                inputBookClient.maxLength = 30
                                 
-                                data.clientes.forEach( (cliente) => {
-                                    let clienteOption = document.createElement('option')
-                                    clienteOption.value = cliente.id
-                                    clienteOption.innerHTML = cliente.name
-                                    selectBookClient.appendChild(clienteOption)
-                                })
-                                selectBookClient.addEventListener('change', () => {
-                                    let clientId = selectBookClient.options[selectBookClient.selectedIndex].value
-                                    let person = null
-                                    for (let i = 0; i < data.clientes.length; i++) {
-                                        if (data.clientes[i].id == clientId) {
-                                            person = data.clientes[i].person_name
-                                            break
-                                        }
-                                    }
-                                    let pessoaInput = document.querySelector('#bookPessoa')
-                                    pessoaInput.value = person
-                                })
-                                divBookClient.appendChild(selectBookClient)
+                                divBookClient.appendChild(inputBookClient)
                                 modalBody.appendChild(divBookClient)
                                 
                                 let divBookPessoaCriar = document.createElement('div')
@@ -502,8 +476,7 @@ export var criarBooks = function() {
                                             return
                                         }
                                     }
-                                    let clientName = document.querySelector('#bookClient')
-                                    let clientNameSelectedId = clientName.options[clientName.selectedIndex].value
+                                    let clientName = document.querySelector('#inputBookClientCriar').value
                                     let ACName = document.querySelector('#bookPessoa').value
                                 
                                     let dados = new FormData()
@@ -512,7 +485,7 @@ export var criarBooks = function() {
                                     dados.append('type', 'gerarBook')
                                     dados.append('colunas', columnList)
                                     dados.append('bookName', bookName.value)
-                                    dados.append('clientId', clientNameSelectedId)
+                                    dados.append('client', clientName)
                                     dados.append('personName', ACName)
                                     fetch('/painel/books/criar', {
                                         method: 'POST',

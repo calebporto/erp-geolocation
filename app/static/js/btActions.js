@@ -12,8 +12,14 @@ var fornecedoresOption = document.querySelector('#fornecedores')
 fornecedoresOption.addEventListener('click', () => {
     window.location.href = '/painel/fornecedores'
 })
-var clientesOption = document.querySelector('#clientes')
+var conversorOption = document.querySelector('#conversor')
+conversorOption.addEventListener('click', () => {
+    window.location.href = '/painel/conversor'
+})
 var equipeOption = document.querySelector('#equipe')
+equipeOption.addEventListener('click', () => {
+    window.location.href = '/painel/equipe'
+})
 
 var ptBt = document.querySelector('#ptBt')
 ptBt.addEventListener('click', () => {

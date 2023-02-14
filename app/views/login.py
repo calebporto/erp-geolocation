@@ -25,7 +25,7 @@ def select_language():
         except:
             pass
         resp = make_response(redirect('/login'))
-        resp.set_cookie('lang', 'pt-br')
+        resp.set_cookie('lang', 'pt-br', max_age=datetime.timedelta(days=365))
         return resp
     if language == 'es':
         try:
@@ -36,7 +36,7 @@ def select_language():
         except:
             pass
         resp = make_response(redirect('/login'))
-        resp.set_cookie('lang', 'es')
+        resp.set_cookie('lang', 'es', max_age=datetime.timedelta(days=365))
         return resp
     if language == 'en':
         try:
@@ -47,7 +47,7 @@ def select_language():
         except:
             pass
         resp = make_response(redirect('/login'))
-        resp.set_cookie('lang', 'en')
+        resp.set_cookie('lang', 'en', max_age=datetime.timedelta(days=365))
         return resp
     return render_template('select-language.html')
 

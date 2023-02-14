@@ -1,0 +1,29 @@
+.criar-items {
+    width: 100%;
+}
+.criar-input {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.criar-input p {
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+.criar-input input {
+    cursor: pointer;
+    width: 35%;
+}
+.criar-input .description {
+    font-weight: normal;
+    font-size: 12px;
+    margin-top: .5rem;
+}
+.criar-bt {
+    margin-top: 2rem;
+    width: 100%;
+}
+.criar-bt button {
+    width: 48%;
+    border: none;
+}

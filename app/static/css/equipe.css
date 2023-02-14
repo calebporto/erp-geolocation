@@ -39,58 +39,13 @@
     font-weight: bold;
     margin-top: .5rem;
 }
-.lista {
-    border-top: solid 1px gray;
-    margin-top: 2rem;
-    text-align: center;
-    width: 100%;
-    padding: 5px;
-}
-.linha-nome {
-    width: 55%;
-    margin: auto;
-}
-.visualizar-item {
-    width: 100%;
-}
-.label-item {
-    text-align: start;
-    font-weight: bold;
-    margin-bottom: 0!important;
-}
-.conteudo-item {
-    text-align: start;
-}
-.input-edit {
-    padding: 3px;
-    margin-top: .5rem;
-    width: 100%;
-    margin-bottom: 1rem;
-}
-form {
-    width: 100%;
-}
-.adicionar {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    padding: 5px;
-    padding-bottom: 2rem;
-    border-bottom: solid 1px gray;
-}
-.adicionar-bt {
-    width: 100%;
-    border: none;
-}
-.title {
-    padding: 5px 15px;
-}
 .linha {
     display: flex;
     border-bottom: solid 1px gray;
     padding: 3px 0;
 }
 .linha-bt {
-    min-width: 15%;
+    min-width: 8%;
     display: flex;
     justify-content: end;
     padding: 0 5px;
@@ -100,4 +55,21 @@ form {
 }
 .linha-bt-bt:hover {
     cursor: pointer!important;
+}
+.linha-nome {
+    width: 40%;
+    margin: auto;
+}
+.visualizar-item {
+    width: 100%;
+}
+.label-item {
+    font-weight: bold;
+    margin-bottom: 0!important;
+}
+.input-edit {
+    padding: 3px;
+    margin-top: .5rem;
+    width: 100%;
+    margin-bottom: 1rem;
 }

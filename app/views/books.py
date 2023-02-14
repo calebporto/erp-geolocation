@@ -98,19 +98,10 @@ def criar():
                     continue
                 else:
                     colunas_dict['outras'].append(coluna)
-            clientes = Person.query.filter(Person.person_type == 2).all()
-            for i, cliente in enumerate(clientes):
-                data = Person_(
-                    id=cliente.id,
-                    name=cliente.name,
-                    person_name=cliente.person_name
-                )
-                clientes[i] = data.dict()
             return dumps(
                 {
                 'colunas': colunas_dict,
-                'message': message,
-                'clientes': clientes
+                'message': message
                 }
             )
         elif request_type == 'gerarBook':
@@ -122,7 +113,7 @@ def criar():
                 )
                 return response.json()
             book_name = request.form.get('bookName') if request.form.get('bookName') else None
-            book_client = int(request.form.get('clientId')) if int(request.form.get('clientId')) != -1 else None
+            book_client = request.form.get('client') if request.form.get('client') else None
             book_person = request.form.get('personName') if request.form.get('personName') else None
             columns = str(request.form.get('colunas')).rsplit(',')
 
@@ -163,7 +154,18 @@ def lista():
                 )
                 books_db[i] = book.dict()
             books = sorted(books_db, key=lambda row:row['creation_date'], reverse=True)
-            return dumps(books, default=str)
+            message_list = []
+            messages = get_redis_msg(current_user.id)
+            if messages:
+                for message in messages:
+                    if len(message) > 2:
+                        message_list.append(message)
+            
+            response = {
+                'books': books,
+                'messages': message_list
+            }
+            return dumps(response, default=str)
         elif filtro == 'downloadpptx':
             arquivo = request.args.get('arg')
             s3.download_file(os.environ['AWS_BUCKET_NAME'], f'pptx/{arquivo}', 'app/static/media/pptx/temp.pptx')

@@ -34,6 +34,10 @@ from app.views.books import books_bp
 app.register_blueprint(books_bp)
 from app.views.fornecedores import fornecedores_bp
 app.register_blueprint(fornecedores_bp)
+from app.views.conversor import conversor_bp
+app.register_blueprint(conversor_bp)
+from app.views.equipe import equipe_bp
+app.register_blueprint(equipe_bp)
 
 db.init_app(app)
 login_manager.init_app(app)

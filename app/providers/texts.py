@@ -6,12 +6,12 @@ main_pt_texts = {
     'titulo-pagina': 'Painel - M Souza',
     'titulo': 'Painel Administrativo',
     'aside': {
-        'user-name': f'Bem vindo, ',
+        'user-name': 'Bem vindo, ',
         'aside-sair': 'Sair',
         'pontos': 'Pontos',
         'books': 'Books',
         'fornecedores': 'Fornecedores',
-        'clientes': 'Clientes',
+        'conversor': 'Conversor',
         'equipe': 'Equipe'
     }
 }
@@ -20,12 +20,12 @@ main_es_texts = {
     'titulo-pagina': 'Painel - M Souza',
     'titulo': 'Panel Administrativo',
     'aside': {
-        'user-name': f'Bienvenido, ',
+        'user-name': 'Bienvenido, ',
         'aside-sair': 'Salir',
         'pontos': 'Lugares',
         'books': 'Books',
         'fornecedores': 'Proveedores',
-        'clientes': 'Clientes',
+        'conversor': 'Convertidor',
         'equipe': 'Equipo'
     }
 }
@@ -34,12 +34,12 @@ main_en_texts = {
     'titulo-pagina': 'Painel - M Souza',
     'titulo': 'Administrative Panel',
     'aside': {
-        'user-name': f'Welcome, ',
+        'user-name': 'Welcome, ',
         'aside-sair': 'Exit',
         'pontos': 'Spots',
         'books': 'Books',
         'fornecedores': 'Providers',
-        'clientes': 'Clients',
+        'conversor': 'Converter',
         'equipe': 'Team'
     }
 }
@@ -48,15 +48,15 @@ pontos_menu_texts = {
     'pt-br': {
         'lista': 'Lista',
         'criar': 'Criar',
-        'importar': 'Importar'
+        'importar': 'Importar XLSX'
     }, 'en': {
         'lista': 'List',
         'criar': 'Create',
-        'importar': 'Import'
+        'importar': 'XLSX Import'
     }, 'es': {
         'lista': 'Lista',
         'criar': 'Crear',
-        'importar': 'Importar'
+        'importar': 'Importar XLSX'
     }
 }
 importar_content_text = {
@@ -81,13 +81,13 @@ importar_content_text = {
 books_menu_texts = {
     'pt-br': {
         'lista': 'Lista',
-        'criar': 'Criar'
+        'criar': 'Criar Book'
     }, 'en': {
         'lista': 'List',
-        'criar': 'Create'
+        'criar': 'Create Book'
     }, 'es': {
         'lista': 'Lista',
-        'criar': 'Crear'
+        'criar': 'Crear Book'
     }
 }
 criar_content_text = {
@@ -110,16 +110,118 @@ criar_content_text = {
 }
 
 # Fornecedores
-
 fornecedores_menu_texts = {
     'pt-br': {
         'lista': 'Lista',
-        'novo': 'Novo'
+        'novo': 'Novo Fornecedor'
     }, 'en': {
         'lista': 'List',
-        'novo': 'New'
+        'novo': 'New Provider'
     }, 'es': {
         'lista': 'Lista',
-        'novo': 'Nuevo'
+        'novo': 'Nuevo Proveedor'
+    }
+}
+novo_fornecedor_texts = {
+    'pt-br': {
+        'nome': 'Nome',
+        'site': 'Site',
+        'executivo': 'Executivo',
+        'email1': 'E-mail Principal',
+        'email2': 'E-mail Secundário',
+        'tel1': 'Telefone Principal',
+        'tel2': 'Telefone Secundário',
+        'relation': 'Nível de Relacionamento',
+        'option': 'Selecione um Nível',
+        'confirmarBt': 'Cadastrar',
+        'cancelarBt': 'Cancelar'
+    }, 'en': {
+        'nome': 'Name',
+        'site': 'Site',
+        'executivo': 'Officer',
+        'email1': 'Primary E-mail',
+        'email2': 'Secondary E-mail',
+        'tel1': 'Main Phone',
+        'tel2': 'Secondary Phone',
+        'relation': 'Relation Level',
+        'option': 'Select a Level',
+        'confirmarBt': 'Register',
+        'cancelarBt': 'Cancel'
+    }, 'es': {
+        'nome': 'Nombre',
+        'site': 'Sitio',
+        'executivo': 'Ejecutivo',
+        'email1': 'Email Principal',
+        'email2': 'Email Secundario',
+        'tel1': 'Teléfono Principal',
+        'tel2': 'Teléfono Secundario',
+        'relation': 'Nível de Relación',
+        'option': 'Seleccione um Nível',
+        'confirmarBt': 'Registrar',
+        'cancelarBt': 'Cancelar'
+    }
+}
+
+# Conversor
+conversor_menu_texts = {
+    'pt-br': {
+        'kml': 'KML para Excel'
+    }, 'en': {
+        'kml': 'KML para Excel'
+    }, 'es': {
+        'kml': 'KML to Excel'
+    }
+}
+kml_content_text = {
+    'pt-br': {
+        'legenda1': 'Selecione um arquivo KML:',
+        'legenda2': 'Somente formato .kml',
+        'converterBt': 'Converter'
+    }, 'es-ar': {
+        'legenda1': 'Seleccione un archivo KML:',
+        'legenda2': 'Solo formato .kml',
+        'converterBt': 'Convertir'
+    }, 'en': {
+        'legenda1': 'Select an KML file:',
+        'legenda2': '.kml format only',
+        'converterBt': 'Convert'
+    }
+}
+
+# Equipe
+equipe_menu_texts = {
+    'pt-br': {
+        'lista': 'Colaboradores',
+        'novo': 'Novo Colaborador'
+    }, 'es': {
+        'lista': 'Colaboradores',
+        'novo': 'Nuevo Colaborador'
+    }, 'en': {
+        'lista': 'Collaborators',
+        'novo': 'New Collaborator'
+    }
+}
+novo_colaborador_texts = {
+    'pt-br': {
+        'nome': 'Nome',
+        'email': 'E-mail',
+        'senha1': 'Escolha uma Senha:',
+        'senha2': 'Confirme a Senha:',
+        'confirmarBt': 'Cadastrar',
+        'cancelarBt': 'Cancelar'
+    }, 'en': {
+        'nome': 'Name',
+        'email': 'E-mail',
+        'senha1': 'Choose a password:',
+        'senha2': 'Confirm the Password:',
+        'confirmarBt': 'Register',
+        'cancelarBt': 'Cancel'
+    }, 'es': {
+        'nome': 'Nombre',
+        'email': 'E-mail',
+        'senha1': 'Elije una Contraseña:',
+        'senha2': 'Confirme la Contraseña:',
+        'confirmarBt': 'Registrar',
+        'cancelarBt': 'Cancelar'
     }
 }

@@ -16,8 +16,9 @@ class User(db.Model, UserMixin):
     is_collaborator = db.Column(db.Boolean, nullable=False, default=False)
     worksheet_content_user_id = db.relationship("Worksheet_Content")
 
-    def __init__(self, name, email, password, is_admin, is_collaborator):
+    def __init__(self, alternative_id, name, email, password, is_admin, is_collaborator):
         self.name = name
+        self.alternative_id = alternative_id
         self.email = email
         self.hash = password
         self.is_admin = is_admin
@@ -44,7 +45,6 @@ class Worksheet_Content(db.Model):
         self.content = content
         self.creation_date = creation_date
         self.image_id = image_id
-
 
 class Spot(db.Model):
     __tablename__ = 'spot'

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class Register_Response_(BaseModel):
     status: Optional[bool]
     message: Optional[list[str]]
+    data: Optional[str]
 
 class Person_(BaseModel):
     id: Optional[int]
@@ -23,3 +24,10 @@ class Worksheet_For_View_(BaseModel):
     title: Optional[str]
     creation_date: Optional[date]
     image_id: Optional[str]
+
+class User_For_View_(BaseModel):
+    id: Optional[int]
+    name: Optional[str]
+    email: Optional[str]
+    is_admin: Optional[bool]
+    is_collaborator: Optional[bool]

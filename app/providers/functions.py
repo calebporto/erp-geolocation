@@ -1,4 +1,4 @@
-from app.models.tables import Spot, Spot_Commercial_Info, Spot_Private_Info, Worksheet_Content as Flask_Worksheet_Content
+from app.models.tables import Spot, Spot_Commercial_Info, Spot_Private_Info, User, Worksheet_Content as Flask_Worksheet_Content
 from sqlalchemy import Column, Date, Integer, String, create_engine
 from app.providers.s3_services import upload_file_to_s3
 from sqlalchemy.orm import declarative_base, Session
@@ -8,7 +8,7 @@ from reportlab.lib.pagesizes import mm
 from PIL import UnidentifiedImageError, ImageFile
 from reportlab.pdfgen import canvas
 from pptx.dml.color import RGBColor
-from secrets import token_urlsafe
+from secrets import token_hex, token_urlsafe
 from flask import flash, redirect
 from reportlab.lib import colors
 from pptx import Presentation
@@ -54,6 +54,14 @@ ALLOWED_EXTENSIONS = {'xlsx'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def alternative_id_generator():
+    alternative_id = token_hex(16)
+    alternative_id_check = User.query.filter(User.alternative_id == alternative_id).first()
+    if alternative_id_check != None:
+        alternative_id_generator()
+    else:
+        return alternative_id
 
 def image_id_generator():
     image_id = token_urlsafe(40)

@@ -1,10 +1,5 @@
 .criar-items {
-    margin-top: 1rem;
-    padding: 1rem;
     width: 100%;
-    border: solid 1px rgb(230, 230, 230);
-    border-radius: 1rem;
-    box-shadow: 3px 2px 5px rgba(20, 20, 20, 0.2);
 }
 .criar-input {
     margin-top: 1rem;
@@ -67,7 +62,6 @@
     display: flex;
     justify-content: end;
     padding: 0 5px;
-    width: 12%!important;
 }
 .linha-bt-bt {
     width: 100%;
