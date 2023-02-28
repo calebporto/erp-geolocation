@@ -3015,19 +3015,24 @@ export var importarZip = function() {
                         }
                         return
                     }
-                    if (fileInput.files[0].size > 5242880){
+                    if (fileInput.files[0].size > 10485760){
                         if (lang == 'es' || lang == 'es-ar') {
-                            alertGenerate(body, 'El archivo debe tener un máximo de 5MB.')
+                            alertGenerate(body, 'El archivo debe tener un máximo de 10MB.')
                             body_header.focus()
                         } else if (lang == 'en') {
-                            alertGenerate(body, 'The file must be a maximum of 5MB.')
+                            alertGenerate(body, 'The file must be a maximum of 10MB.')
                             body_header.focus()
                         } else {
-                            alertGenerate(body, 'O arquivo deve ter no máximo 5MB.')
+                            alertGenerate(body, 'O arquivo deve ter no máximo 10MB.')
                             body_header.focus()
                         }
                         return
                     }
+                    buttonCriarBt.innerHTML = `
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    `
                     let send = new FormData()
                     send.append('arquivo', fileInput.files[0])
                     send.append('pais', pais)
@@ -3045,12 +3050,14 @@ export var importarZip = function() {
                     })
                     .then((response) => {
                         if (!response.ok) {
+                            buttonCriarBt.innerHTML = textContent.enviarBt
                             alertGenerate(body, 'Erro no servidor. Tente novamente.')
                             importarZip()
                             body_header.focus()
                         } else {
                             return response.json()
                             .then((data) => {
+                                buttonCriarBt.innerHTML = textContent.enviarBt
                                 data.message.forEach(element => {
                                     alertGenerate(body, element)
                                 });

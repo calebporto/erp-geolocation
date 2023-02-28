@@ -521,10 +521,10 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
 
 def points_register(arquivo, lang, pattern_columns=None):
+    messages = []
     try:
         tabela = pd.ExcelFile(arquivo)
         planilhas_count = len(tabela.sheet_names)
-        messages = []
         if planilhas_count != 1:
             if lang == 'es' or lang == 'es-ar':
                 messages.append('Su hoja de trabajo tiene dos pestañas y solo se procesó la primera.')
@@ -609,7 +609,15 @@ def points_register(arquivo, lang, pattern_columns=None):
         valorNegociado = pattern_columns['valorNegociado'] if pattern_columns else None
         formato = pattern_columns['formato'] if pattern_columns else None
 
-        for linha in planilha:
+        for i, linha in enumerate(planilha):
+            if str(linha[code_col]) == 'nan' or str(linha[address_col]) == 'nan' or str(linha[latitude_col]) == 'nan' or str(linha[longitude_col]) == 'nan' or str(linha[image_col]) == 'nan':
+                if lang == 'es' or lang == 'es-ar':
+                    messages.append('A la hoja de trabajo le faltan los datos requeridos. Corrija y vuelva a intentarlo.')
+                elif lang == 'en':
+                    messages.append('The worksheet is missing required data. Please correct and try again.')
+                else:
+                    messages.append('A planilha está faltando dados obrigatórios. Corrija e tente novamente.')
+                return False, messages
             linhaPais = linha[country_col] if country_col and str(linha[country_col]) != 'nan' else None
             linhaZona = linha[zone_col] if zone_col and str(linha[zone_col]) != 'nan' else None
             linhaCidade = linha[county_col] if county_col and str(linha[county_col]) != 'nan' else None
@@ -670,6 +678,20 @@ def points_register(arquivo, lang, pattern_columns=None):
         else:
             messages.append('Os pontos foram cadastrados com sucesso.')
         return True, messages
+    except ValueError as error:
+        if 'Excel file format cannot be determined, you must specify an engine manually.' in str(error):
+            if lang == 'es' or lang == 'es-ar':
+                messages.append('Formato de archivo inválido.')
+                return False, messages
+            elif lang == 'en':
+                messages.append('Invalid file format.')
+                return False, messages
+            else:
+                messages.append('Formato de arquivo inválido.')
+                return False, messages
+        else:
+            print(f'erro = {str(error)}')
+            return False, ['Erro no servidor. Tente novamente mais tarde.']
     except Exception as error:
         print(f'erro = {str(error)}')
         return False, ['Erro no servidor. Tente novamente mais tarde.']

@@ -250,8 +250,22 @@ def importar_zip():
             'formato': formato
         }
         for nome_planilha in lista:
+            print(nome_planilha)
             planilha = zip.read(nome_planilha)
-            abas = pd.ExcelFile(planilha).sheet_names
+            try:
+                abas = pd.ExcelFile(planilha).sheet_names
+            except ValueError as error:
+                if 'Excel file format cannot be determined, you must specify an engine manually.' in str(error):
+                    if lang == 'es' or lang == 'es-ar':
+                        messages.append(f'Error al procesar la hoja de trabajo {nome_planilha}, Formato de archivo inválido.')
+                    elif lang == 'en':
+                        messages.append(f'Error processing the worksheet {nome_planilha}. Invalid file format.')
+                    else:
+                        messages.append(f'Erro ao processar a planilha {nome_planilha}. Formato de arquivo inválido.')
+                else:
+                    print(f'erro = {str(error)}')
+                    messages.append(f'Erro ao processar a planilha {nome_planilha}.')
+                continue
             if len(abas) != 1:
                 if lang == 'es-ar' or lang == 'es':
                     messages.append(f'La hoja de trabajo {nome_planilha} no se puede procesar porque tiene más de una pestaña')
@@ -288,11 +302,11 @@ def importar_zip():
             register_status, register_messages = points_register(planilha, lang, pattern_columns=pattern_columns)
             if register_status == False:
                 if lang == 'es-ar' or lang == 'es':
-                    messages.append(f'Error al procesar la hoja de cálculo {nome_planilha}. Verifique los datos proporcionados e intente nuevamente.')
+                    messages.append(f'Error al procesar la hoja de cálculo {nome_planilha}. Faltan datos requeridos como código, dirección, latitud, longitud o foto.')
                 elif lang == 'en':
-                    messages.append(f'Error processing worksheet {nome_planilha}. Check the data provided and try again.')
+                    messages.append(f'Error processing worksheet {nome_planilha}. Required data is missing such as code, address, latitude, longitude or photo.')
                 else:
-                    messages.append(f'Erro ao processar a planilha {nome_planilha}. Verifique os dados fornecidos e tente novamente.')
+                    messages.append(f'Erro ao processar a planilha {nome_planilha}. Faltam dados obrigatórios como código, endereço, latitude, longitude ou foto.')
         
         zip.close()
         if lang == 'es-ar' or lang == 'es':
