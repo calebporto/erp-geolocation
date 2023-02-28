@@ -47,7 +47,6 @@
     text-align: center;
 }
 .lista {
-    margin-top: 2rem;
     text-align: center;
     width: 100%;
     padding: 5px;
@@ -56,6 +55,9 @@
     display: flex;
     border-bottom: solid 1px gray;
     padding: 3px 0;
+}
+.linha:hover {
+    background-color: rgba(0, 0, 0, 0.03);
 }
 .linha-bt {
     min-width: 8%;

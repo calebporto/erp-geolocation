@@ -126,6 +126,9 @@ body {
 .body-header-opt.select {
     background-color: rgb(240, 240, 240);
 }
+.viewBt.select {
+    background-color: rgb(240, 240, 240);
+}
 .gold-bt {
     background: linear-gradient(rgb(182, 182, 0),rgb(255, 255, 60));
     padding: 10px;

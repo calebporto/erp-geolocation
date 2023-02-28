@@ -35,4 +35,3 @@ var enBt = document.querySelector('#enBt')
 enBt.addEventListener('click', () => {
     window.location.href = '/painel?select-lang=en'
 })
-window.onload = {}

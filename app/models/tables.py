@@ -63,8 +63,8 @@ class Spot(db.Model):
     country = db.Column(db.String(255))
     format = db.Column(db.String(255))
     measure = db.Column(db.String(255))
-    commercial_spot_id = db.relationship("Spot_Commercial_Info")
-    private_spot_id = db.relationship("Spot_Private_Info")
+    commercial_spot_id = db.relationship("Spot_Commercial_Info", cascade='all, delete')
+    private_spot_id = db.relationship("Spot_Private_Info", cascade='all, delete')
 
     def __init__(self, code, address, latitude, longitude, image_link, include_date, reference, district, city, zone, state, country, format, measure):
         self.code = code
@@ -109,16 +109,16 @@ class Spot_Private_Info(db.Model):
     empresa = db.Column(db.String(255))
     valor_negociado_int = db.Column(db.String(255))
     custo_liq = db.Column(db.String(255))
-    custo_liq_negociado = db.Column(db.String(255))
+    medida_int = db.Column(db.String(255))
     observacoes = db.Column(db.String(255))
     outros = db.Column(db.JSON)
     
-    def __init__(self, spot_id, empresa, valor_negociado_int, custo_liq, custo_liq_negociado, observacoes, outros):
+    def __init__(self, spot_id, empresa, medida_int, valor_negociado_int, custo_liq, observacoes, outros):
         self.spot_id = spot_id
         self.empresa = empresa
-        self.valor_negociado = valor_negociado_int
+        self.medida_int = medida_int
+        self.valor_negociado_int = valor_negociado_int
         self.custo_liq = custo_liq
-        self.custo_liq_negociado = custo_liq_negociado
         self.observacoes = observacoes
         self.outros = outros
 

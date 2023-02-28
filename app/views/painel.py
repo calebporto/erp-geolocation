@@ -1,6 +1,7 @@
 import datetime
 from flask import Blueprint, make_response, redirect, render_template, request
 from flask_login import login_required
+from app.providers.db_services import get_point_in_radius
 from app.providers.texts import main_en_texts, main_es_texts, main_pt_texts
 
 painel_bp = Blueprint(
@@ -33,12 +34,5 @@ def painel():
             return resp
 
 
-        # Pegar cookie de linguagem para definir texts
-        if lang == 'es':
-            texts = main_es_texts
-        elif lang == 'en':
-            texts = main_en_texts
-        else:
-            texts = main_pt_texts
-        return render_template('painel.html', texts=texts)
+        return redirect('/painel/pontos')
 

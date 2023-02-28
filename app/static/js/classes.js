@@ -29,3 +29,45 @@ export class Colaborador {
         this.is_collaborator = is_collaborator
     }
 }
+export class Ponto_Basic {
+    constructor(id, code, address, latitude, longitude, image_link, reference, district, city, zone, state, country, format, measure) {
+        this.id = id
+        this.code = code
+        this.address = address
+        this.latitude = latitude
+        this.longitude = longitude
+        this.image_link = image_link
+        this.reference = reference
+        this.district = district
+        this.city = city
+        this.zone = zone
+        this.state = state
+        this.country = country
+        this.format = format
+        this.measure = measure
+    }
+}
+export class Ponto_Commercial {
+    constructor(id, spot_id, impacto, valor_tabela_comm, valor_negociado_comm, producao, observacoes, outros) {
+        this.id = id
+        this.spot_id = spot_id
+        this.impacto = impacto
+        this.valor_tabela_comm = valor_tabela_comm
+        this.valor_negociado_comm = valor_negociado_comm
+        this.producao = producao
+        this.observacoes = observacoes
+        this.outros = outros
+    }
+}
+export class Ponto_Private {
+    constructor(id, spot_id, empresa, valor_negociado_int, custo_liq, medida_int, observacoes, outros) {
+        this.id = id
+        this.spot_id = spot_id
+        this.empresa = empresa
+        this.valor_negociado_int = valor_negociado_int
+        this.custo_liq = custo_liq
+        this.medida_int = medida_int
+        this.observacoes = observacoes
+        this.outros = outros
+    }
+}

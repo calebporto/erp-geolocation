@@ -47,15 +47,18 @@ main_en_texts = {
 pontos_menu_texts = {
     'pt-br': {
         'lista': 'Lista',
-        'criar': 'Criar',
+        'mapa': 'Mapa',
+        'importarZip': 'Importar ZIP',
         'importar': 'Importar XLSX'
     }, 'en': {
         'lista': 'List',
-        'criar': 'Create',
+        'mapa': 'Map',
+        'importarZip': 'ZIP Import',
         'importar': 'XLSX Import'
     }, 'es': {
         'lista': 'Lista',
-        'criar': 'Crear',
+        'mapa': 'Mapa',
+        'importarZip': 'Importar ZIP',
         'importar': 'Importar XLSX'
     }
 }
@@ -75,6 +78,127 @@ importar_content_text = {
         'legenda2': '.xlsx format only',
         'checkBook': 'Generate Book',
         'enviarBt': 'Send'
+    }
+}
+importar_zip_content_text = {
+    'pt-br': {
+        'observacoes': '''
+        O seu arquivo .zip deve conter somente planilhas no formato
+        .xlsx, e não pode conter pastas.
+        ''',
+        'legenda1': 'Selecione um arquivo ZIP:',
+        'legenda2': 'Somente formato .zip / Máximo 5 MB',
+        'enviarBt': 'Enviar',
+        'padronizarLabel': 'Padronizar campos (Opcional):',
+        'cidadeLabel': 'Cidade:',
+        'empresaLabel': 'Empresa:',
+        'custoLabel': 'Custo Líquido:',
+        'estadoLabel': 'Estado:',
+        'zonaLabel': 'Zona:',
+        'valorTabelaLabel': 'Valor de Tabela:',
+        'valorNegociadoLabel': 'Valor Negociado:',
+        'formatoLabel': 'Formato:',
+        'paisLabel': 'Selecione o país (Obrigatório):',
+        'defaultOption': '-- Selecione --'
+    }, 'es-ar': {
+        'observacoes': '''
+        Su archivo .zip solo debe contener hojas de trabajo en formato .xlsx y no puede contener carpetas.
+        ''',
+        'legenda1': 'Seleccione un archivo ZIP:',
+        'legenda2': 'Solo formato .zip / Máximo 5 MB',
+        'enviarBt': 'Mandar',
+        'padronizarLabel': 'Estandarizar campos (Opcional):',
+        'cidadeLabel': 'Ciudad:',
+        'empresaLabel': 'Empresa:',
+        'custoLabel': 'Costo neto:',
+        'estadoLabel': 'Estado:',
+        'zonaLabel': 'Zona:',
+        'valorTabelaLabel': 'Valor de la tabla:',
+        'valorNegociadoLabel': 'Valor negociado:',
+        'formatoLabel': 'Formato:',
+        'paisLabel': 'Seleccionar país (Obligatorio):',
+        'defaultOption': '-- Seleccionar --'
+    }, 'en': {
+        'observacoes': '''
+        Your .zip file must only contain worksheets in .xlsx format, and cannot contain directories.
+        ''',
+        'legenda1': 'Select a ZIP file:',
+        'legenda2': '.zip format only / Maximum 5 MB',
+        'enviarBt': 'Send',
+        'padronizarLabel': 'Standardize fields (Optional):',
+        'cidadeLabel': 'City:',
+        'empresaLabel': 'Company:',
+        'custoLabel': 'Net Cost:',
+        'estadoLabel': 'State:',
+        'zonaLabel': 'Zone:',
+        'valorTabelaLabel': 'Table value:',
+        'valorNegociadoLabel': 'Negotiated value:',
+        'formatoLabel': 'Format:',
+        'paisLabel': 'Select the country (required):',
+        'defaultOption': '-- Select --'
+    }
+}
+visualizar_pontos_content_text = {
+    'pt_br': {
+        'adicionarFiltro': 'Adicionar Filtro',
+        'limparFiltros': 'Limpar Filtros',
+        'adicionarFiltroConfirmarBt': 'Adicionar',
+        'adicionarFiltroCancelarBt': 'Cancelar',
+        'adicionarFiltroModalTitle': 'Adicionar Filtro:',
+        'pais': 'País:',
+        'paisDefaultOpt': '-- Selecione um país --',
+        'paisBrasilOpt': 'Brasil',
+        'paisArgentinaOpt': 'Argentina',
+        'paisInglaterraOpt': 'Inglaterra',
+        'codigo': 'Código:',
+        'cidade': 'Cidade:',
+        'estado': 'Estado:',
+        'zona': 'Zona:',
+        'bairro': 'Bairro:',
+        'endereco': 'Endereço:',
+        'empresa': 'Empresa:',
+        'formato': 'Formato:',
+        'notFilters': 'Sem Filtros.'
+    }, 'es': {
+        'adicionarFiltro': 'Añadir Filtro',
+        'limparFiltros': 'Limpiar Filtros',
+        'adicionarFiltroConfirmarBt': 'Agregar',
+        'adicionarFiltroCancelarBt': 'Cancelar',
+        'adicionarFiltroModalTitle': 'Añadir Filtro:',
+        'pais': 'País:',
+        'paisDefaultOpt': '-- Seleccione um país --',
+        'paisBrasilOpt': 'Brasil',
+        'paisArgentinaOpt': 'Argentina',
+        'paisInglaterraOpt': 'Inglaterra',
+        'codigo': 'Código:',
+        'cidade': 'Ciudad:',
+        'estado': 'Estado:',
+        'zona': 'Zona:',
+        'bairro': 'Barrio:',
+        'endereco': 'Dirección:',
+        'empresa': 'Empresa:',
+        'formato': 'Formato:',
+        'notFilters': 'Sin Filtros.'
+    }, 'en': {
+        'adicionarFiltro': 'Add Filter',
+        'limparFiltros': 'Clear Filters',
+        'adicionarFiltroConfirmarBt': 'Add',
+        'adicionarFiltroCancelarBt': 'Cancel',
+        'adicionarFiltroModalTitle': 'Add Filter:',
+        'pais': 'Coutry:',
+        'paisDefaultOpt': '-- Select a Country --',
+        'paisBrasilOpt': 'Brazil',
+        'paisArgentinaOpt': 'Argentina',
+        'paisInglaterraOpt': 'England',
+        'codigo': 'Code:',
+        'cidade': 'City:',
+        'estado': 'State:',
+        'zona': 'Zone:',
+        'bairro': 'District:',
+        'endereco': 'Address:',
+        'empresa': 'Company:',
+        'formato': 'Format:',
+        'notFilters': 'No filters.'
     }
 }
 #Books

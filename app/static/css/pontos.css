@@ -46,3 +46,393 @@
 .selectBookClientImportar {
     text-align: center;
 }
+.criar-items {
+    width: 100%;
+}
+.criar-input {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.criar-input p {
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+.criar-input input {
+    cursor: pointer;
+    width: 35%;
+}
+.criar-input .description {
+    font-weight: normal;
+    font-size: 12px;
+    margin-top: .5rem;
+}
+.criar-bt {
+    margin-top: 2rem;
+    width: 100%;
+}
+.criar-bt button {
+    width: 48%;
+    border: none;
+}
+.comments {
+    font-weight: normal!important;
+}
+.divPadronizar {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.padronizarLabel, .divPaisLabel {
+    font-weight: bold;
+}
+.divPadronizarItem {
+    margin-top: .5rem;
+    display: flex;
+    width: 100%;
+}
+.divPadronizarCheckbox {
+    margin-right: 1rem;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.divPadronizarLabel {
+    font-weight: bold;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 15%;
+}
+.divPadronizarInput {
+    width: 50%;
+    padding: .5rem;
+}
+.divPais {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.divPaisSelect {
+    width: 45%;
+    padding: .5rem;
+}
+.divFiltro{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+.divFiltroBt {
+    width: 20%;
+}
+.filtroBt {
+    width: 100%;
+}
+.limparFiltroBt {
+    width: 100%;
+    margin-top: .3rem;
+}
+.divFiltroList{
+    width: 80%;
+    min-height: 3rem;
+    border: dotted 1px gray;
+    margin-left: 1rem;
+    border-radius: .5rem;
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+.notFilters {
+    width: 100%;
+    text-align: center;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.divFiltroItem, .divEditarItem {
+    display: flex;
+    width: 100%;
+    margin-top: .5rem;
+}
+.divFiltroRadio, .divEditarRadio {
+    margin: .5rem;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.divFiltroLabel, .divEditarLabel {
+    width: 20%;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.divFiltroInput, .divEditarInput {
+    width: 75%;
+    padding: .3rem;
+}
+.divViewList {
+    text-align: center;
+}
+.divViewBts {
+    margin-top: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 1rem;
+}
+.viewBt {
+    width: 8%;
+    margin: .5rem;
+    text-align: center;
+    padding: .5rem;
+    font-weight: bold;
+    margin-right: .5rem;
+    box-shadow: 3px 2px 5px rgba(20, 20, 20, 0.2);
+    cursor: pointer;
+    border-radius: 1rem;
+}
+.linha {
+    display: flex;
+    border-bottom: solid 1px gray;
+    padding: 3px 0;
+}
+.linha:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+.linha.select {
+    background-color: rgba(249, 253, 0, 0.274);
+}
+.linha-bt {
+    min-width: 8%;
+    display: flex;
+    justify-content: end;
+    padding: 0 5px;
+}
+.linha-bt-bt {
+    width: 100%;
+}
+.linha-bt-bt:hover {
+    cursor: pointer!important;
+}
+.divCheckbox {
+    display: flex;
+    width: 5%;
+    text-align: center;
+}
+.linhaCheckbox {
+    margin: auto;
+}
+.linha-endereco {
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 50%;
+}
+.linha-cidade {
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 21%;
+}
+.divFiltroIcone {
+    display: flex;
+    margin: .5rem;
+    border-radius: 3px;
+    padding: 3px;
+    box-shadow: 3px 2px 5px rgba(20, 20, 20, 0.2);
+}
+.divFiltroIconeKey {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px;
+    margin: 0;
+    border-radius: 3px 0 0 3px;
+    background-color: rgb(255, 255, 134);
+}
+.divFiltroIconeValue {
+    font-size: 12px;
+    padding: 3px;
+    margin: 0;
+    background-color: rgb(255, 255, 117);
+}
+.divFiltroIconeFechar {
+    font-size: 12px;
+    padding: 3px;
+    margin: 0;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    color: white;
+    border-radius: 0 3px 3px 0;
+    background-color: rgb(73, 73, 0);
+    cursor: pointer;
+}
+.divActions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    padding-left: 0;
+    box-shadow: 0px 3px 5px rgba(20, 20, 20, 0.2);
+    border: solid .5px rgb(212, 212, 212);
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+}
+.divSelectAll {
+    display: flex;
+    width: 5%;
+    text-align: center;
+}
+.selectAll {
+    margin: auto;
+}
+.divActionsBtGroup {
+    display: none;
+    justify-content: space-around;
+    width: 35%;
+}
+.divActionsOpt {
+    border: solid .5px rgb(212, 212, 212);
+    text-align: center;
+    border-radius: 1rem;
+    width: 20%;
+    padding: 3px;
+    cursor: pointer;
+    box-shadow: 0px 3px 5px rgba(20, 20, 20, 0.2);
+}
+.divActionsOpt:active {
+    position: relative;
+    top: 3px;
+    box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.2);
+}
+.divVerMais {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+.visualizar-item {
+    width: 100%;
+}
+.label-item {
+    text-align: start;
+    font-weight: bold;
+    margin-bottom: 0!important;
+}
+.conteudo-item {
+    text-align: start;
+}
+.input-edit {
+    padding: 3px;
+    margin-top: .5rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.visualizar-imagem {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+}
+.visualizar-imagem img {
+    width: 100%;
+    height: auto;
+}
+.div-select-columns {
+    display: flex;
+    flex-direction: column;
+}
+.select-column {
+    display: flex;
+}
+.select-column-checkbox {
+    height: auto;
+    margin: auto 1rem auto 1rem;
+}
+.select-column-label {
+    font-size: 13px;
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.select-columns-title {
+    font-weight: bold;
+    font-size: 15px;
+    margin-bottom: 1rem;
+}
+.div-book-inputs {
+    width: 100%;
+}
+.book-input-group {
+    width: 100%;
+    margin-top: 1rem;
+}
+.book-label {
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+.book-input {
+    padding: .5rem;
+    width: 100%;
+}
+.divMapActions {
+    display: flex;
+    margin-top: 1rem;
+}
+.divSearch {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border: dotted 1px gray;
+    border-radius: 1rem;
+    margin: 1rem;
+}
+.searchTitle {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+}
+.searchBt {
+    width: 20%;
+    border: solid 1px rgb(236, 236, 236);
+    box-shadow: 0px 3px 5px rgba(20, 20, 20, 0.2);
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+}
+.searchBt:active {
+    position: relative;
+    top: 3px;
+    box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.2);
+}
+.searchBt.polygon {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.divRaioRange {
+    margin-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-weight: bold;
+}
+.form-range {
+    margin-top: 0px!important;
+}
+.raioRangeValue {
+    font-weight: normal!important;
+    margin-top: 1rem;
+}
+.divResultOpt {
+    margin: 1rem;
+}
+.resultBt {
+    width: 15%;
+}
+.resultBt.gerarBook {
+    margin-right: 1rem;
+}
+.divMap {
+    margin-top: 1rem;
+    min-height: 50rem;
+}

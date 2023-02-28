@@ -1,4 +1,4 @@
-import { criarPontos, importarPontos, listaPontos } from "./pontosFunctions.js"
+import { importarZip, importarPontos, listaPontos, mapaPontos } from "./pontosFunctions.js"
 
 export var pontosOpt = function() {
     fetch(`/painel/pontos?arg=top-menu`)
@@ -27,6 +27,24 @@ export var pontosOpt = function() {
                 })
                 bodyHeader.appendChild(listaPontosOpt)
                 
+                let mapaPontosOpt = document.createElement('div')
+                mapaPontosOpt.id = 'mapaPontosOpt'
+                mapaPontosOpt.className = "body-header-opt"
+                mapaPontosOpt.innerHTML = texts.mapa
+                mapaPontosOpt.addEventListener('click', () => {
+                    mapaPontos()
+                })
+                bodyHeader.appendChild(mapaPontosOpt)
+                
+                let importarZipOpt = document.createElement('div')
+                importarZipOpt.id = 'importarZipOpt'
+                importarZipOpt.className = "body-header-opt"
+                importarZipOpt.innerHTML = texts.importarZip
+                importarZipOpt.addEventListener('click', () => {
+                    importarZip()
+                })
+                bodyHeader.appendChild(importarZipOpt)
+
                 let importarPontosOpt = document.createElement('div')
                 importarPontosOpt.id = 'importarPontosOpt'
                 importarPontosOpt.className = "body-header-opt"
@@ -36,7 +54,7 @@ export var pontosOpt = function() {
                 })
                 bodyHeader.appendChild(importarPontosOpt)
 
-                importarPontos()
+                listaPontos()
             })
         }
     })

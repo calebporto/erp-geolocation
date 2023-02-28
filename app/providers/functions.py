@@ -1,5 +1,7 @@
+from app.models.basemodels import Register_Response_
 from app.models.tables import Spot, Spot_Commercial_Info, Spot_Private_Info, User, Worksheet_Content as Flask_Worksheet_Content
 from sqlalchemy import Column, Date, Integer, String, create_engine
+from app.providers.db_services import get_pontos_by_id_list
 from app.providers.s3_services import upload_file_to_s3
 from sqlalchemy.orm import declarative_base, Session
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT
@@ -130,7 +132,6 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 foto_column = coluna
             else:
                 other_columns.append(coluna)
-        
         for coluna in [endereco_column, latitude_column, longitude_column, codigo_column, foto_column]:
             if coluna == None:
                 if lang == 'es' or lang == 'es-ar':
@@ -279,7 +280,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         pdf.showPage()
 
         for i, linha in enumerate(linhas):
-            print('gerando pdf')
+            print('gerando linha')
             foto_link = str(linha[foto_column])
             print(f'1 {foto_link}')
             valid_image = True
@@ -322,7 +323,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             # Endereço PDF
             pdf.setFont('Helvetica-Bold', 7*mm)
             pdf.setFillColor(colors.white)
-            pdf.drawCentredString(200*mm,207*mm, linha[endereco_column])
+            pdf.drawCentredString(190*mm,207*mm, linha[endereco_column])
 
             # Endereço PPTX
             endereco = slide.shapes.add_textbox(Mm(0), Mm(5), Mm(420), Mm(5))
@@ -519,7 +520,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         message = f'Falha ao gerar o Boook {capa["nome"]}. Motivo: Erro no servidor.'
         send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
 
-def points_register(arquivo, lang):
+def points_register(arquivo, lang, pattern_columns=None):
     try:
         tabela = pd.ExcelFile(arquivo)
         planilhas_count = len(tabela.sheet_names)
@@ -549,41 +550,41 @@ def points_register(arquivo, lang):
                 longitude_col = coluna
             elif is_in_the_column(coluna.lower(), ['foto', 'imagem', 'imagen', 'fotografia', 'fotografía', 'image', 'photo', 'picture']):
                 image_col = coluna
-            elif coluna.lower() in ['referencia', 'referência', 'reference']:
+            elif coluna.lower() in ['referencia', 'referencia ', 'referência', 'referência ', 'reference', 'reference ']:
                 reference_col = coluna
-            elif coluna.lower() in ['bairro', 'distrito', 'barrio', 'district']:
+            elif coluna.lower() in ['bairro', 'bairro ', 'distrito', 'distrito ', 'barrio', 'barrio ', 'district', 'district ']:
                 district_col = coluna
-            elif coluna.lower() in ['cidade', 'ciudad', 'city', 'county']:
+            elif coluna.lower() in ['cidade', 'cidade ', 'ciudad', 'ciudad ', 'city', 'city ', 'county', 'county ']:
                 county_col = coluna
-            elif coluna.lower() in ['zona', 'zone', 'regiao', 'região', 'región', 'region']:
+            elif coluna.lower() in ['zona', 'zona ', 'zone', 'zone ', 'regiao', 'regiao ', 'região', 'região ', 'región', 'región ', 'region', 'region ']:
                 zone_col = coluna
-            elif coluna.lower() in ['estado', 'provincia', 'state']:
+            elif coluna.lower() in ['estado', 'estado ', 'provincia', 'provincia ', 'state', 'state ']:
                 state_col = coluna
-            elif coluna.lower() in ['país', 'pais', 'country']:
+            elif coluna.lower() in ['país', 'país ', 'pais', 'pais ', 'country', 'country ']:
                 country_col = coluna
-            elif coluna.lower() in ['formato', 'format']:
+            elif coluna.lower() in ['formato', 'formato ', 'format', 'format ']:
                 format_col = coluna
-            elif coluna.lower() in ['medida', 'tamanho', 'tamaño', 'tamano', 'measure', 'size']:
+            elif coluna.lower() in ['medida', 'medida ', 'tamanho', 'tamanho ', 'tamaño', 'tamaño ', 'tamano', 'tamano ', 'measure', 'measure ', 'size', 'size ']:
                 measure_col = coluna
-            elif coluna.lower() in ['impacto', 'fluxo passantes', 'impact']:
+            elif coluna.lower() in ['impacto', 'impacto ', 'fluxo passantes', 'fluxo passantes ', 'impact', 'impact ']:
                 impacto_col = coluna
-            elif coluna.lower() in ['valor tabela', 'valor de la tabla', 'average media value']:
+            elif coluna.lower() in ['valor tabela', 'valor tabela ', 'valor de la tabla', 'valor de la tabla ', 'average media value', 'average media value ']:
                 valor_tab_comm = coluna
-            elif coluna.lower() in ['valor negociado', 'valor negociado', 'our media value']:
+            elif coluna.lower() in ['valor negociado', 'valor negociado ', 'our media value', 'our media value ']:
                 valor_negociado_comm = coluna
-            elif coluna.lower() in ['produção', 'producao', 'produccion', 'producción', 'production']:
+            elif coluna.lower() in ['produção', 'produção ', 'producao', 'producao ', 'produccion', 'produccion ', 'producción', 'producción ', 'production', 'production ']:
                 producao_col = coluna
-            elif coluna.lower() in ['observações', 'observacoes', 'comentarios', 'comments']:
+            elif coluna.lower() in ['observações', 'observações ', 'observacoes', 'observacoes ', 'comentarios', 'comentarios ', 'comments', 'comments ']:
                 observacoes_col = coluna
-            elif coluna.lower() in ['empresa', 'company']:
+            elif coluna.lower() in ['empresa', 'empresa ', 'company', 'company ']:
                 empresa_col = coluna
-            elif coluna.lower() in ['medida interna', 'internal measurement']:
+            elif coluna.lower() in ['medida interna', 'medida interna ', 'internal measurement', 'internal measurement ']:
                 measure_int_col = coluna
-            elif coluna.lower() in ['valor negociado interno', 'valor negociado interno', 'internal negotiated value']:
+            elif coluna.lower() in ['valor negociado interno', 'valor negociado interno ', 'internal negotiated value', 'internal negotiated value ']:
                 valor_negociado_int = coluna
-            elif coluna.lower() in ['custo líquido', 'custo liquido', 'preço líquido', 'preco liquido', 'preço liquido', 'preco líquido', 'costo neto', 'net cost']:
+            elif coluna.lower() in ['custo líquido', 'custo líquido ', 'custo liquido', 'custo liquido ', 'preço líquido', 'preço líquido ', 'preco liquido', 'preco liquido ', 'preço liquido', 'preço liquido ', 'preco líquido', 'preco líquido ', 'costo neto', 'costo neto ', 'net cost', 'net cost ']:
                 custo_liq_col = coluna
-            elif coluna.lower() in ['comentários internos', 'comentarios internos', 'internal comments']:
+            elif coluna.lower() in ['comentários internos', 'comentários internos ', 'comentarios internos', 'comentarios internos ', 'internal comments', 'internal comments ']:
                 observacoes_int_col = coluna
             else:
                 continue
@@ -597,7 +598,27 @@ def points_register(arquivo, lang):
             else:
                 messages.append('Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.')
                 return False, messages
+
+        pais = pattern_columns['pais'] if pattern_columns else None
+        zona = pattern_columns['zona'] if pattern_columns else None
+        cidade = pattern_columns['cidade'] if pattern_columns else None
+        estado = pattern_columns['estado'] if pattern_columns else None
+        empresa = pattern_columns['empresa'] if pattern_columns else None
+        custo = pattern_columns['custo'] if pattern_columns else None
+        valorTabela = pattern_columns['valorTabela'] if pattern_columns else None
+        valorNegociado = pattern_columns['valorNegociado'] if pattern_columns else None
+        formato = pattern_columns['formato'] if pattern_columns else None
+
         for linha in planilha:
+            linhaPais = linha[country_col] if country_col and str(linha[country_col]) != 'nan' else None
+            linhaZona = linha[zone_col] if zone_col and str(linha[zone_col]) != 'nan' else None
+            linhaCidade = linha[county_col] if county_col and str(linha[county_col]) != 'nan' else None
+            linhaEstado = linha[state_col] if state_col and str(linha[state_col]) != 'nan' else None
+            linhaEmpresa = linha[empresa_col] if empresa_col and str(linha[empresa_col]) != 'nan' else None
+            linhaCusto = linha[custo_liq_col] if custo_liq_col and str(linha[custo_liq_col]) != 'nan' else None
+            linhaValorTabela = linha[valor_tab_comm] if valor_tab_comm and str(linha[valor_tab_comm]) != 'nan' else None
+            linhaValorNegociado = linha[valor_negociado_comm] if valor_negociado_comm and str(linha[valor_negociado_comm]) != 'nan' else None
+            linhaFormato = linha[format_col] if format_col and str(linha[format_col]) != 'nan' else None
             new_spot = Spot(
                 linha[code_col],
                 linha[address_col],
@@ -607,28 +628,28 @@ def points_register(arquivo, lang):
                 date.today(),
                 linha[reference_col] if reference_col and str(linha[reference_col]) != 'nan' else None,
                 linha[district_col] if district_col and str(linha[district_col]) != 'nan' else None,
-                linha[county_col] if county_col and str(linha[county_col]) != 'nan' else None,
-                linha[zone_col] if zone_col and str(linha[zone_col]) != 'nan' else None,
-                linha[state_col] if state_col and str(linha[state_col]) != 'nan' else None,
-                linha[country_col] if country_col and str(linha[country_col]) != 'nan' else None,
-                linha[format_col] if format_col and str(linha[format_col]) != 'nan' else None,
+                cidade if cidade else linhaCidade,
+                zona if zona else linhaZona,
+                estado if estado else linhaEstado,
+                pais if pais else linhaPais,
+                formato if formato else linhaFormato,
                 linha[measure_col] if measure_col and str(linha[measure_col]) != 'nan' else None
             )
             new_spot_com = Spot_Commercial_Info(
                 None,
                 linha[impacto_col] if impacto_col and str(linha[impacto_col]) != 'nan' else None,
-                linha[valor_tab_comm] if valor_tab_comm and str(linha[valor_tab_comm]) != 'nan' else None,
-                linha[valor_negociado_comm] if valor_negociado_comm and str(linha[valor_negociado_comm]) != 'nan' else None,
+                valorTabela if valorTabela else linhaValorTabela,
+                valorNegociado if valorNegociado else linhaValorNegociado,
                 linha[producao_col] if producao_col and str(linha[producao_col]) != 'nan' else None,
                 linha[observacoes_col] if observacoes_col and str(linha[observacoes_col]) != 'nan' else None,
                 outros_comm_col
             )
             new_spot_int = Spot_Private_Info(
                 None,
-                linha[empresa_col] if empresa_col and str(linha[empresa_col]) != 'nan' else None,
+                empresa if empresa else linhaEmpresa,
                 linha[measure_int_col] if measure_int_col and str(linha[measure_int_col]) != 'nan' else None,
                 linha[valor_negociado_int] if valor_negociado_int and str(linha[valor_negociado_int]) != 'nan' else None,
-                linha[custo_liq_col] if custo_liq_col and str(linha[custo_liq_col]) != 'nan' else None,
+                custo if custo else linhaCusto,
                 linha[observacoes_int_col] if observacoes_int_col and str(linha[observacoes_int_col]) != 'nan' else None,
                 outros_int_col
             )
@@ -722,3 +743,179 @@ def book_register(arquivo, dados_capa, colunas, lang, user_id):
         else:
             messages.append(f'O book {(dados_capa["nome"]).title()} está sendo gerado. Quando estiver concluído, ele aparecerá em "Lista de Books" ou notificará na tela em caso de erro.')
         return True, messages
+    
+def bookGenerateWithPoints(lang, columns, idList, userId, bookName, personName, clientName):
+    messages = []
+    try:
+        if len(columns) > 15:
+            if lang == 'es' or lang == 'es-ar':
+                messages.append('Elija un máximo de 15 columnas.')
+            elif lang == 'en':
+                messages.append('Choose a maximum of 15 columns.')
+            else:
+                messages.append('Escolha no máximo 15 colunas.')
+            response = Register_Response_(
+                status=False,
+                message=messages
+            )
+            return response.json()
+        allColumns = columns.copy()
+        codigo_col = None
+        latitude_col = None
+        longitude_col = None
+        endereco_col = None
+        image_col = None
+        for coluna in columns:
+            if is_in_the_column(coluna.lower(), ['cod', 'cod.', 'cód', 'cód.', 'código', 'codigo', 'code']):
+                codigo_col = coluna
+            elif is_in_the_column(coluna.lower(), ['endereço', 'endereco', 'direccion', 'dirección', 'ubicacion', 'ubicación', 'address']):
+                endereco_col = coluna
+            elif is_in_the_column(coluna.lower(), ['latitude', 'latitud', 'latitúd']):
+                latitude_col = coluna
+            elif is_in_the_column(coluna.lower(), ['longitude', 'longitud', 'longitúd']):
+                longitude_col = coluna
+            elif is_in_the_column(coluna.lower(), ['foto', 'imagem', 'imagen', 'fotografia', 'fotografía', 'image', 'photo', 'picture']):
+                image_col = coluna
+        for coluna in [codigo_col, latitude_col, longitude_col, endereco_col, image_col]:
+            if coluna:
+                allColumns.remove(coluna)
+            else:
+                if lang == 'es' or lang == 'es-ar':
+                    messages.append('Erro en servidor.')
+                elif lang == 'en':
+                    messages.append('Server error.')
+                else:
+                    messages.append('Erro no servidor.')
+                response = Register_Response_(
+                    status=False,
+                    message=messages
+                )
+                return response.json()
+        
+        pontos = get_pontos_by_id_list(idList)
+        conteudo = []
+        for ponto in pontos:
+            linha = {}
+            linha[codigo_col] = ponto[0].code
+            linha[latitude_col] = ponto[0].latitude
+            linha[longitude_col] = ponto[0].longitude
+            linha[endereco_col] = ponto[0].address
+            linha[image_col] = ponto[0].image_link
+            for coluna in allColumns:
+                if coluna.lower() in ['referencia', 'referencia ', 'referência', 'referência ', 'reference', 'reference ']:
+                    linha[coluna] = ponto[0].reference if ponto[0].reference else ''
+                elif coluna.lower() in ['bairro', 'bairro ', 'distrito', 'distrito ', 'barrio', 'barrio ', 'district', 'district ']:
+                    linha[coluna] = ponto[0].district if ponto[0].district else ''
+                elif coluna.lower() in ['cidade', 'cidade ', 'ciudad', 'ciudad ', 'city', 'city ', 'county', 'county ']:
+                    linha[coluna] = ponto[0].city if ponto[0].city else ''
+                elif coluna.lower() in ['zona', 'zona ', 'zone', 'zone ', 'regiao', 'regiao ', 'região', 'região ', 'región', 'región ', 'region', 'region ']:
+                    linha[coluna] = ponto[0].zone if ponto[0].zone else ''
+                elif coluna.lower() in ['estado', 'estado ', 'provincia', 'provincia ', 'state', 'state ']:
+                    linha[coluna] = ponto[0].state if ponto[0].state else ''
+                elif coluna.lower() in ['país', 'país ', 'pais', 'pais ', 'country', 'country ']:
+                    linha[coluna] = ponto[0].country if ponto[0].country else ''
+                elif coluna.lower() in ['formato', 'formato ', 'format', 'format ']:
+                    linha[coluna] = ponto[0].format if ponto[0].format else ''
+                elif coluna.lower() in ['medida', 'medida ', 'tamanho', 'tamanho ', 'tamaño', 'tamaño ', 'tamano', 'tamano ', 'measure', 'measure ', 'size', 'size ']:
+                    linha[coluna] = ponto[0].measure if ponto[0].measure else ''
+                elif coluna.lower() in ['impacto', 'impacto ', 'fluxo passantes', 'fluxo passantes ', 'impact', 'impact ']:
+                    linha[coluna] = ponto[1].impacto if ponto[1].impacto else ''
+                elif coluna.lower() in ['valor tabela', 'valor tabela ', 'valor de la tabla', 'valor de la tabla ', 'average media value', 'average media value ']:
+                    linha[coluna] = ponto[1].valor_tabela_comm if ponto[1].valor_tabela_comm else ''
+                elif coluna.lower() in ['valor negociado', 'valor negociado ', 'our media value', 'our media value ']:
+                    linha[coluna] = ponto[1].valor_negociado_comm if ponto[1].valor_negociado_comm else ''
+                elif coluna.lower() in ['produção', 'produção ', 'producao', 'producao ', 'produccion', 'produccion ', 'producción', 'producción ', 'production', 'production ']:
+                    linha[coluna] = ponto[1].producao if ponto[1].producao else ''
+                elif coluna.lower() in ['observações', 'observações ', 'observacoes', 'observacoes ', 'comentarios', 'comentarios ', 'comments', 'comments ']:
+                    linha[coluna] = ponto[1].observacoes if ponto[1].observacoes else ''
+                elif coluna.lower() in ['empresa', 'empresa ', 'company', 'company ']:
+                    linha[coluna] = ponto[2].empresa if ponto[2].empresa else ''
+                elif coluna.lower() in ['medida interna', 'medida interna ', 'internal measurement', 'internal measurement ']:
+                    linha[coluna] = ponto[2].medida_int if ponto[2].medida_int else ''
+                elif coluna.lower() in ['valor negociado interno', 'valor negociado interno ', 'internal negotiated value', 'internal negotiated value ']:
+                    linha[coluna] = ponto[2].valor_negociado_int if ponto[2].valor_negociado_int else ''
+                elif coluna.lower() in ['custo líquido', 'custo líquido ', 'custo liquido', 'custo liquido ', 'preço líquido', 'preço líquido ', 'preco liquido', 'preco liquido ', 'preço liquido', 'preço liquido ', 'preco líquido', 'preco líquido ', 'costo neto', 'costo neto ', 'net cost', 'net cost ']:
+                    linha[coluna] = ponto[2].custo_liq if ponto[2].custo_liq else ''
+                elif coluna.lower() in ['comentários internos', 'comentários internos ', 'comentarios internos', 'comentarios internos ', 'internal comments', 'internal comments ']:
+                    linha[coluna] = ponto[2].observacoes if ponto[2].observacoes else ''
+                else:
+                    continue
+            conteudo.append(linha)
+        
+        capa = {'nome': bookName, 'cliente': clientName, 'pessoa': personName}
+        content = {'colunas': columns, 'conteudo': conteudo}
+        image_id = image_id_generator()
+        
+        # Criando fila rq
+        q = Queue(connection=conn)
+
+        result = q.enqueue(pdf_generator, capa, content, image_id, lang, userId, True, job_timeout='30m')
+        if lang == 'es' or lang == 'es-ar':
+            messages.append(f'El libro {(capa["nome"]).title()} se está generando. Cuando se complete, aparecerá en "Lista de Books" o notificará en pantalla en caso de error.')
+        elif lang == 'en':
+            messages.append(f'The book {(capa["nome"]).title()} is being generated. When completed, it will appear in "List of Books" or notify on screen in case of error.')
+        else:
+            messages.append(f'O book {(capa["nome"]).title()} está sendo gerado. Quando estiver concluído, ele aparecerá em "Lista de Books" ou notificará na tela em caso de erro.')
+        response = Register_Response_(
+            status=True,
+            message=messages
+        )
+        return response.json()
+    except Exception as error:
+        print(str(error))
+        if lang == 'es' or lang == 'es-ar':
+            messages.append('Erro en servidor.')
+        elif lang == 'en':
+            messages.append('Server error.')
+        else:
+            messages.append('Erro no servidor.')
+        response = Register_Response_(
+            status=False,
+            message=messages
+        )
+        return response.json()
+
+def editar_grupo(lang, idList, dados):
+    messages = []
+    pontos = get_pontos_by_id_list(idList)
+    for ponto in pontos:
+        basic = ponto[0]
+        commercial = ponto[1]
+        private = ponto[2]
+
+        basic.reference = dados['reference'] if dados['reference'] else basic.reference
+        basic.district = dados['district'] if dados['district'] else basic.district
+        basic.city = dados['city'] if dados['city'] else basic.city
+        basic.zone = dados['zone'] if dados['zone'] else basic.zone
+        basic.state = dados['state'] if dados['state'] else basic.state
+        basic.country = dados['country'] if dados['country'] else basic.country
+        basic.format = dados['format'] if dados['format'] else basic.format
+        basic.measure = dados['measure'] if dados['measure'] else basic.measure
+
+        commercial.impacto = dados['impacto'] if dados['impacto'] else commercial.impacto
+        commercial.valor_tabela_comm = dados['valor_tabela_comm'] if dados['valor_tabela_comm'] else commercial.valor_tabela_comm
+        commercial.valor_negociado_comm = dados['valor_negociado_comm'] if dados['valor_negociado_comm'] else commercial.valor_negociado_comm
+        commercial.producao = dados['producao'] if dados['producao'] else commercial.producao
+        commercial.observacoes = dados['observacoes_comm'] if dados['observacoes_comm'] else commercial.observacoes
+        
+        private.empresa = dados['empresa'] if dados['empresa'] else private.empresa
+        private.medida_int = dados['medida_int'] if dados['medida_int'] else private.medida_int
+        private.valor_negociado_int = dados['valor_negociado_int'] if dados['valor_negociado_int'] else private.valor_negociado_int
+        private.custo_liq = dados['custo_liq'] if dados['custo_liq'] else private.custo_liq
+        private.observacoes = dados['observacoes_int'] if dados['observacoes_int'] else private.observacoes
+
+        db.session.add(basic)
+        db.session.add(commercial)
+        db.session.add(private)
+    db.session.commit()
+    if lang == 'es' or lang == 'es-ar':
+        messages.append('Puntos cambiados con exito.')
+    elif lang == 'en':
+        messages.append('Points changed successfully.')
+    else:
+        messages.append('Pontos alterados com sucesso.')
+    response = Register_Response_(
+        status=True,
+        message=messages
+    )
+    return response.json()
