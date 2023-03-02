@@ -190,6 +190,13 @@
     cursor: pointer;
     border-radius: 1rem;
 }
+.linhaTitle {
+    padding: 3px 0;
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.04);
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
 .linha {
     display: flex;
     border-bottom: solid 1px gray;
@@ -202,16 +209,25 @@
     background-color: rgba(249, 253, 0, 0.274);
 }
 .linha-bt {
-    min-width: 8%;
+    width: 4%;
     display: flex;
     justify-content: end;
     padding: 0 5px;
 }
 .linha-bt-bt {
+    display: flex;
+    justify-content: center;
+    border-radius: 50%;
     width: 100%;
+    height: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 .linha-bt-bt:hover {
     cursor: pointer!important;
+}
+.btMin {
+    margin: auto;
 }
 .divCheckbox {
     display: flex;
@@ -231,7 +247,25 @@
     height: auto;
     margin-top: auto;
     margin-bottom: auto;
-    width: 21%;
+    width: 15%;
+}
+.linha-formato {
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 15%;
+}
+.linha-valor {
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 8%;
+}
+.linha-btsTitle {
+    height: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 12.5%;
 }
 .divFiltroIcone {
     display: flex;
@@ -400,6 +434,10 @@
     margin-left: auto;
     margin-right: auto;
     cursor: pointer;
+    height: 3.5rem;
+}
+.searchBt.clicked {
+    border: solid 4px rgb(255, 255, 115);
 }
 .searchBt:active {
     position: relative;
@@ -435,4 +473,29 @@
 .divMap {
     margin-top: 1rem;
     min-height: 50rem;
+}
+.divCoordenadasSearch {
+    display: flex;
+    width: 100%;
+    margin-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.coordenadasSearchItem {
+    width: 40%;
+    margin-right: 1rem;
+}
+.coordenadasSearchLabel {
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+.coordenadasSearchInput {
+    width: 100%;
+    padding: 2px;
+    height: 35px;
+}
+.coordenadasSearchBt {
+    width: 20%;
+    height: 35px;
+    margin-top: auto;
 }

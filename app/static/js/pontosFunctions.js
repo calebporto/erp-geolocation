@@ -52,11 +52,12 @@ var allTexts = {
         'divEditarGrupoModalTitle': 'Alterar colunas em grupo',
         'excluirGrupoModalBody': 'Após a excusão dos pontos selecionados, não será possível reverter.',
         'raioRangeLabel': 'Raio de busca',
-        'raioSearchTitle': 'Clique para buscar por área circular',
+        'raioSearchTitle': 'Clique para criar um ponto de busca no mapa',
         'polygonSearchTitle': 'Clique para criar uma área de busca',
         'resultText': ' pontos encontrados.',
         'gerarBookBt': 'Gerar book',
-        'limparBt':'Limpar Pesquisa'
+        'limparBt':'Limpar Pesquisa',
+        'buscarBt': 'Buscar'
     }, 'es': {
         'codigo': 'Código',
         'endereco': 'Dirección',
@@ -107,11 +108,12 @@ var allTexts = {
         'divEditarGrupoModalTitle': 'Cambiar columnas en grupo',
         'excluirGrupoModalBody': 'Después de eliminar los puntos seleccionados, no será posible revertirlos.',
         'raioRangeLabel': 'Radio de busqueda',
-        'raioSearchTitle': 'Haga clic para buscar por área circular',
+        'raioSearchTitle': 'Haga clic para crear un punto de búsqueda en el mapa',
         'polygonSearchTitle': 'Haga clic para crear un área de búsqueda',
         'resultText': ' puntos encontrados.',
         'gerarBookBt': 'Generar book',
-        'limparBt':'Borrar búsqueda'
+        'limparBt':'Borrar búsqueda',
+        'buscarBt': 'Buscar'
     }, 'en': {
         'codigo': 'Code',
         'endereco': 'Address',
@@ -162,11 +164,12 @@ var allTexts = {
         'divEditarGrupoModalTitle': 'Change columns in group',
         'excluirGrupoModalBody': 'After deleting the selected points, it will not be possible to revert.',
         'raioRangeLabel': 'Search radius',
-        'raioSearchTitle': 'Click to search by circular area',
+        'raioSearchTitle': 'Click to create a search point on the map',
         'polygonSearchTitle': 'Click to create a search area',
         'resultText': ' points found.',
         'gerarBookBt': 'Book generate',
-        'limparBt':'Clear search' 
+        'limparBt':'Clear search' ,
+        'buscarBt': 'Search'
     }
 }
 var pontos = {
@@ -235,19 +238,25 @@ function selectAllCheckbox() {
 function displayActionsBts() {
     let allCheckbox = document.getElementsByClassName('linhaCheckbox')
     let divActionsBtGroup = document.querySelector('.divActionsBtGroup')
+    let selectAll = document.querySelector('#selectAll')
     let is_checked = false
+    let allChecked = true
     for (let i = 0; i < allCheckbox.length; i++) {
         if (allCheckbox[i].checked == true) {
             is_checked = true
-            break
         } else {
-            continue
+            allChecked = false
         }
     }
     if (is_checked == true) {
         divActionsBtGroup.style.display = 'flex'
     } else {
         divActionsBtGroup.style.display = 'none'
+    }
+    if (allChecked == true) {
+        selectAll.checked = true
+    } else {
+        selectAll.checked = false
     }
 }
 var initMap = function(divMap, center=null, radius=null) {
@@ -267,7 +276,6 @@ var initMap = function(divMap, center=null, radius=null) {
     var map = new google.maps.Map(divMap, mapOptions)
     var latlngbounds = new google.maps.LatLngBounds() // Adequar o zoom para ver todos os pontos
     if (center) {
-        console.log('ok')
         map.setCenter(center)
         let flag = new google.maps.Marker({
             position: center,
@@ -425,8 +433,7 @@ var initMap = function(divMap, center=null, radius=null) {
     }
     return map
 }
-
-function getPointsByMarkerPosition(map, raioRangeElement) {
+function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBtEvent) {
     let texts;
     if (lang == 'es' || lang == 'es-ar') {
         texts = allTexts.es
@@ -444,6 +451,16 @@ function getPointsByMarkerPosition(map, raioRangeElement) {
     })
     google.maps.event.addListener(drawingManager, 'markercomplete', function(marker) {
         cleanFilters()
+        raioSearchBt.removeEventListener('click', searchBtEvent)
+        raioSearchBt.addEventListener('click', () => {
+            if (lang == 'es' || lang == 'es-ar') {
+                alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
+            } else if (lang == 'es') {
+                alertGenerate(body, 'Clean the search to fetch again')
+            } else {
+                alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
+            }
+        })
         let latitude = marker.getPosition().lat()
         let longitude = marker.getPosition().lng()
         let radius = raioRangeElement.value
@@ -513,6 +530,89 @@ function getPointsByMarkerPosition(map, raioRangeElement) {
             let resultMap = initMap(divMap, center=center, radius=radius)
         })
     })
+    return drawingManager
+}
+function removeMapMarkerPosition(drawingManager) {
+    drawingManager.setOptions({ drawingControl: false })
+}
+function getPointsByLatLng(latitude, longitude, radius, bt) {
+    let texts;
+    if (lang == 'es' || lang == 'es-ar') {
+        texts = allTexts.es
+    } else if (lang == 'en') {
+        texts = allTexts.en
+    } else {
+        texts = allTexts.pt
+    }
+    latitude.disabled = true
+    longitude.disabled = true
+    radius.disabled = true
+    bt.disabled = true
+    filtros.radius = radius.value
+    filtros.coordinates.lat = latitude.value
+    filtros.coordinates.lng = longitude.value
+    filtros.type = 'getPointsByMarkerPosition'
+    fetch(`/painel/pontos/visualizar?filter=${JSON.stringify(filtros)}`)
+    .then((response) => {
+        return response.json()
+    })
+    .then((dados) => {
+        pontos.length = dados.length
+        dados.pontos.forEach((dado) => {
+            pontosSelecionadosId.push(dado.basic.id)
+            let ponto = {
+                'basic': null,
+                'commercial': null,
+                'private': null
+            }
+            ponto.basic = new Ponto_Basic(
+                dado.basic.id,
+                dado.basic.code,
+                dado.basic.address,
+                dado.basic.latitude,
+                dado.basic.longitude,
+                dado.basic.image_link,
+                dado.basic.reference,
+                dado.basic.district,
+                dado.basic.city,
+                dado.basic.zone,
+                dado.basic.state,
+                dado.basic.country,
+                dado.basic.format,
+                dado.basic.measure
+            )
+            ponto.commercial = new Ponto_Commercial(
+                dado.commercial.id,
+                dado.commercial.spot_id,
+                dado.commercial.impacto,
+                dado.commercial.valor_tabela_comm,
+                dado.commercial.valor_negociado_comm,
+                dado.commercial.producao,
+                dado.commercial.observacoes,
+                dado.commercial.outros
+            )
+            ponto.private = new Ponto_Private(
+                dado.private.id,
+                dado.private.spot_id,
+                dado.private.empresa,
+                dado.private.valor_negociado_int,
+                dado.private.custo_liq,
+                dado.private.medida_int,
+                dado.private.observacoes,
+                dado.private.outros
+            )
+            pontos.pontos.push(ponto)
+        })
+        let divMap = document.querySelector('#divMap')
+        divMap.innerHTML = ''
+        let resultText = document.querySelector('#resultText')
+        resultText.innerHTML = pontos.length + texts.resultText
+        let resultLimparBt = document.querySelector('#resultLimparBt')
+        resultLimparBt.disabled = false
+        let center = {lat: parseFloat(latitude.value), lng: parseFloat(longitude.value)}
+        console.log(center)
+        let resultMap = initMap(divMap, center=center, radius=parseFloat(radius.value))
+    })
 }
 function gerarLista(index) {
     let texts = null
@@ -540,7 +640,32 @@ function gerarLista(index) {
     } else {
         index = index + 1
     }
-
+    
+    let linhaTitle = document.createElement('div')
+    linhaTitle.className = 'linhaTitle'
+    let checkboxTitle = document.createElement('div')
+    checkboxTitle.className = 'divCheckbox'
+    linhaTitle.appendChild(checkboxTitle)
+    let enderecoTitle = document.createElement('div')
+    enderecoTitle.className = 'linha-endereco'
+    enderecoTitle.innerHTML = texts.endereco
+    linhaTitle.appendChild(enderecoTitle)
+    let cidadeTitle = document.createElement('div')
+    cidadeTitle.className = 'linha-cidade'
+    cidadeTitle.innerHTML = texts.city
+    linhaTitle.appendChild(cidadeTitle)
+    let formatoTitle = document.createElement('div')
+    formatoTitle.className = 'linha-formato'
+    formatoTitle.innerHTML = texts.format
+    linhaTitle.appendChild(formatoTitle)
+    let valorTitle = document.createElement('div')
+    valorTitle.className = 'linha-valor'
+    valorTitle.innerHTML = '$$'
+    linhaTitle.appendChild(valorTitle)
+    let btsTitle = document.createElement('div')
+    btsTitle.className = 'linha-btsTitle'
+    linhaTitle.appendChild(btsTitle)
+    divViewList.appendChild(linhaTitle)
     for (let i = index; i < pontos.pontos.length; i++) {
         let ponto = pontos.pontos[i]
         let id = ponto.basic.id
@@ -605,6 +730,16 @@ function gerarLista(index) {
         cidadeColumn.className = 'linha-cidade'
         cidadeColumn.innerHTML = cidade
         linha.appendChild(cidadeColumn)
+        
+        let formatoColumn = document.createElement('div')
+        formatoColumn.className = 'linha-formato'
+        formatoColumn.innerHTML = format
+        linha.appendChild(formatoColumn)
+        
+        let valorColumn = document.createElement('div')
+        valorColumn.className = 'linha-valor'
+        valorColumn.innerHTML = valor_negociado_int
+        linha.appendChild(valorColumn)
 
         // Visualizar
         let visualizar = document.createElement('div')
@@ -612,7 +747,12 @@ function gerarLista(index) {
         let visualizarBt = document.createElement('button')
         visualizarBt.type = 'button'
         visualizarBt.className = 'btn btn-sm btn-primary linha-bt-bt'
-        visualizarBt.innerHTML = texts.visualizar
+        visualizarBt.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-eye-fill btMin" viewBox="0 0 16 16">
+            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+        </svg>
+        `
         visualizarBt.addEventListener('click', () => {
             $(`#visualizar${id}`).modal('show')
         })
@@ -750,7 +890,12 @@ function gerarLista(index) {
         let editarBt = document.createElement('button')
         editarBt.type = 'button'
         editarBt.className = 'btn btn-sm btn-warning linha-bt-bt'
-        editarBt.innerHTML = 'Editar'
+        editarBt.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square btMin" viewBox="0 0 16 16">
+            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+        </svg>
+        `
         let cancelarEditModal;
         let confirmarEditModal;
         editarBt.addEventListener('click', () => {
@@ -1021,7 +1166,11 @@ function gerarLista(index) {
         let excluirBt = document.createElement('button')
         excluirBt.type = 'button'
         excluirBt.className = 'btn btn-sm btn-secondary linha-bt-bt'
-        excluirBt.innerHTML = 'Excluir'
+        excluirBt.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill btMin" viewBox="0 0 16 16">
+            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+        </svg>
+        `
         let confirmarExcluirModal;
         //excluirBt.removeEventListener('click', confirmarExcluirModal)
         excluirBt.addEventListener('click', confirmarExcluirModal = () => {
@@ -1629,8 +1778,8 @@ function carregarPontos() {
             pontos.pontos.push(ponto)
         })
         pontosSelecionadosId = []
-        displayActionsBts()
         visualizarPontos()
+        displayActionsBts()
     })
 }
 export var listaPontos = function() {
@@ -3551,7 +3700,7 @@ export var mapaPontos = function() {
     raioSearchTitle.innerHTML = texts.raioSearchTitle
     divraioSearch.appendChild(raioSearchTitle)
     let raioSearchBt = document.createElement('div')
-    raioSearchBt.className = 'searchBt gold-bt'
+    raioSearchBt.className = 'searchBt btn btn-secondary'
     raioSearchBt.id = 'raioSearchBt'
     raioSearchBt.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-geo" viewBox="0 0 16 16">
@@ -3576,22 +3725,81 @@ export var mapaPontos = function() {
     raioRange.min = 1
     raioRange.max = 50
     raioRange.value = 1
-    raioRange.disabled = true
     raioRange.id = 'raioRange'
     raioRange.addEventListener('change', () => {
         raioRangeValue.innerHTML = `${raioRange.value} Km`
     })
     divRaioRange.appendChild(raioRange)
+
+    let divCoordenadasSearch = document.createElement('div')
+    divCoordenadasSearch.className = 'divCoordenadasSearch'
+    let divCoordenadasSearchLatitude = document.createElement('div')
+    divCoordenadasSearchLatitude.className = 'coordenadasSearchItem'
+    let searchLatitudeLabel = document.createElement('p')
+    searchLatitudeLabel.className = 'coordenadasSearchLabel'
+    searchLatitudeLabel.innerHTML = texts.latitude
+    divCoordenadasSearchLatitude.appendChild(searchLatitudeLabel)
+    let searchLatitudeInput = document.createElement('input')
+    searchLatitudeInput.id = 'searchLatitudeInput'
+    searchLatitudeInput.className = 'coordenadasSearchInput'
+    searchLatitudeInput.maxLength = 20
+    divCoordenadasSearchLatitude.appendChild(searchLatitudeInput)
+    divCoordenadasSearch.appendChild(divCoordenadasSearchLatitude)
+    let divCoordenadasSearchLongitude = document.createElement('div')
+    divCoordenadasSearchLongitude.className = 'coordenadasSearchItem'
+    let searchLongitudeLabel = document.createElement('p')
+    searchLongitudeLabel.className = 'coordenadasSearchLabel'
+    searchLongitudeLabel.innerHTML = texts.longitude
+    divCoordenadasSearchLongitude.appendChild(searchLongitudeLabel)
+    let searchLongitudeInput = document.createElement('input')
+    searchLongitudeInput.id = 'searchLongitudeInput'
+    searchLongitudeInput.className = 'coordenadasSearchInput'
+    searchLongitudeInput.maxLength = 20
+    divCoordenadasSearchLongitude.appendChild(searchLongitudeInput)
+    divCoordenadasSearch.appendChild(divCoordenadasSearchLongitude)
+    let coordenadasSearchBt = document.createElement('button')
+    coordenadasSearchBt.className = 'coordenadasSearchBt btn btn-dark'
+    coordenadasSearchBt.id = 'coordenadasSearchBt'
+    coordenadasSearchBt.innerHTML = texts.buscarBt
+    divCoordenadasSearch.appendChild(coordenadasSearchBt)
+
     divraioSearch.appendChild(divRaioRange)
+    divraioSearch.appendChild(divCoordenadasSearch)
     divMapActions.appendChild(divraioSearch)
 
-    
+    let raioSearchBtClicked = false
+    raioSearchBt.removeEventListener('click', searchBtEvent)
+    let drawingManager;
     raioSearchBt.addEventListener('click', searchBtEvent = () => {
-        console.log('evento')
+        console.log(raioSearchBtClicked)
+        if (raioSearchBtClicked == false) {
+            raioSearchBtClicked = true
+            raioSearchBt.className = 'searchBt gold-bt'
+            searchLatitudeInput.disabled = true
+            searchLongitudeInput.disabled = true
+            coordenadasSearchBt.disabled = true
+            drawingManager = getPointsByMarkerPosition(map, raioRange, raioSearchBt, searchBtEvent)
+        } else {
+            raioSearchBtClicked = false
+            raioSearchBt.className = 'searchBt btn btn-secondary'
+            searchLatitudeInput.disabled = false
+            searchLongitudeInput.disabled = false
+            coordenadasSearchBt.disabled = false
+            removeMapMarkerPosition(drawingManager)
+        }
+    })
+    coordenadasSearchBt.addEventListener('click', () => {
         raioSearchBt.removeEventListener('click', searchBtEvent)
-        divraioSearch.style.border = 'solid 2px black'
-        raioRange.disabled = false
-        getPointsByMarkerPosition(map, raioRange)
+        raioSearchBt.addEventListener('click', () => {
+            if (lang == 'es' || lang == 'es-ar') {
+                alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
+            } else if (lang == 'es') {
+                alertGenerate(body, 'Clean the search to fetch again')
+            } else {
+                alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
+            }
+        })
+        getPointsByLatLng(searchLatitudeInput, searchLongitudeInput, raioRange, coordenadasSearchBt)
     })
     let divResultOpt = document.createElement('div')
     divResultOpt.className = 'divResultOpt'
