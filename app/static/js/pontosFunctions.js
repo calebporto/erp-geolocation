@@ -241,11 +241,15 @@ function displayActionsBts() {
     let selectAll = document.querySelector('#selectAll')
     let is_checked = false
     let allChecked = true
-    for (let i = 0; i < allCheckbox.length; i++) {
-        if (allCheckbox[i].checked == true) {
-            is_checked = true
-        } else {
-            allChecked = false
+    if (allCheckbox.length == 0) {
+        allChecked = false
+    } else {
+        for (let i = 0; i < allCheckbox.length; i++) {
+            if (allCheckbox[i].checked == true) {
+                is_checked = true
+            } else {
+                allChecked = false
+            }
         }
     }
     if (is_checked == true) {
