@@ -10,13 +10,13 @@ main_bp = Blueprint(
     __name__
 )
 
-'''redis_url = os.getenv('REDIS_URL', os.environ['REDIS_URL'])
+redis_url = os.getenv('REDIS_URL', os.environ['REDIS_URL'])
 redis_db = redis.from_url(
     redis_url,
     decode_responses=True
-)'''
+)
 
-pool = redis.ConnectionPool(
+'''pool = redis.ConnectionPool(
     decode_responses=False, 
     host=os.environ['REDIS_HOST'], 
     username=os.environ['REDIS_USERNAME'], 
@@ -27,7 +27,7 @@ pool = redis.ConnectionPool(
 
 redis_db = redis.Redis(
     connection_pool=pool
-)
+)'''
 
 s3 = boto3.client(
     "s3",
