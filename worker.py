@@ -9,7 +9,7 @@ listen = ['high', 'default', 'low']
 
 redis_url = os.getenv('REDIS_URL', os.environ['REDIS_URL'])
 
-conn = redis.Redis(
+conn = redis.ConnectionPool(
     decode_responses=False, 
     host=os.environ['REDIS_HOST'], 
     username=os.environ['REDIS_USERNAME'], 

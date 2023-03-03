@@ -16,7 +16,7 @@ redis_db = redis.from_url(
     decode_responses=True
 )'''
 
-redis_db = redis.Redis(
+redis_db = redis.ConnectionPool(
     decode_responses=True, 
     host=os.environ['REDIS_HOST'], 
     username=os.environ['REDIS_USERNAME'], 
