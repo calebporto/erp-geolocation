@@ -24,6 +24,8 @@ def equipe():
     lang = request.cookies.get('lang')
     if lang == None:
         return redirect('/select-language')
+    if not current_user.is_admin:
+        return redirect('/painel')
     
     if request.args.get('arg') == 'top-menu':
         texts = equipe_menu_texts
