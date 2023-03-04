@@ -282,7 +282,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         for i, linha in enumerate(linhas):
             print('gerando linha')
             foto_link = str(linha[foto_column])
-            print(f'1 {foto_link}')
+            print(foto_link)
             valid_image = True
             if str(foto_link) == 'nan':
                 valid_image = False
@@ -290,13 +290,14 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 valid_image = False
             elif foto_link[len(foto_link) - 4:len(foto_link)] not in ['.png', '.jpg', 'jpeg']:
                 valid_image = False
-            with open(f'app/static/media/pdf_provider_images/temp_image{i}.png', 'wb') as nova_imagem:
-                imagem = requests.get(foto_link, stream=True, headers={'User-Agent': 'Chrome/108.0.5359.124'})
-                if not imagem.ok:
-                    valid_image = False
-                else:
-                    for dado in imagem.iter_content():
-                        nova_imagem.write(dado)
+            else:
+                with open(f'app/static/media/pdf_provider_images/temp_image{i}.png', 'wb') as nova_imagem:
+                    imagem = requests.get(foto_link, stream=True, headers={'User-Agent': 'Chrome/108.0.5359.124'})
+                    if not imagem.ok:
+                        valid_image = False
+                    else:
+                        for dado in imagem.iter_content():
+                            nova_imagem.write(dado)
             if valid_image == True:
                 imagem_pil = Image.open(f'app/static/media/pdf_provider_images/temp_image{i}.png')
                 size = imagem_pil.size
