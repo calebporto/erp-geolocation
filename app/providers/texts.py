@@ -87,7 +87,7 @@ importar_zip_content_text = {
         .xlsx, e não pode conter pastas.
         ''',
         'legenda1': 'Selecione um arquivo ZIP:',
-        'legenda2': 'Somente formato .zip / Máximo 5 MB',
+        'legenda2': 'Somente formato .zip / Máximo 10 MB',
         'enviarBt': 'Enviar',
         'padronizarLabel': 'Padronizar campos (Opcional):',
         'cidadeLabel': 'Cidade:',
@@ -105,7 +105,7 @@ importar_zip_content_text = {
         Su archivo .zip solo debe contener hojas de trabajo en formato .xlsx y no puede contener carpetas.
         ''',
         'legenda1': 'Seleccione un archivo ZIP:',
-        'legenda2': 'Solo formato .zip / Máximo 5 MB',
+        'legenda2': 'Solo formato .zip / Máximo 10 MB',
         'enviarBt': 'Mandar',
         'padronizarLabel': 'Estandarizar campos (Opcional):',
         'cidadeLabel': 'Ciudad:',
@@ -123,7 +123,7 @@ importar_zip_content_text = {
         Your .zip file must only contain worksheets in .xlsx format, and cannot contain directories.
         ''',
         'legenda1': 'Select a ZIP file:',
-        'legenda2': '.zip format only / Maximum 5 MB',
+        'legenda2': '.zip format only / Maximum 10 MB',
         'enviarBt': 'Send',
         'padronizarLabel': 'Standardize fields (Optional):',
         'cidadeLabel': 'City:',

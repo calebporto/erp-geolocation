@@ -201,6 +201,7 @@ def lista():
                     message=['Erro no servidor. Tente novamente.']
                 )
                 return response.json()
+
 @app.route('/pdfview/<pdf_file>')
 def pdfview(pdf_file):
     try:
