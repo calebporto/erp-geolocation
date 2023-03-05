@@ -641,35 +641,37 @@ function gerarLista(index) {
     if (index == null) {
         divViewList.innerHTML = ''
         index = 0
+
+        let linhaTitle = document.createElement('div')
+        linhaTitle.className = 'linhaTitle'
+        let checkboxTitle = document.createElement('div')
+        checkboxTitle.className = 'divCheckbox'
+        linhaTitle.appendChild(checkboxTitle)
+        let enderecoTitle = document.createElement('div')
+        enderecoTitle.className = 'linha-endereco'
+        enderecoTitle.innerHTML = texts.endereco
+        linhaTitle.appendChild(enderecoTitle)
+        let cidadeTitle = document.createElement('div')
+        cidadeTitle.className = 'linha-cidade'
+        cidadeTitle.innerHTML = texts.city
+        linhaTitle.appendChild(cidadeTitle)
+        let formatoTitle = document.createElement('div')
+        formatoTitle.className = 'linha-formato'
+        formatoTitle.innerHTML = texts.format
+        linhaTitle.appendChild(formatoTitle)
+        let valorTitle = document.createElement('div')
+        valorTitle.className = 'linha-valor'
+        valorTitle.innerHTML = '$$'
+        linhaTitle.appendChild(valorTitle)
+        let btsTitle = document.createElement('div')
+        btsTitle.className = 'linha-btsTitle'
+        linhaTitle.appendChild(btsTitle)
+        divViewList.appendChild(linhaTitle)
     } else {
         index = index + 1
     }
     
-    let linhaTitle = document.createElement('div')
-    linhaTitle.className = 'linhaTitle'
-    let checkboxTitle = document.createElement('div')
-    checkboxTitle.className = 'divCheckbox'
-    linhaTitle.appendChild(checkboxTitle)
-    let enderecoTitle = document.createElement('div')
-    enderecoTitle.className = 'linha-endereco'
-    enderecoTitle.innerHTML = texts.endereco
-    linhaTitle.appendChild(enderecoTitle)
-    let cidadeTitle = document.createElement('div')
-    cidadeTitle.className = 'linha-cidade'
-    cidadeTitle.innerHTML = texts.city
-    linhaTitle.appendChild(cidadeTitle)
-    let formatoTitle = document.createElement('div')
-    formatoTitle.className = 'linha-formato'
-    formatoTitle.innerHTML = texts.format
-    linhaTitle.appendChild(formatoTitle)
-    let valorTitle = document.createElement('div')
-    valorTitle.className = 'linha-valor'
-    valorTitle.innerHTML = '$$'
-    linhaTitle.appendChild(valorTitle)
-    let btsTitle = document.createElement('div')
-    btsTitle.className = 'linha-btsTitle'
-    linhaTitle.appendChild(btsTitle)
-    divViewList.appendChild(linhaTitle)
+    
     for (let i = index; i < pontos.pontos.length; i++) {
         let ponto = pontos.pontos[i]
         let id = ponto.basic.id
