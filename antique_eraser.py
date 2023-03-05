@@ -21,6 +21,7 @@ Base = declarative_base()
 class Worksheet_Content(Base):
     __tablename__ = 'worksheet_content'
     id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    user_id = Column(Integer)
     title = Column(String(255), nullable=False)
     company = Column(String(255))
     person = Column(String(255))
@@ -28,13 +29,15 @@ class Worksheet_Content(Base):
     creation_date = Column(Date, nullable=False)
     image_id = Column(String(255), nullable=False, unique=True)
 
-    def __init__(self, title, company, person, content, creation_date, image_id):
+    def __init__(self, user_id, title, company, person, content, creation_date, image_id):
         self.title = title
+        self.user_id = user_id
         self.company = company
         self.person = person
         self.content = content
         self.creation_date = creation_date
         self.image_id = image_id
+
 
 engine = create_engine(os.environ['SQLALCHEMY_DATABASE_URI'], echo=True, future=True)
 session = Session(engine)
