@@ -1,18 +1,20 @@
 from io import BytesIO
 import os
+import time
 from flask_login import current_user, login_required
 from app.providers.db_services import delete_ponto, delete_pontos, edit_pontos, get_point_in_radius, get_pontos
 from app.providers.redis_services import get_redis_msg
 from app.providers.texts import main_en_texts, main_es_texts, main_pt_texts, pontos_menu_texts, importar_content_text, importar_zip_content_text, visualizar_pontos_content_text
-from app.providers.functions import allowed_file, book_register, bookGenerateWithPoints, editar_grupo, file_validator, flash_dif_languages, is_in_the_column, points_register
-from flask import Blueprint, Response, flash, redirect, render_template, request
+from app.providers.functions import allowed_file, book_register, bookGenerateWithPoints, editar_grupo, file_validator, flash_dif_languages, gerar_excel, is_in_the_column, points_register
+from flask import Blueprint, Response, flash, make_response, redirect, render_template, request
 from app.models.tables import Person, Spot, Spot_Commercial_Info, Spot_Private_Info
 from app.models.basemodels import Person_, Register_Response_
 from datetime import date
 from json import dumps, loads
 import pandas as pd
-from app import db
+from app import db, q
 import zipfile
+from app.views.main import s3
 
 pontos_bp = Blueprint(
     'pontos',
@@ -57,6 +59,7 @@ def pontos():
 @login_required
 def importar():
     if request.method == 'POST':
+        messages = []
         lang = str(request.form.get('lang'))
         arquivo = request.files.get('arquivo')
         request_type = request.form.get('type')
@@ -118,7 +121,6 @@ def importar():
                 }
             )
         elif request_type == 'registrar&book':
-            messages = []
             file_check = file_validator(arquivo, lang)
             if file_check[0] == False:
                 response = Register_Response_(
@@ -126,8 +128,20 @@ def importar():
                     message=file_check[1]
                 )
                 return response.json()
-            register_status, register_messages = points_register(arquivo, lang)
+            register_status, register_messages = points_register(arquivo, None, lang, None, None)
             if register_status == False:
+                response = Register_Response_(
+                    status=False,
+                    message=register_messages
+                )
+                return response.json()
+            elif register_status == 'invalid_lat_lng':
+                if lang == 'es-ar' or lang == 'es':
+                    messages.append(f'Error al procesar la hoja de cálculo. Latitud o longitud no válida en ninguna de las filas de la tabla.')
+                elif lang == 'en':
+                    messages.append(f'Error processing worksheet. Invalid latitude or longitude in any of the rows in the table.')
+                else:
+                    messages.append(f'Erro ao processar a planilha. Latitude ou longitude inválida em alguma das linhas da tabela.')
                 response = Register_Response_(
                     status=False,
                     message=register_messages
@@ -165,7 +179,20 @@ def importar():
                     message=file_check[1]
                 )
                 return response.json()
-            register_status, register_messages = points_register(arquivo, lang)
+            register_status, register_messages = points_register(arquivo, None, lang, None, None)
+            if register_status == 'invalid_lat_lng':
+                if lang == 'es-ar' or lang == 'es':
+                    messages.append(f'Error al procesar la hoja de cálculo. Latitud o longitud no válida en ninguna de las filas de la tabla.')
+                elif lang == 'en':
+                    messages.append(f'Error processing worksheet. Invalid latitude or longitude in any of the rows in the table.')
+                else:
+                    messages.append(f'Erro ao processar a planilha. Latitude ou longitude inválida em alguma das linhas da tabela.')
+                response = Register_Response_(
+                    status=False,
+                    message=messages
+                )
+                return response.json()
+            
             response = Register_Response_(
                 status=register_status,
                 message=register_messages
@@ -249,6 +276,7 @@ def importar_zip():
             'valorNegociado': valorNegociado,
             'formato': formato
         }
+        planilhas_waiting_queue = ''
         for nome_planilha in lista:
             print(nome_planilha)
             planilha = zip.read(nome_planilha)
@@ -299,22 +327,18 @@ def importar_zip():
                     messages.append(f'A planilha {nome_planilha} não pode ser processada, pois falta alguma coluna obrigatória.')
                 continue
             
-            register_status, register_messages = points_register(planilha, lang, pattern_columns=pattern_columns)
-            if register_status == False:
-                if lang == 'es-ar' or lang == 'es':
-                    messages.append(f'Error al procesar la hoja de cálculo {nome_planilha}. Faltan datos requeridos como código, dirección, latitud, longitud o foto.')
-                elif lang == 'en':
-                    messages.append(f'Error processing worksheet {nome_planilha}. Required data is missing such as code, address, latitude, longitude or photo.')
-                else:
-                    messages.append(f'Erro ao processar a planilha {nome_planilha}. Faltam dados obrigatórios como código, endereço, latitude, longitude ou foto.')
-        
+            result = q.enqueue(points_register, planilha, nome_planilha, lang, current_user.id, pattern_columns, True, job_timeout='30m')
+            planilhas_waiting_queue = f'{planilhas_waiting_queue} {nome_planilha},'
+
         zip.close()
+
+        planilhas_waiting_queue = planilhas_waiting_queue[0:len(planilhas_waiting_queue)-1]
         if lang == 'es-ar' or lang == 'es':
-            messages.append(f'Puntos registrados con éxito.')
+            messages.append(f'Se están generando las hojas de trabajo {planilhas_waiting_queue}. Una vez que se complete, se le notificará en la pantalla.')
         elif lang == 'en':
-            messages.append(f'Points registered successfully.')
+            messages.append(f'The worksheets {planilhas_waiting_queue} are being generated. Once it is completed, you will be notified on the screen.')
         else:
-            messages.append(f'Pontos registrados com sucesso.')
+            messages.append(f'As planilhas {planilhas_waiting_queue} estão sendo geradas. Assim que estiver concluído, você será notificado na tela.')
         response = Register_Response_(
             status=True,
             message=messages
@@ -428,6 +452,10 @@ def visualizar_pontos():
         elif request_type == 'excluirGrupo':
             idList = loads(request.form.get('idList'))
             return delete_pontos(lang, idList)
+        elif request_type == 'gerarExcel':
+            ids = loads(request.form.get('ids'))
+            return gerar_excel(ids, lang)
+
     else:
         if request.args.get('filter'):
             request_filter = loads(request.args.get('filter'))
@@ -447,3 +475,15 @@ def visualizar_pontos():
             return dumps(texto['en'])
         else:
             return dumps(texto['pt_br'])
+        
+@pontos_bp.route('xlsx.download/<file_name>')
+def excel_download(file_name):
+    try:
+        s3.download_file(os.environ['AWS_BUCKET_NAME'], f'xlsx/{file_name}.xlsx', 'app/static/media/xlsx/temp.xlsx')
+        with open('app/static/media/xlsx/temp.xlsx', 'rb') as tempfile:
+            dados = tempfile.read()
+        s3.delete_object(Bucket=os.environ['AWS_BUCKET_NAME'], Key=f'xlsx/{file_name}.xlsx')
+        return make_response(dados, {'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+    except Exception as error:
+        print(str(error))
+        return Response('Server Error', 500)

@@ -1,5 +1,5 @@
 import os
-
+from app import conn
 import redis
 from rq import Worker, Queue, Connection
 from dotenv import load_dotenv
@@ -7,7 +7,6 @@ load_dotenv(dotenv_path='app/.env')
 
 listen = ['high', 'default', 'low']
 
-redis_url = os.getenv('REDIS_URL', os.environ['REDIS_URL'])
 
 '''pool = redis.ConnectionPool(
     decode_responses=False, 
@@ -22,7 +21,6 @@ redis_url = os.getenv('REDIS_URL', os.environ['REDIS_URL'])
 conn = redis.Redis(
     connection_pool=pool
 )'''
-conn = redis.from_url(redis_url)
 
 if __name__ == '__main__':
     with Connection(conn):

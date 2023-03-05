@@ -1,6 +1,7 @@
+from openpyxl import Workbook
 from app.models.basemodels import Register_Response_
-from app.models.tables import Spot, Spot_Commercial_Info, Spot_Private_Info, User, Worksheet_Content as Flask_Worksheet_Content
-from sqlalchemy import Column, Date, Integer, String, create_engine
+from app.models.tables import Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, create_engine
 from app.providers.db_services import get_pontos_by_id_list
 from app.providers.s3_services import upload_file_to_s3
 from sqlalchemy.orm import declarative_base, Session
@@ -22,16 +23,17 @@ from io import BytesIO
 from PIL import Image
 from rq import Queue
 import pandas as pd
-from app import db
+from app import db, q
 import requests
 import os
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
 class Worksheet_Content(Base):
     __tablename__ = 'worksheet_content'
     id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
-    user_id = db.Column(db.Integer)
+    user_id = Column(Integer)
     title = Column(String(255), nullable=False)
     company = Column(String(255))
     person = Column(String(255))
@@ -48,9 +50,84 @@ class Worksheet_Content(Base):
         self.creation_date = creation_date
         self.image_id = image_id
 
+class Spot(Base):
+    __tablename__ = 'spot'
+    id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    code = Column(String(255), nullable=False)
+    address = Column(String(255), nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    image_link = Column(String(255), nullable=False)
+    include_date = Column(Date, nullable=False)
+    reference = Column(String(255))
+    district = Column(String(255))
+    city = Column(String(255))
+    zone = Column(String(255))
+    state = Column(String(255))
+    country = Column(String(255))
+    format = Column(String(255))
+    measure = Column(String(255))
+    commercial_spot_id = relationship("Spot_Commercial_Info", cascade='all, delete')
+    private_spot_id = relationship("Spot_Private_Info", cascade='all, delete')
+
+    def __init__(self, code, address, latitude, longitude, image_link, include_date, reference, district, city, zone, state, country, format, measure):
+        self.code = code
+        self.address = address
+        self.latitude = latitude
+        self.longitude = longitude
+        self.image_link = image_link
+        self.include_date = include_date
+        self.reference = reference
+        self.district = district
+        self.city = city
+        self.zone = zone
+        self.state = state
+        self.country = country
+        self.format = format
+        self.measure = measure
+    
+class Spot_Commercial_Info(Base):
+    __tablename__ = 'spot_commercial_info'
+    id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    spot_id = Column(Integer, ForeignKey(Spot.id, ondelete='CASCADE'), nullable=False, unique=True)
+    impacto = Column(String(255))
+    valor_tabela_comm = Column(String(255))
+    valor_negociado_comm = Column(String(255))
+    producao = Column(String(255))
+    observacoes = Column(String(255))
+    outros = Column(JSON(255))
+    
+    def __init__(self, spot_id, impacto, valor_tabela_comm, valor_negociado_comm, producao, observacoes, outros):
+        self.spot_id = spot_id
+        self.impacto = impacto
+        self.valor_tabela_comm = valor_tabela_comm
+        self.valor_negociado_comm = valor_negociado_comm
+        self.producao = producao
+        self.observacoes = observacoes
+        self.outros = outros
+
+class Spot_Private_Info(Base):
+    __tablename__ = 'spot_private_info'
+    id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    spot_id = Column(Integer, ForeignKey(Spot.id, ondelete='CASCADE'), nullable=False, unique=True)
+    empresa = Column(String(255))
+    valor_negociado_int = Column(String(255))
+    custo_liq = Column(String(255))
+    medida_int = Column(String(255))
+    observacoes = Column(String(255))
+    outros = Column(JSON)
+    
+    def __init__(self, spot_id, empresa, medida_int, valor_negociado_int, custo_liq, observacoes, outros):
+        self.spot_id = spot_id
+        self.empresa = empresa
+        self.medida_int = medida_int
+        self.valor_negociado_int = valor_negociado_int
+        self.custo_liq = custo_liq
+        self.observacoes = observacoes
+        self.outros = outros
+
 engine = create_engine(os.environ['SQLALCHEMY_DATABASE_URI'], echo=False, future=True)
 session = Session(engine)
-
 
 ALLOWED_EXTENSIONS = {'xlsx'}
 def allowed_file(filename):
@@ -105,6 +182,13 @@ def file_validator(arquivo, lang):
             messages.append('Formato de arquivo não suportado. Você deve enviar arquivos ".xlsx".')
         return False, messages
     return True, messages
+
+def is_float(string):
+    try:
+        test = float(string)
+        return True
+    except ValueError as error:
+        return False
 
 def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
     try:
@@ -340,10 +424,10 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
 
             if valid_image == True:
                 # Imagem PDF
-                pdf.drawImage(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', 3*mm, 18.19*mm, 305*mm, 180*mm)
+                pdf.drawImage(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', 3*mm, 18.19*mm, 260*mm, 180*mm)
 
                 #Imagem PPTX
-                imagem = slide.shapes.add_picture(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', Mm(3), Mm(21.81), height=Mm(180), width=Mm(310))
+                imagem = slide.shapes.add_picture(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', Mm(3), Mm(21.81), height=Mm(180), width=Mm(262))
             else:
                 # Imagem invalida PDF
                 pdf.setFont('Helvetica-Bold', 5*mm)
@@ -362,11 +446,11 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 invalid_img_text.font.size = Mm(5)
 
             # Coordenadas PDF
-            pdf.setFont('Helvetica-Bold', 5*mm)
+            pdf.setFont('Helvetica-Bold', 5.5*mm)
             pdf.setFillColor(colors.black)
             pdf.drawString(4*mm, 10*mm, 'Coordenadas:')
             
-            pdf.setFont('Helvetica', 5*mm)
+            pdf.setFont('Helvetica', 5.5*mm)
             pdf.drawString(41.5*mm, 10*mm, coordenadas)
 
             # Coordenadas PPTX
@@ -378,7 +462,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             coordenadas_text.text = 'Coordenadas:'
             coordenadas_text.font.name = 'Helvetica'
             coordenadas_text.font.bold = True
-            coordenadas_text.font.size = Mm(5)
+            coordenadas_text.font.size = Mm(5.5)
 
             coordenadas_content = slide.shapes.add_textbox(Mm(40.5), Mm(205), Mm(50), Mm(6))
             coordenadas_content_text_frame = coordenadas_content.text_frame
@@ -387,13 +471,13 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             coordenadas_content_text = coordenadas_content_text_frame.paragraphs[0].add_run()
             coordenadas_content_text.text = coordenadas
             coordenadas_content_text.font.name = 'Helvetica'
-            coordenadas_content_text.font.size = Mm(5)
+            coordenadas_content_text.font.size = Mm(5.5)
             
             # Código PDF
-            pdf.setFont('Helvetica-Bold', 5*mm)
+            pdf.setFont('Helvetica-Bold', 5.5*mm)
             pdf.drawString(180*mm, 10*mm, 'Código:')
             
-            pdf.setFont('Helvetica', 5*mm)
+            pdf.setFont('Helvetica', 5.5*mm)
             pdf.drawString(202*mm, 10*mm, linha[codigo_column])
 
             # Código PPTX
@@ -405,7 +489,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             codigo_text.text = 'Codigo:'
             codigo_text.font.name = 'Helvetica'
             codigo_text.font.bold = True
-            codigo_text.font.size = Mm(5)
+            codigo_text.font.size = Mm(5.5)
 
             codigo_content = slide.shapes.add_textbox(Mm(202), Mm(205), Mm(50), Mm(6))
             codigo_content_text_frame = codigo_content.text_frame
@@ -414,7 +498,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             codigo_content_text = codigo_content_text_frame.paragraphs[0].add_run()
             codigo_content_text.text = linha[codigo_column]
             codigo_content_text.font.name = 'Helvetica'
-            codigo_content_text.font.size = Mm(5)
+            codigo_content_text.font.size = Mm(5.5)
 
             eixo_y_pdf = 194
             eixo_y_pptx = 20
@@ -428,15 +512,15 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 if conteudo == 'nan':
                     conteudo = ''
                 # Outras Colunas PDF
-                pdf.setFont('Helvetica-Bold', 5*mm)
-                pdf.drawString(312*mm, eixo_y_pdf*mm, titulo)
+                pdf.setFont('Helvetica-Bold', 5.5*mm)
+                pdf.drawString(267*mm, eixo_y_pdf*mm, titulo)
                 
-                pdf.setFont('Helvetica', 5*mm)
-                pdf.drawString(312*mm, (eixo_y_pdf - 7) * mm, conteudo)
-                eixo_y_pdf -= 19
+                pdf.setFont('Helvetica', 5.5*mm)
+                pdf.drawString(267*mm, (eixo_y_pdf - 7.5) * mm, conteudo)
+                eixo_y_pdf -= 17
 
                 # Outras colunas PPTX
-                outros = slide.shapes.add_textbox(Mm(315), Mm(eixo_y_pptx), Mm(30), Mm(6))
+                outros = slide.shapes.add_textbox(Mm(266), Mm(eixo_y_pptx), Mm(30), Mm(6))
                 outros_text_frame = outros.text_frame
                 outros_text_frame.clear()
                 outros_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
@@ -445,9 +529,9 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 outros_text.text = titulo
                 outros_text.font.name = 'Helvetica'
                 outros_text.font.bold = True
-                outros_text.font.size = Mm(5)
+                outros_text.font.size = Mm(5.5)
 
-                outros_content = slide.shapes.add_textbox(Mm(315), Mm(eixo_y_pptx + 7), Mm(30), Mm(6))
+                outros_content = slide.shapes.add_textbox(Mm(266), Mm(eixo_y_pptx + 7.5), Mm(30), Mm(6))
                 outros_content_text_frame = outros_content.text_frame
                 outros_content_text_frame.clear()
                 outros_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
@@ -455,8 +539,8 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 outros_content_text = outros_content_text_frame.paragraphs[0].add_run()
                 outros_content_text.text = conteudo
                 outros_content_text.font.name = 'Helvetica'
-                outros_content_text.font.size = Mm(5)
-                eixo_y_pptx += 19
+                outros_content_text.font.size = Mm(5.5)
+                eixo_y_pptx += 17
             
             # Página PDF
             pdf.setFont('Helvetica-Bold', 8*mm)
@@ -521,18 +605,19 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         message = f'Falha ao gerar o Boook {capa["nome"]}. Motivo: Erro no servidor.'
         send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
 
-def points_register(arquivo, lang, pattern_columns=None):
+def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_worker, db_session=None):
     messages = []
     try:
         tabela = pd.ExcelFile(arquivo)
-        planilhas_count = len(tabela.sheet_names)
-        if planilhas_count != 1:
-            if lang == 'es' or lang == 'es-ar':
-                messages.append('Su hoja de trabajo tiene dos pestañas y solo se procesó la primera.')
-            elif lang == 'en':
-                messages.append('Your worksheet has two tabs, and only the first one was processed.')
-            else:
-                messages.append('Sua planilha possui duas abas, e somente a primeira foi processada.')
+        if not is_worker:
+            planilhas_count = len(tabela.sheet_names)
+            if planilhas_count != 1:
+                if lang == 'es' or lang == 'es-ar':
+                    messages.append('Su hoja de trabajo tiene dos pestañas y solo se procesó la primera.')
+                elif lang == 'en':
+                    messages.append('Your worksheet has two tabs, and only the first one was processed.')
+                else:
+                    messages.append('Sua planilha possui duas abas, e somente a primeira foi processada.')
         planilha = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0]).to_dict('records')
         colunas = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0])
         code_col, address_col, latitude_col, longitude_col, image_col = None, None, None, None, None
@@ -590,15 +675,16 @@ def points_register(arquivo, lang, pattern_columns=None):
             else:
                 continue
         if not code_col or not address_col or not latitude_col or not longitude_col or not image_col:
-            if lang == 'es' or lang == 'es-ar':
-                messages.append('No se reconoció alguna columna obligatoria. Las columnas obligatorias son: Código, Dirección, Latitud, Longitud y Foto.')
-                return False, messages
-            elif lang == 'en':
-                messages.append('Some mandatory column was not recognized. The mandatory columns are: Code, Address, Latitude, Longitude and Photo.')
-                return False, messages
-            else:
-                messages.append('Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.')
-                return False, messages
+            if not is_worker:
+                if lang == 'es' or lang == 'es-ar':
+                    messages.append('No se reconoció alguna columna obligatoria. Las columnas obligatorias son: Código, Dirección, Latitud, Longitud y Foto.')
+                    return False, messages
+                elif lang == 'en':
+                    messages.append('Some mandatory column was not recognized. The mandatory columns are: Code, Address, Latitude, Longitude and Photo.')
+                    return False, messages
+                else:
+                    messages.append('Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.')
+                    return False, messages
 
         pais = pattern_columns['pais'] if pattern_columns else None
         zona = pattern_columns['zona'] if pattern_columns else None
@@ -612,13 +698,36 @@ def points_register(arquivo, lang, pattern_columns=None):
 
         for i, linha in enumerate(planilha):
             if str(linha[code_col]) == 'nan' or str(linha[address_col]) == 'nan' or str(linha[latitude_col]) == 'nan' or str(linha[longitude_col]) == 'nan' or str(linha[image_col]) == 'nan':
-                if lang == 'es' or lang == 'es-ar':
-                    messages.append('A la hoja de trabajo le faltan los datos requeridos. Corrija y vuelva a intentarlo.')
-                elif lang == 'en':
-                    messages.append('The worksheet is missing required data. Please correct and try again.')
+                if not is_worker:
+                    if lang == 'es' or lang == 'es-ar':
+                        messages.append('A la hoja de trabajo le faltan los datos requeridos. Corrija y vuelva a intentarlo.')
+                    elif lang == 'en':
+                        messages.append('The worksheet is missing required data. Please correct and try again.')
+                    else:
+                        messages.append('A planilha está faltando dados obrigatórios. Corrija e tente novamente.')
+                    return False, messages
                 else:
-                    messages.append('A planilha está faltando dados obrigatórios. Corrija e tente novamente.')
-                return False, messages
+                    if lang == 'es' or lang == 'es-ar':
+                        message = f'Faltan datos obligatorios en alguna fila de la hoja de trabajo {nome_arquivo}. Corrija y vuelva a intentarlo.'
+                    elif lang == 'en':
+                        message = f'Some row of worksheet {nome_arquivo} is missing mandatory data. Please correct and try again.'
+                    else:
+                        message = f'Alguma linha da planilha {nome_arquivo} está faltando dados obrigatórios. Corrija e tente novamente.'
+                    send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+                    return
+            if not is_float(linha[latitude_col]) or not is_float(linha[longitude_col]):
+                if not is_worker:
+                    return 'invalid_lat_lng', messages
+                else:
+                    if lang == 'es' or lang == 'es-ar':
+                        message = f'Alguna fila de la hoja de cálculo {nome_arquivo} tiene una latitud o longitud no válida. Corrija y vuelva a intentarlo.'
+                    elif lang == 'en':
+                        message = f'Some row of the spreadsheet {nome_arquivo} has an invalid latitude or longitude. Please correct and try again.'
+                    else:
+                        message = f'Alguma linha da planilha {nome_arquivo} está com a latitude ou longitude inválida. Corrija e tente novamente.'
+                    send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+                    return
+            
             linhaPais = linha[country_col] if country_col and str(linha[country_col]) != 'nan' else None
             linhaZona = linha[zone_col] if zone_col and str(linha[zone_col]) != 'nan' else None
             linhaCidade = linha[county_col] if county_col and str(linha[county_col]) != 'nan' else None
@@ -628,74 +737,167 @@ def points_register(arquivo, lang, pattern_columns=None):
             linhaValorTabela = linha[valor_tab_comm] if valor_tab_comm and str(linha[valor_tab_comm]) != 'nan' else None
             linhaValorNegociado = linha[valor_negociado_comm] if valor_negociado_comm and str(linha[valor_negociado_comm]) != 'nan' else None
             linhaFormato = linha[format_col] if format_col and str(linha[format_col]) != 'nan' else None
-            new_spot = Spot(
-                linha[code_col],
-                linha[address_col],
-                linha[latitude_col],
-                linha[longitude_col],
-                linha[image_col],
-                date.today(),
-                linha[reference_col] if reference_col and str(linha[reference_col]) != 'nan' else None,
-                linha[district_col] if district_col and str(linha[district_col]) != 'nan' else None,
-                cidade if cidade else linhaCidade,
-                zona if zona else linhaZona,
-                estado if estado else linhaEstado,
-                pais if pais else linhaPais,
-                formato if formato else linhaFormato,
-                linha[measure_col] if measure_col and str(linha[measure_col]) != 'nan' else None
-            )
-            new_spot_com = Spot_Commercial_Info(
-                None,
-                linha[impacto_col] if impacto_col and str(linha[impacto_col]) != 'nan' else None,
-                valorTabela if valorTabela else linhaValorTabela,
-                valorNegociado if valorNegociado else linhaValorNegociado,
-                linha[producao_col] if producao_col and str(linha[producao_col]) != 'nan' else None,
-                linha[observacoes_col] if observacoes_col and str(linha[observacoes_col]) != 'nan' else None,
-                outros_comm_col
-            )
-            new_spot_int = Spot_Private_Info(
-                None,
-                empresa if empresa else linhaEmpresa,
-                linha[measure_int_col] if measure_int_col and str(linha[measure_int_col]) != 'nan' else None,
-                linha[valor_negociado_int] if valor_negociado_int and str(linha[valor_negociado_int]) != 'nan' else None,
-                custo if custo else linhaCusto,
-                linha[observacoes_int_col] if observacoes_int_col and str(linha[observacoes_int_col]) != 'nan' else None,
-                outros_int_col
-            )
-            db.session.add(new_spot)
-            db.session.flush()
-            db.session.refresh(new_spot)
+            if not is_worker:
+                new_spot = Flask_Spot(
+                    linha[code_col],
+                    linha[address_col],
+                    float(linha[latitude_col]),
+                    float(linha[longitude_col]),
+                    linha[image_col],
+                    date.today(),
+                    linha[reference_col] if reference_col and str(linha[reference_col]) != 'nan' else None,
+                    linha[district_col] if district_col and str(linha[district_col]) != 'nan' else None,
+                    cidade if cidade else linhaCidade,
+                    zona if zona else linhaZona,
+                    estado if estado else linhaEstado,
+                    pais if pais else linhaPais,
+                    formato if formato else linhaFormato,
+                    linha[measure_col] if measure_col and str(linha[measure_col]) != 'nan' else None
+                )
+                new_spot_com = Flask_Spot_Comm(
+                    None,
+                    linha[impacto_col] if impacto_col and str(linha[impacto_col]) != 'nan' else None,
+                    valorTabela if valorTabela else linhaValorTabela,
+                    valorNegociado if valorNegociado else linhaValorNegociado,
+                    linha[producao_col] if producao_col and str(linha[producao_col]) != 'nan' else None,
+                    linha[observacoes_col] if observacoes_col and str(linha[observacoes_col]) != 'nan' else None,
+                    outros_comm_col
+                )
+                new_spot_int = Flask_Spot_Int(
+                    None,
+                    empresa if empresa else linhaEmpresa,
+                    linha[measure_int_col] if measure_int_col and str(linha[measure_int_col]) != 'nan' else None,
+                    linha[valor_negociado_int] if valor_negociado_int and str(linha[valor_negociado_int]) != 'nan' else None,
+                    custo if custo else linhaCusto,
+                    linha[observacoes_int_col] if observacoes_int_col and str(linha[observacoes_int_col]) != 'nan' else None,
+                    outros_int_col
+                )
+                if db_session == None:
+                    db.session.add(new_spot)
+                    db.session.flush()
+                    db.session.refresh(new_spot)
 
-            new_spot_com.spot_id = new_spot.id
-            db.session.add(new_spot_com)
-            
-            new_spot_int.spot_id = new_spot.id
-            db.session.add(new_spot_int)
-        db.session.commit()
-        if lang == 'es' or lang == 'es-ar':
-            messages.append('Los puntos se han registrado con éxito.')
-        elif lang == 'en':
-            messages.append('Points have been registered successfully.')
+                    new_spot_com.spot_id = new_spot.id
+                    db.session.add(new_spot_com)
+                    
+                    new_spot_int.spot_id = new_spot.id
+                    db.session.add(new_spot_int)
+                else:
+                    db_session.add(new_spot)
+                    db_session.flush()
+                    db_session.refresh(new_spot)
+
+                    new_spot_com.spot_id = new_spot.id
+                    db_session.add(new_spot_com)
+                    
+                    new_spot_int.spot_id = new_spot.id
+                    db_session.add(new_spot_int)
+            else:
+                new_spot = Spot(
+                    linha[code_col],
+                    linha[address_col],
+                    float(linha[latitude_col]),
+                    float(linha[longitude_col]),
+                    linha[image_col],
+                    date.today(),
+                    linha[reference_col] if reference_col and str(linha[reference_col]) != 'nan' else None,
+                    linha[district_col] if district_col and str(linha[district_col]) != 'nan' else None,
+                    cidade if cidade else linhaCidade,
+                    zona if zona else linhaZona,
+                    estado if estado else linhaEstado,
+                    pais if pais else linhaPais,
+                    formato if formato else linhaFormato,
+                    linha[measure_col] if measure_col and str(linha[measure_col]) != 'nan' else None
+                )
+                new_spot_com = Spot_Commercial_Info(
+                    None,
+                    linha[impacto_col] if impacto_col and str(linha[impacto_col]) != 'nan' else None,
+                    valorTabela if valorTabela else linhaValorTabela,
+                    valorNegociado if valorNegociado else linhaValorNegociado,
+                    linha[producao_col] if producao_col and str(linha[producao_col]) != 'nan' else None,
+                    linha[observacoes_col] if observacoes_col and str(linha[observacoes_col]) != 'nan' else None,
+                    outros_comm_col
+                )
+                new_spot_int = Spot_Private_Info(
+                    None,
+                    empresa if empresa else linhaEmpresa,
+                    linha[measure_int_col] if measure_int_col and str(linha[measure_int_col]) != 'nan' else None,
+                    linha[valor_negociado_int] if valor_negociado_int and str(linha[valor_negociado_int]) != 'nan' else None,
+                    custo if custo else linhaCusto,
+                    linha[observacoes_int_col] if observacoes_int_col and str(linha[observacoes_int_col]) != 'nan' else None,
+                    outros_int_col
+                )
+                session.add(new_spot)
+                session.flush()
+                session.refresh(new_spot)
+
+                new_spot_com.spot_id = new_spot.id
+                session.add(new_spot_com)
+                
+                new_spot_int.spot_id = new_spot.id
+                session.add(new_spot_int)
+        
+        if not is_worker:
+            if db_session == None:
+                db.session.commit()
         else:
-            messages.append('Os pontos foram cadastrados com sucesso.')
-        return True, messages
+            session.commit()
+            session.close()
+        
+        if not is_worker:
+            if lang == 'es' or lang == 'es-ar':
+                messages.append('Los puntos se han registrado con éxito.')
+            elif lang == 'en':
+                messages.append('Points have been registered successfully.')
+            else:
+                messages.append('Os pontos foram cadastrados com sucesso.')
+            return True, messages
+        else:
+            if lang == 'es' or lang == 'es-ar':
+                message = f'La hoja de cálculo {nome_arquivo} se registró correctamente.'
+            elif lang == 'en':
+                message = f'Spreadsheet {nome_arquivo} was successfully registered.'
+            else:
+                message = f'A planilha {nome_arquivo} foi registrada com sucesso.'
+            send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+            return
     except ValueError as error:
         if 'Excel file format cannot be determined, you must specify an engine manually.' in str(error):
-            if lang == 'es' or lang == 'es-ar':
-                messages.append('Formato de archivo inválido.')
-                return False, messages
-            elif lang == 'en':
-                messages.append('Invalid file format.')
-                return False, messages
+            if not is_worker:
+                if lang == 'es' or lang == 'es-ar':
+                    messages.append('Formato de archivo inválido.')
+                    return False, messages
+                elif lang == 'en':
+                    messages.append('Invalid file format.')
+                    return False, messages
+                else:
+                    messages.append('Formato de arquivo inválido.')
+                    return False, messages
             else:
-                messages.append('Formato de arquivo inválido.')
-                return False, messages
+                if lang == 'es' or lang == 'es-ar':
+                    message = f'La hoja de cálculo {nome_arquivo} no se registró. Motivo: formato de archivo no válido.'
+                elif lang == 'en':
+                    message = f'Spreadsheet {nome_arquivo} was not registered. Reason: Invalid file format.'
+                else:
+                    message = f'A planilha {nome_arquivo} não foi cadastrada. Motivo: Formato de arquivo inválido.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+                return
         else:
+            if not is_worker:
+                print(f'erro = {str(error)}')
+                return False, ['Erro no servidor. Tente novamente mais tarde.']
+            else:
+                message = f'A planilha {nome_arquivo} não foi cadastrada. Erro no servidor.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+                return
+    except Exception as error:
+        if not is_worker:
             print(f'erro = {str(error)}')
             return False, ['Erro no servidor. Tente novamente mais tarde.']
-    except Exception as error:
-        print(f'erro = {str(error)}')
-        return False, ['Erro no servidor. Tente novamente mais tarde.']
+        else:
+            message = f'A planilha {nome_arquivo} não foi cadastrada. Erro no servidor.'
+            send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+            return
 
 def book_register(arquivo, dados_capa, colunas, lang, user_id):
     messages = []
@@ -755,9 +957,6 @@ def book_register(arquivo, dados_capa, colunas, lang, user_id):
         capa = {'nome': dados_capa['nome'], 'cliente': dados_capa['cliente'], 'pessoa': dados_capa['pessoa']}
         content = {'colunas': colunas, 'conteudo': book}
         
-        # Criando fila rq
-        q = Queue(connection=conn)
-
         result = q.enqueue(pdf_generator, capa, content, image_id, lang, user_id, True, job_timeout='30m')
         if lang == 'es' or lang == 'es-ar':
             messages.append(f'El libro {(dados_capa["nome"]).title()} se está generando. Cuando se complete, aparecerá en "Lista de Books" o notificará en pantalla en caso de error.')
@@ -940,5 +1139,142 @@ def editar_grupo(lang, idList, dados):
     response = Register_Response_(
         status=True,
         message=messages
+    )
+    return response.json()
+
+def gerar_excel(ids, lang):
+    messages = []
+    pontos = get_pontos_by_id_list(ids)
+    planilha = Workbook()
+    planilha.remove(planilha['Sheet'])
+
+    nome_planilha = token_hex(32)
+    tabela = planilha.create_sheet('POINTS')
+    colunas = None
+    if lang == 'es' or lang == 'es-ar':
+        colunas = [
+            'Código',
+            'Dirección',
+            'Latidud',
+            'Longitud',
+            'Foto',
+            'Barrio',
+            'Referencia',
+            'Ciudad',
+            'Zona',
+            'Provincia',
+            'País',
+            'Formato',
+            'Medida',
+            'Impacto',
+            'Valor de la tabla',
+            'Valor negociado',
+            'Producción',
+            'Comentarios',
+            'Empresa',
+            'Valor negociado interno',
+            'Costo neto',
+            'Medida interna',
+            'Comentarios internos'
+        ]
+    elif lang  == 'en':
+        colunas = [
+            'Code',
+            'Address',
+            'Latidude',
+            'Longitude',
+            'Photo',
+            'District',
+            'Reference',
+            'City',
+            'Zone',
+            'State',
+            'Country',
+            'Format',
+            'Measure',
+            'Impact',
+            'Average media value',
+            'Our media value',
+            'Production',
+            'Comments',
+            'Company',
+            'Internal negotiated value',
+            'Net cost',
+            'Internal measurement',
+            'Internal comments'
+        ]
+    else:
+        colunas = [
+            'Código',
+            'Endereço',
+            'Latidude',
+            'Longitude',
+            'Foto',
+            'Bairro',
+            'Referência',
+            'Cidade',
+            'Zona',
+            'Estado',
+            'País',
+            'Formato',
+            'Medida',
+            'Impacto',
+            'Valor tabela',
+            'Valor negociado',
+            'Produção',
+            'Observações',
+            'Empresa',
+            'Valor negociado interno',
+            'Custo líquido',
+            'Medida interna',
+            'Comentários internos'
+        ]
+    tabela.append(colunas)
+    for ponto in pontos:
+        linha = []
+        linha.append(ponto[0].code)
+        linha.append(ponto[0].address)
+        linha.append(ponto[0].latitude)
+        linha.append(ponto[0].longitude)
+        linha.append(ponto[0].image_link)
+        linha.append(ponto[0].district)
+        linha.append(ponto[0].reference)
+        linha.append(ponto[0].city)
+        linha.append(ponto[0].zone)
+        linha.append(ponto[0].state)
+        linha.append(ponto[0].country)
+        linha.append(ponto[0].format)
+        linha.append(ponto[0].measure)
+        linha.append(ponto[1].impacto)
+        linha.append(ponto[1].valor_tabela_comm)
+        linha.append(ponto[1].valor_negociado_comm)
+        linha.append(ponto[1].producao)
+        linha.append(ponto[1].observacoes)
+        linha.append(ponto[2].empresa)
+        linha.append(ponto[2].valor_negociado_int)
+        linha.append(ponto[2].custo_liq)
+        linha.append(ponto[2].medida_int)
+        linha.append(ponto[2].observacoes)
+        tabela.append(linha)
+    
+    planilha_buffer = BytesIO()
+    planilha.save(planilha_buffer)
+    with planilha_buffer as planilha_file:
+        xlsx_upload = upload_file_to_s3(planilha_file.getvalue(), f'xlsx/{nome_planilha}.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        if xlsx_upload == False:
+            message = 'Falha ao converter arquivo. Tente novamente'
+            messages.append(message)
+        else:
+            if lang == 'es' or lang == 'es-ar':
+                messages.append('Hoja de cálculo generada con éxito.')
+            elif lang == 'en':
+                messages.append('Spreadsheet generated successfully.')
+            else:
+                messages.append('Planilha gerada com sucesso.')
+    planilha_buffer.close()
+    response = Register_Response_(
+        status=True,
+        message=messages,
+        data=nome_planilha
     )
     return response.json()

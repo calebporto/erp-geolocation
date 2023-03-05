@@ -4,10 +4,16 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
+import redis
+from rq import Queue
 load_dotenv()
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+
+redis_url = os.getenv('REDIS_URL', os.environ['REDIS_URL'])
+conn = redis.from_url(redis_url)
+q = Queue(connection=conn)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']

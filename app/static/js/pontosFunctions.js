@@ -1786,6 +1786,7 @@ function carregarPontos() {
         displayActionsBts()
     })
 }
+var gerarExcelEvent;
 export var listaPontos = function() {
     cleanFilters()
     pontosSelecionadosId = []
@@ -1909,15 +1910,15 @@ export var listaPontos = function() {
                     paisDefaultOpt.disabled = true
                     paisSelect.appendChild(paisDefaultOpt)
                     let paisBrasilOpt = document.createElement('option')
-                    paisBrasilOpt.value = 'brasil'
+                    paisBrasilOpt.value = 'Brasil'
                     paisBrasilOpt.innerHTML = textContent.paisBrasilOpt
                     paisSelect.appendChild(paisBrasilOpt)
                     let paisArgentinaOpt = document.createElement('option')
-                    paisArgentinaOpt.value = 'argentina'
+                    paisArgentinaOpt.value = 'Argentina'
                     paisArgentinaOpt.innerHTML = textContent.paisArgentinaOpt
                     paisSelect.appendChild(paisArgentinaOpt)
                     let paisInglaterraOpt = document.createElement('option')
-                    paisInglaterraOpt.value = 'england'
+                    paisInglaterraOpt.value = 'England'
                     paisInglaterraOpt.innerHTML = textContent.paisInglaterraOpt
                     paisSelect.appendChild(paisInglaterraOpt)
                     divPais.appendChild(paisRadio)
@@ -2292,6 +2293,52 @@ export var listaPontos = function() {
                 divActions.appendChild(divSelectAll)
                 let divActionsBtGroup = document.createElement('div')
                 divActionsBtGroup.className = 'divActionsBtGroup'
+                let divGerarExcel = document.createElement('div')
+                divGerarExcel.className = 'divActionsOpt'
+                divGerarExcel.id = 'divGerarExcel'
+                let divGerarExcelText = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet" viewBox="0 0 16 16">
+                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5v2zM3 12v-2h2v2H3zm0 1h2v2H4a1 1 0 0 1-1-1v-1zm3 2v-2h3v2H6zm4 0v-2h3v1a1 1 0 0 1-1 1h-2zm3-3h-3v-2h3v2zm-7 0v-2h3v2H6z"/>
+                </svg>
+                `
+                divGerarExcel.innerHTML = divGerarExcelText
+                divGerarExcel.removeEventListener('click', gerarExcelEvent)
+                divGerarExcel.addEventListener('click', gerarExcelEvent = () => {
+                    divGerarExcel.innerHTML = `
+                    <div class="spinner-border spinner-border-sm text-warning" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    `
+                    let send = new FormData()
+                    send.append('type', 'gerarExcel')
+                    send.append('ids', JSON.stringify(pontosSelecionadosId))
+                    fetch('/painel/pontos/visualizar', {
+                        method: 'POST',
+                        body: send
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            divGerarExcel.innerHTML = divGerarExcelText
+                            if (lang == 'es' || lang == 'es-ar') {
+                                alertGenerate(body, 'Erro del servidor.')
+                            } else if (lang == 'en') {
+                                alertGenerate(body, 'Server error.')
+                            } else {
+                                alertGenerate(body, 'Erro no servidor.')
+                            }
+                        } else {
+                            return response.json()
+                            .then((dados) => {
+                                divGerarExcel.innerHTML = divGerarExcelText
+                                dados.message.forEach(message => {
+                                    alertGenerate(body, message)
+                                })
+                                window.open(`/painel/conversor/kml/download/${dados.data}`)
+                            })
+                        }
+                    })
+                })
+                divActionsBtGroup.appendChild(divGerarExcel)
                 let divCriarBook = document.createElement('div')
                 divCriarBook.className = 'divActionsOpt'
                 divCriarBook.id = 'divCriarBook'
@@ -2908,15 +2955,15 @@ export var importarZip = function() {
                 paisDefaultOpt.disabled = true
                 paisSelect.appendChild(paisDefaultOpt)
                 let paisBrasilOpt = document.createElement('option')
-                paisBrasilOpt.value = 'brasil'
+                paisBrasilOpt.value = 'Brasil'
                 paisBrasilOpt.innerHTML = 'Brasil'
                 paisSelect.appendChild(paisBrasilOpt)
                 let paisArgentinaOpt = document.createElement('option')
-                paisArgentinaOpt.value = 'argentina'
+                paisArgentinaOpt.value = 'Argentina'
                 paisArgentinaOpt.innerHTML = 'Argentina'
                 paisSelect.appendChild(paisArgentinaOpt)
                 let paisInglaterraOpt = document.createElement('option')
-                paisInglaterraOpt.value = 'england'
+                paisInglaterraOpt.value = 'England'
                 paisInglaterraOpt.innerHTML = 'England'
                 paisSelect.appendChild(paisInglaterraOpt)
                 divPais.appendChild(paisLabel)
