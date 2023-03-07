@@ -128,7 +128,7 @@ def importar():
                     message=file_check[1]
                 )
                 return response.json()
-            register_status, register_messages = points_register(arquivo, None, lang, None, None)
+            register_status, register_messages = points_register(arquivo, None, lang, None, None, False)
             if register_status == False:
                 response = Register_Response_(
                     status=False,
@@ -179,7 +179,7 @@ def importar():
                     message=file_check[1]
                 )
                 return response.json()
-            register_status, register_messages = points_register(arquivo, None, lang, None, None)
+            register_status, register_messages = points_register(arquivo, None, lang, None, None, False)
             if register_status == 'invalid_lat_lng':
                 if lang == 'es-ar' or lang == 'es':
                     messages.append(f'Error al procesar la hoja de cálculo. Latitud o longitud no válida en ninguna de las filas de la tabla.')
