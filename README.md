@@ -6,7 +6,7 @@ Teconologias utilizadas:
 - Javascript;
 - Flask;
 - Google Maps API
-- Postgres
+- Postgresql
 - Redis (Cache)
 - SQLAlchemy (ORM)
 - HTML
