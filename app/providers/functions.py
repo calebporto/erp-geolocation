@@ -191,119 +191,142 @@ def is_float(string):
         return False
 
 def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
-    #try:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    colunas = content['colunas']
-    linhas = content['conteudo']
+    try:
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        colunas = content['colunas']
+        linhas = content['conteudo']
 
-    endereco_column = None
-    latitude_column = None
-    longitude_column = None
-    codigo_column = None
-    foto_column = None
-    other_columns = []
+        endereco_column = None
+        latitude_column = None
+        longitude_column = None
+        codigo_column = None
+        foto_column = None
+        other_columns = []
 
-    for coluna in colunas:
-        if coluna.lower().rsplit(' ')[0] == 'endereco' or coluna.lower().rsplit(' ')[0] == 'endereço' or coluna.lower().rsplit(' ')[0] == 'direccion' or coluna.lower().rsplit(' ')[0] == 'dirección' or coluna.lower().rsplit(' ')[0] == 'ubicacion' or coluna.lower().rsplit(' ')[0] == 'ubicación' or coluna.lower().rsplit(' ')[0] == 'address':
-            endereco_column = coluna
-        elif coluna.lower().rsplit(' ')[0] == 'latitude' or coluna.lower().rsplit(' ')[0] == 'latitud':
-            latitude_column = coluna
-        elif coluna.lower().rsplit(' ')[0] == 'longitude' or coluna.lower().rsplit(' ')[0] == 'longitud':
-            longitude_column = coluna
-        elif coluna.lower().rsplit(' ')[0] == 'cod.' or coluna.lower().rsplit(' ')[0] == 'codigo' or coluna.lower().rsplit(' ')[0] == 'código' or coluna.lower().rsplit(' ')[0] == 'code' or coluna.lower().rsplit(' ')[0] == 'cod' or coluna.lower().rsplit(' ')[0] == 'cód' or coluna.lower().rsplit(' ')[0] == 'cód.':
-            codigo_column = coluna
-        elif coluna.lower().rsplit(' ')[0] == 'foto' or coluna.lower().rsplit(' ')[0] == 'imagem' or coluna.lower().rsplit(' ')[0] == 'imagen' or coluna.lower().rsplit(' ')[0] == 'fotografia' or coluna.lower().rsplit(' ')[0] == 'fotografía' or coluna.lower().rsplit(' ')[0] == 'image' or coluna.lower().rsplit(' ')[0] == 'picture' or coluna.lower().rsplit(' ')[0] == 'photo':
-            foto_column = coluna
-        else:
-            other_columns.append(coluna)
-    for coluna in [endereco_column, latitude_column, longitude_column, codigo_column, foto_column]:
-        if coluna == None:
-            if lang == 'es' or lang == 'es-ar':
-                message = f'No se generó el libro {capa["nome"]}. Motivo: Falta la columna obligatoria.'
-            elif lang == 'en':
-                message = f'The book {capa["nome"]} was not generated. Reason: Missing required column.'
+        for coluna in colunas:
+            if coluna.lower().rsplit(' ')[0] == 'endereco' or coluna.lower().rsplit(' ')[0] == 'endereço' or coluna.lower().rsplit(' ')[0] == 'direccion' or coluna.lower().rsplit(' ')[0] == 'dirección' or coluna.lower().rsplit(' ')[0] == 'ubicacion' or coluna.lower().rsplit(' ')[0] == 'ubicación' or coluna.lower().rsplit(' ')[0] == 'address':
+                endereco_column = coluna
+            elif coluna.lower().rsplit(' ')[0] == 'latitude' or coluna.lower().rsplit(' ')[0] == 'latitud':
+                latitude_column = coluna
+            elif coluna.lower().rsplit(' ')[0] == 'longitude' or coluna.lower().rsplit(' ')[0] == 'longitud':
+                longitude_column = coluna
+            elif coluna.lower().rsplit(' ')[0] == 'cod.' or coluna.lower().rsplit(' ')[0] == 'codigo' or coluna.lower().rsplit(' ')[0] == 'código' or coluna.lower().rsplit(' ')[0] == 'code' or coluna.lower().rsplit(' ')[0] == 'cod' or coluna.lower().rsplit(' ')[0] == 'cód' or coluna.lower().rsplit(' ')[0] == 'cód.':
+                codigo_column = coluna
+            elif coluna.lower().rsplit(' ')[0] == 'foto' or coluna.lower().rsplit(' ')[0] == 'imagem' or coluna.lower().rsplit(' ')[0] == 'imagen' or coluna.lower().rsplit(' ')[0] == 'fotografia' or coluna.lower().rsplit(' ')[0] == 'fotografía' or coluna.lower().rsplit(' ')[0] == 'image' or coluna.lower().rsplit(' ')[0] == 'picture' or coluna.lower().rsplit(' ')[0] == 'photo':
+                foto_column = coluna
             else:
-                message = f'O book {capa["nome"]} não foi gerado. Motivo: Ausência de coluna obrigatória.'
+                other_columns.append(coluna)
+        for coluna in [endereco_column, latitude_column, longitude_column, codigo_column, foto_column]:
+            if coluna == None:
+                if lang == 'es' or lang == 'es-ar':
+                    message = f'No se generó el libro {capa["nome"]}. Motivo: Falta la columna obligatoria.'
+                elif lang == 'en':
+                    message = f'The book {capa["nome"]} was not generated. Reason: Missing required column.'
+                else:
+                    message = f'O book {capa["nome"]} não foi gerado. Motivo: Ausência de coluna obrigatória.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+                print(f'Erro ao gerar o book {capa["nome"]}. Motivo: ausência de coluna obrigatória.')
+                return False
+
+        # Gerando PDF
+        pdf_buffer = BytesIO()
+        pdf = canvas.Canvas(pdf_buffer, (400*mm, 220*mm))
+        # Gerando PPTX
+        apresentacao = Presentation()
+        apresentacao.slide_height = Mm(220)
+        apresentacao.slide_width = Mm(400)
+
+        # Capa
+        
+        if not capa['nome']:
+            message = f'O book não foi gerado. Motivo: Você deve fornecer um nome para o book.'
             send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
-            print(f'Erro ao gerar o book {capa["nome"]}. Motivo: ausência de coluna obrigatória.')
+            print(f'Erro ao gerar o book. Motivo: Nome para o book não foi fornecido.')
             return False
-
-    # Gerando PDF
-    pdf_buffer = BytesIO()
-    pdf = canvas.Canvas(pdf_buffer, (400*mm, 220*mm))
-    # Gerando PPTX
-    apresentacao = Presentation()
-    apresentacao.slide_height = Mm(220)
-    apresentacao.slide_width = Mm(400)
-
-    # Capa
-    
-    if not capa['nome']:
-        message = f'O book não foi gerado. Motivo: Você deve fornecer um nome para o book.'
-        send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
-        print(f'Erro ao gerar o book. Motivo: Nome para o book não foi fornecido.')
-        return False
-    else:
-        # PDF
-        pdf.drawImage('app/static/media/pdf_provider_images/capa_template.jpg', 0, 0, 400*mm, 220*mm)
-        pdf.setFont('Helvetica', 10*mm)
-        
-        # Inicializando slide da capa
-        slide = apresentacao.slides.add_slide(apresentacao.slide_layouts[6])
-        capa_template = slide.shapes.add_picture('app/static/media/pdf_provider_images/capa_template.jpg', Mm(0), Mm(0), height=Mm(220), width=Mm(400))
-        
-        if not capa['cliente'] and not capa['pessoa']:
-            pdf.drawString(105*mm,25*mm, capa['nome'])
-
-            capa_nome = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
-            capa_nome_text_frame = capa_nome.text_frame
-            capa_nome_text_frame.clear()
-            capa_nome_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-            capa_nome_text = capa_nome_text_frame.paragraphs[0].add_run()
-            capa_nome_text.text = capa['nome']
-            capa_nome_text.font.name = 'Helvetica'
-            capa_nome_text.font.size = Mm(10)
-            
         else:
-            if capa['cliente'] and capa['pessoa']:
-                texto = f'A\C {capa["pessoa"]} - {capa["cliente"]}'
-                if len(texto) > 48:
-                    pdf.drawString(105*mm,55*mm, capa['nome'])
-                    
-                    capa_nome = slide.shapes.add_textbox(Mm(102), Mm(155), Mm(200), Mm(10))
-                    capa_nome_text_frame = capa_nome.text_frame
-                    capa_nome_text_frame.clear()
-                    capa_nome_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                    capa_nome_text = capa_nome_text_frame.paragraphs[0].add_run()
-                    capa_nome_text.text = capa['nome']
-                    capa_nome_text.font.name = 'Helvetica'
-                    capa_nome_text.font.size = Mm(10)
+            # PDF
+            pdf.drawImage('app/static/media/pdf_provider_images/capa_template.jpg', 0, 0, 400*mm, 220*mm)
+            pdf.setFont('Helvetica', 10*mm)
+            
+            # Inicializando slide da capa
+            slide = apresentacao.slides.add_slide(apresentacao.slide_layouts[6])
+            capa_template = slide.shapes.add_picture('app/static/media/pdf_provider_images/capa_template.jpg', Mm(0), Mm(0), height=Mm(220), width=Mm(400))
+            
+            if not capa['cliente'] and not capa['pessoa']:
+                pdf.drawString(105*mm,25*mm, capa['nome'])
 
-                    pdf.drawString(105*mm,40*mm, texto[0:48])
+                capa_nome = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
+                capa_nome_text_frame = capa_nome.text_frame
+                capa_nome_text_frame.clear()
+                capa_nome_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                capa_nome_text = capa_nome_text_frame.paragraphs[0].add_run()
+                capa_nome_text.text = capa['nome']
+                capa_nome_text.font.name = 'Helvetica'
+                capa_nome_text.font.size = Mm(10)
+                
+            else:
+                if capa['cliente'] and capa['pessoa']:
+                    texto = f'A\C {capa["pessoa"]} - {capa["cliente"]}'
+                    if len(texto) > 48:
+                        pdf.drawString(105*mm,55*mm, capa['nome'])
+                        
+                        capa_nome = slide.shapes.add_textbox(Mm(102), Mm(155), Mm(200), Mm(10))
+                        capa_nome_text_frame = capa_nome.text_frame
+                        capa_nome_text_frame.clear()
+                        capa_nome_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        capa_nome_text = capa_nome_text_frame.paragraphs[0].add_run()
+                        capa_nome_text.text = capa['nome']
+                        capa_nome_text.font.name = 'Helvetica'
+                        capa_nome_text.font.size = Mm(10)
 
-                    texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(170), Mm(200), Mm(10))
-                    texto_pptx1_text_frame = texto_pptx1.text_frame
-                    texto_pptx1_text_frame.clear()
-                    texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                    texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
-                    texto_pptx1_text.text = texto[0:48]
-                    texto_pptx1_text.font.name = 'Helvetica'
-                    texto_pptx1_text.font.size = Mm(10)
+                        pdf.drawString(105*mm,40*mm, texto[0:48])
 
-                    pdf.drawString(105*mm,25*mm, texto[48:len(texto)])
+                        texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(170), Mm(200), Mm(10))
+                        texto_pptx1_text_frame = texto_pptx1.text_frame
+                        texto_pptx1_text_frame.clear()
+                        texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
+                        texto_pptx1_text.text = texto[0:48]
+                        texto_pptx1_text.font.name = 'Helvetica'
+                        texto_pptx1_text.font.size = Mm(10)
 
-                    texto_pptx2 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
-                    texto_pptx2_text_frame = texto_pptx2.text_frame
-                    texto_pptx2_text_frame.clear()
-                    texto_pptx2_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                    texto_pptx2_text = texto_pptx2_text_frame.paragraphs[0].add_run()
-                    texto_pptx2_text.text = texto[48:len(texto)]
-                    texto_pptx2_text.font.name = 'Helvetica'
-                    texto_pptx2_text.font.size = Mm(10)
+                        pdf.drawString(105*mm,25*mm, texto[48:len(texto)])
+
+                        texto_pptx2 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
+                        texto_pptx2_text_frame = texto_pptx2.text_frame
+                        texto_pptx2_text_frame.clear()
+                        texto_pptx2_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        texto_pptx2_text = texto_pptx2_text_frame.paragraphs[0].add_run()
+                        texto_pptx2_text.text = texto[48:len(texto)]
+                        texto_pptx2_text.font.name = 'Helvetica'
+                        texto_pptx2_text.font.size = Mm(10)
+
+                    else:
+                        pdf.drawString(105*mm,40*mm, capa['nome'])
+                        
+                        capa_nome = slide.shapes.add_textbox(Mm(102), Mm(170), Mm(200), Mm(10))
+                        capa_nome_text_frame = capa_nome.text_frame
+                        capa_nome_text_frame.clear()
+                        capa_nome_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        capa_nome_text = capa_nome_text_frame.paragraphs[0].add_run()
+                        capa_nome_text.text = capa['nome']
+                        capa_nome_text.font.name = 'Helvetica'
+                        capa_nome_text.font.size = Mm(10)
+
+                        pdf.drawString(105*mm,25*mm, texto)
+
+                        texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
+                        texto_pptx1_text_frame = texto_pptx1.text_frame
+                        texto_pptx1_text_frame.clear()
+                        texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
+                        texto_pptx1_text.text = texto
+                        texto_pptx1_text.font.name = 'Helvetica'
+                        texto_pptx1_text.font.size = Mm(10)
 
                 else:
                     pdf.drawString(105*mm,40*mm, capa['nome'])
-                    
+
                     capa_nome = slide.shapes.add_textbox(Mm(102), Mm(170), Mm(200), Mm(10))
                     capa_nome_text_frame = capa_nome.text_frame
                     capa_nome_text_frame.clear()
@@ -312,298 +335,275 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                     capa_nome_text.text = capa['nome']
                     capa_nome_text.font.name = 'Helvetica'
                     capa_nome_text.font.size = Mm(10)
+                    if capa['cliente'] and not capa['pessoa']:
+                        texto = f'{capa["cliente"]}'
+                        pdf.drawString(105*mm,25*mm, texto)
 
-                    pdf.drawString(105*mm,25*mm, texto)
+                        texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
+                        texto_pptx1_text_frame = texto_pptx1.text_frame
+                        texto_pptx1_text_frame.clear()
+                        texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
+                        texto_pptx1_text.text = texto
+                        texto_pptx1_text.font.name = 'Helvetica'
+                        texto_pptx1_text.font.size = Mm(10)
 
-                    texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
-                    texto_pptx1_text_frame = texto_pptx1.text_frame
-                    texto_pptx1_text_frame.clear()
-                    texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                    texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
-                    texto_pptx1_text.text = texto
-                    texto_pptx1_text.font.name = 'Helvetica'
-                    texto_pptx1_text.font.size = Mm(10)
+                    elif capa['pessoa'] and not capa['cliente']:
+                        texto = f'A\C {capa["pessoa"]}'
+                        pdf.drawString(105*mm,25*mm, texto)
 
+                        texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
+                        texto_pptx1_text_frame = texto_pptx1.text_frame
+                        texto_pptx1_text_frame.clear()
+                        texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                        texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
+                        texto_pptx1_text.text = texto
+                        texto_pptx1_text.font.name = 'Helvetica'
+                        texto_pptx1_text.font.size = Mm(10)
+
+        pdf.showPage()
+
+        for i, linha in enumerate(linhas):
+            print('gerando linha')
+            foto_link = str(linha[foto_column])
+            print(foto_link)
+            valid_image = True
+            if str(foto_link) == 'nan':
+                valid_image = False
+            elif not 'http' in str(foto_link):
+                valid_image = False
+            elif foto_link[len(foto_link) - 4:len(foto_link)] not in ['.png', '.jpg', 'jpeg']:
+                valid_image = False
             else:
-                pdf.drawString(105*mm,40*mm, capa['nome'])
-
-                capa_nome = slide.shapes.add_textbox(Mm(102), Mm(170), Mm(200), Mm(10))
-                capa_nome_text_frame = capa_nome.text_frame
-                capa_nome_text_frame.clear()
-                capa_nome_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                capa_nome_text = capa_nome_text_frame.paragraphs[0].add_run()
-                capa_nome_text.text = capa['nome']
-                capa_nome_text.font.name = 'Helvetica'
-                capa_nome_text.font.size = Mm(10)
-                if capa['cliente'] and not capa['pessoa']:
-                    texto = f'{capa["cliente"]}'
-                    pdf.drawString(105*mm,25*mm, texto)
-
-                    texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
-                    texto_pptx1_text_frame = texto_pptx1.text_frame
-                    texto_pptx1_text_frame.clear()
-                    texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                    texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
-                    texto_pptx1_text.text = texto
-                    texto_pptx1_text.font.name = 'Helvetica'
-                    texto_pptx1_text.font.size = Mm(10)
-
-                elif capa['pessoa'] and not capa['cliente']:
-                    texto = f'A\C {capa["pessoa"]}'
-                    pdf.drawString(105*mm,25*mm, texto)
-
-                    texto_pptx1 = slide.shapes.add_textbox(Mm(102), Mm(185), Mm(200), Mm(10))
-                    texto_pptx1_text_frame = texto_pptx1.text_frame
-                    texto_pptx1_text_frame.clear()
-                    texto_pptx1_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-                    texto_pptx1_text = texto_pptx1_text_frame.paragraphs[0].add_run()
-                    texto_pptx1_text.text = texto
-                    texto_pptx1_text.font.name = 'Helvetica'
-                    texto_pptx1_text.font.size = Mm(10)
-
-    pdf.showPage()
-
-    for i, linha in enumerate(linhas):
-        print('gerando linha')
-        foto_link = str(linha[foto_column])
-        print(foto_link)
-        valid_image = True
-        if str(foto_link) == 'nan':
-            valid_image = False
-        elif not 'http' in str(foto_link):
-            valid_image = False
-        elif foto_link[len(foto_link) - 4:len(foto_link)] not in ['.png', '.jpg', 'jpeg']:
-            valid_image = False
-        else:
-            with open(f'app/static/media/pdf_provider_images/temp_image{i}.png', 'wb') as nova_imagem:
-                imagem = requests.get(foto_link, stream=True, headers={'User-Agent': 'Chrome/108.0.5359.124'})
-                if not imagem.ok:
-                    valid_image = False
+                with open(f'app/static/media/pdf_provider_images/temp_image{i}.png', 'wb') as nova_imagem:
+                    imagem = requests.get(foto_link, stream=True, headers={'User-Agent': 'Chrome/108.0.5359.124'})
+                    if not imagem.ok:
+                        valid_image = False
+                    else:
+                        for dado in imagem.iter_content():
+                            nova_imagem.write(dado)
+            if valid_image == True:
+                imagem_pil = Image.open(f'app/static/media/pdf_provider_images/temp_image{i}.png')
+                size = imagem_pil.size
+                new_image = None
+                if size[0] > 1280:
+                    new_image = imagem_pil.resize((1280, 768))
+                    new_image = new_image.convert('RGB')
                 else:
-                    for dado in imagem.iter_content():
-                        nova_imagem.write(dado)
-        if valid_image == True:
-            imagem_pil = Image.open(f'app/static/media/pdf_provider_images/temp_image{i}.png')
-            size = imagem_pil.size
-            new_image = None
-            if size[0] > 1280:
-                new_image = imagem_pil.resize((1280, 768))
-                new_image = new_image.convert('RGB')
-            else:
-                new_image = imagem_pil.convert('RGB')
-            new_image.save(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', 'JPEG')
+                    new_image = imagem_pil.convert('RGB')
+                new_image.save(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', 'JPEG')
 
 
-        coordenadas = f'{linha[latitude_column]}  {linha[longitude_column]}'
+            coordenadas = f'{linha[latitude_column]}  {linha[longitude_column]}'
 
-        # Inicializando PPT
-        slide = apresentacao.slides.add_slide(apresentacao.slide_layouts[6])
-        
-        # Template de fundo PDF
-        pdf.drawImage('app/static/media/pdf_provider_images/template_pdf.jpg', 0, 0, 400*mm, 220*mm)
-
-        # Template de fundo PPTX
-        template_fundo = slide.shapes.add_picture('app/static/media/pdf_provider_images/template_pdf.jpg', Mm(0), Mm(0), height=Mm(220), width=Mm(400))
-
-        # Endereço PDF
-        pdf.setFont('Helvetica-Bold', 7*mm)
-        pdf.setFillColor(colors.white)
-        pdf.drawCentredString(190*mm,207*mm, str(linha[endereco_column]))
-
-        # Endereço PPTX
-        endereco = slide.shapes.add_textbox(Mm(0), Mm(5), Mm(420), Mm(5))
-        endereco_text_frame = endereco.text_frame
-        endereco_text_frame.clear()
-        endereco_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
-        endereco_text = endereco_text_frame.paragraphs[0].add_run()
-        endereco_text.text = str(linha[endereco_column])
-        endereco_text.font.name = 'Helvetica'
-        endereco_text.font.bold = True
-        endereco_text.font.size = Mm(7)
-        endereco_text.font.color.rgb = RGBColor(255,255,255)
-
-        if valid_image == True:
-            # Imagem PDF
-            pdf.drawImage(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', 3*mm, 18.19*mm, 260*mm, 180*mm)
-
-            #Imagem PPTX
-            imagem = slide.shapes.add_picture(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', Mm(3), Mm(21.81), height=Mm(180), width=Mm(262))
-        else:
-            # Imagem invalida PDF
-            pdf.setFont('Helvetica-Bold', 5*mm)
-            pdf.setFillColor(colors.black)
-            pdf.drawString(48*mm, 80*mm, 'Link inválido ou bloqueado pelo provedor.')
-
-            # Imagem Inválida PPTX
-            invalid_img_pptx = slide.shapes.add_textbox(Mm(47), Mm(125), Mm(30), Mm(5))
-            invalid_img_text_frame = invalid_img_pptx.text_frame
-            invalid_img_text_frame.clear()
-            invalid_img_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-            invalid_img_text = invalid_img_text_frame.paragraphs[0].add_run()
-            invalid_img_text.text = 'Link inválido ou bloqueado pelo provedor.'
-            invalid_img_text.font.name = 'Helvetica'
-            invalid_img_text.font.bold = True
-            invalid_img_text.font.size = Mm(5)
-
-        # Coordenadas PDF
-        pdf.setFont('Helvetica-Bold', 5.5*mm)
-        pdf.setFillColor(colors.black)
-        pdf.drawString(4*mm, 10*mm, 'Coordenadas:')
-        
-        pdf.setFont('Helvetica', 5.5*mm)
-        pdf.drawString(41.5*mm, 10*mm, str(coordenadas))
-
-        # Coordenadas PPTX
-        coordenadas_pptx = slide.shapes.add_textbox(Mm(3), Mm(205), Mm(30), Mm(5))
-        coordenadas_text_frame = coordenadas_pptx.text_frame
-        coordenadas_text_frame.clear()
-        coordenadas_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-        coordenadas_text = coordenadas_text_frame.paragraphs[0].add_run()
-        coordenadas_text.text = 'Coordenadas:'
-        coordenadas_text.font.name = 'Helvetica'
-        coordenadas_text.font.bold = True
-        coordenadas_text.font.size = Mm(5.5)
-
-        coordenadas_content = slide.shapes.add_textbox(Mm(40.5), Mm(205), Mm(50), Mm(6))
-        coordenadas_content_text_frame = coordenadas_content.text_frame
-        coordenadas_content_text_frame.clear()
-        coordenadas_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-        coordenadas_content_text = coordenadas_content_text_frame.paragraphs[0].add_run()
-        coordenadas_content_text.text = str(coordenadas)
-        coordenadas_content_text.font.name = 'Helvetica'
-        coordenadas_content_text.font.size = Mm(5.5)
-        
-        # Código PDF
-        pdf.setFont('Helvetica-Bold', 5.5*mm)
-        pdf.drawString(180*mm, 10*mm, 'Código:')
-        
-        pdf.setFont('Helvetica', 5.5*mm)
-        pdf.drawString(202*mm, 10*mm, str(linha[codigo_column]))
-
-        # Código PPTX
-        codigo = slide.shapes.add_textbox(Mm(180), Mm(205), Mm(30), Mm(5))
-        codigo_text_frame = codigo.text_frame
-        codigo_text_frame.clear()
-        codigo_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-        codigo_text = codigo_text_frame.paragraphs[0].add_run()
-        codigo_text.text = 'Codigo:'
-        codigo_text.font.name = 'Helvetica'
-        codigo_text.font.bold = True
-        codigo_text.font.size = Mm(5.5)
-
-        codigo_content = slide.shapes.add_textbox(Mm(202), Mm(205), Mm(50), Mm(6))
-        codigo_content_text_frame = codigo_content.text_frame
-        codigo_content_text_frame.clear()
-        codigo_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-        codigo_content_text = codigo_content_text_frame.paragraphs[0].add_run()
-        codigo_content_text.text = str(linha[codigo_column])
-        codigo_content_text.font.name = 'Helvetica'
-        codigo_content_text.font.size = Mm(5.5)
-
-        eixo_y_pdf = 194
-        eixo_y_pptx = 20
-
-        for coluna in other_columns:
-            titulo = str(coluna)
-            if titulo == 'nan':
-                titulo = ''
+            # Inicializando PPT
+            slide = apresentacao.slides.add_slide(apresentacao.slide_layouts[6])
             
-            conteudo = str(linha[coluna])
-            if conteudo == 'nan':
-                conteudo = ''
-            # Outras Colunas PDF
+            # Template de fundo PDF
+            pdf.drawImage('app/static/media/pdf_provider_images/template_pdf.jpg', 0, 0, 400*mm, 220*mm)
+
+            # Template de fundo PPTX
+            template_fundo = slide.shapes.add_picture('app/static/media/pdf_provider_images/template_pdf.jpg', Mm(0), Mm(0), height=Mm(220), width=Mm(400))
+
+            # Endereço PDF
+            pdf.setFont('Helvetica-Bold', 7*mm)
+            pdf.setFillColor(colors.white)
+            pdf.drawCentredString(190*mm,207*mm, str(linha[endereco_column]))
+
+            # Endereço PPTX
+            endereco = slide.shapes.add_textbox(Mm(0), Mm(5), Mm(420), Mm(5))
+            endereco_text_frame = endereco.text_frame
+            endereco_text_frame.clear()
+            endereco_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
+            endereco_text = endereco_text_frame.paragraphs[0].add_run()
+            endereco_text.text = str(linha[endereco_column])
+            endereco_text.font.name = 'Helvetica'
+            endereco_text.font.bold = True
+            endereco_text.font.size = Mm(7)
+            endereco_text.font.color.rgb = RGBColor(255,255,255)
+
+            if valid_image == True:
+                # Imagem PDF
+                pdf.drawImage(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', 3*mm, 18.19*mm, 260*mm, 180*mm)
+
+                #Imagem PPTX
+                imagem = slide.shapes.add_picture(f'app/static/media/pdf_provider_images/temp_image{i}.jpg', Mm(3), Mm(21.81), height=Mm(180), width=Mm(262))
+            else:
+                # Imagem invalida PDF
+                pdf.setFont('Helvetica-Bold', 5*mm)
+                pdf.setFillColor(colors.black)
+                pdf.drawString(48*mm, 80*mm, 'Link inválido ou bloqueado pelo provedor.')
+
+                # Imagem Inválida PPTX
+                invalid_img_pptx = slide.shapes.add_textbox(Mm(47), Mm(125), Mm(30), Mm(5))
+                invalid_img_text_frame = invalid_img_pptx.text_frame
+                invalid_img_text_frame.clear()
+                invalid_img_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                invalid_img_text = invalid_img_text_frame.paragraphs[0].add_run()
+                invalid_img_text.text = 'Link inválido ou bloqueado pelo provedor.'
+                invalid_img_text.font.name = 'Helvetica'
+                invalid_img_text.font.bold = True
+                invalid_img_text.font.size = Mm(5)
+
+            # Coordenadas PDF
             pdf.setFont('Helvetica-Bold', 5.5*mm)
-            pdf.drawString(267*mm, eixo_y_pdf*mm, titulo)
+            pdf.setFillColor(colors.black)
+            pdf.drawString(4*mm, 10*mm, 'Coordenadas:')
             
             pdf.setFont('Helvetica', 5.5*mm)
-            pdf.drawString(267*mm, (eixo_y_pdf - 7.5) * mm, conteudo)
-            eixo_y_pdf -= 17
+            pdf.drawString(41.5*mm, 10*mm, str(coordenadas))
 
-            # Outras colunas PPTX
-            outros = slide.shapes.add_textbox(Mm(266), Mm(eixo_y_pptx), Mm(30), Mm(6))
-            outros_text_frame = outros.text_frame
-            outros_text_frame.clear()
-            outros_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-            outros_text_frame.paragraphs[0].word_wrap = True
-            outros_text = outros_text_frame.paragraphs[0].add_run()
-            outros_text.text = titulo
-            outros_text.font.name = 'Helvetica'
-            outros_text.font.bold = True
-            outros_text.font.size = Mm(5.5)
+            # Coordenadas PPTX
+            coordenadas_pptx = slide.shapes.add_textbox(Mm(3), Mm(205), Mm(30), Mm(5))
+            coordenadas_text_frame = coordenadas_pptx.text_frame
+            coordenadas_text_frame.clear()
+            coordenadas_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+            coordenadas_text = coordenadas_text_frame.paragraphs[0].add_run()
+            coordenadas_text.text = 'Coordenadas:'
+            coordenadas_text.font.name = 'Helvetica'
+            coordenadas_text.font.bold = True
+            coordenadas_text.font.size = Mm(5.5)
 
-            outros_content = slide.shapes.add_textbox(Mm(266), Mm(eixo_y_pptx + 7.5), Mm(30), Mm(6))
-            outros_content_text_frame = outros_content.text_frame
-            outros_content_text_frame.clear()
-            outros_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
-            outros_content_text_frame.paragraphs[0].word_wrap = True
-            outros_content_text = outros_content_text_frame.paragraphs[0].add_run()
-            outros_content_text.text = conteudo
-            outros_content_text.font.name = 'Helvetica'
-            outros_content_text.font.size = Mm(5.5)
-            eixo_y_pptx += 17
-        
-        # Página PDF
-        pdf.setFont('Helvetica-Bold', 8*mm)
-        pdf.setFillColor(colors.white)
-        pdf.drawCentredString(387*mm, 6.5*mm, str(pdf.getPageNumber()))
-
-        # Página PPTX
-        pagina = slide.shapes.add_textbox(Mm(380), Mm(203.5), Mm(10), Mm(10))
-        pagina_text_frame = pagina.text_frame
-        pagina_text_frame.clear()
-        pagina_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
-        pagina_text = pagina_text_frame.paragraphs[0].add_run()
-        pagina_text.text = str(pdf.getPageNumber())
-        pagina_text.font.name = 'Helvetica'
-        pagina_text.font.bold = True
-        pagina_text.font.size = Mm(8)
-        pagina_text.font.color.rgb = RGBColor(255,255,255)
-        
-        pdf.showPage()
-        
-    pdf.save()
-
-    #Gravando pdf
-    with pdf_buffer as pdf_file:
-        pdf_upload = upload_file_to_s3(pdf_file.getvalue(), f'pdf/{image_id}.pdf', 'application/pdf')
-        if pdf_upload == False:
-            message = 'Falha ao salvar o arquivo PDF. Apague o book e tente novamente.'
-            send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
-    pdf_buffer.close()
-    
-    # Gravando pptx
-    pptx_buffer = BytesIO()
-    apresentacao.save(pptx_buffer)
-    with pptx_buffer as pptx_file:
-        pptx_upload = upload_file_to_s3(pptx_file.getvalue(), f'pptx/{image_id}.pptx', 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
-        if pptx_upload == False:
-            message = 'Falha ao salvar o arquivo PPTX. Apague o book e tente novamente.'
-            send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
-    pptx_buffer.close()
-
-    if is_worker == True:
-        session.add(Worksheet_Content(
-            user_id,
-            capa['nome'].title(),
-            capa['cliente'],
-            capa['pessoa'],
-            dumps(content),
-            date.today(),
-            image_id
-        ))
-        session.commit()
-    message = f'Book {capa["nome"].title()} cadastrado e seus arquivos PDF e PPTX gerados com sucesso.'
-    send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
-    print('terminando de gerar pdf')
+            coordenadas_content = slide.shapes.add_textbox(Mm(40.5), Mm(205), Mm(50), Mm(6))
+            coordenadas_content_text_frame = coordenadas_content.text_frame
+            coordenadas_content_text_frame.clear()
+            coordenadas_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+            coordenadas_content_text = coordenadas_content_text_frame.paragraphs[0].add_run()
+            coordenadas_content_text.text = str(coordenadas)
+            coordenadas_content_text.font.name = 'Helvetica'
+            coordenadas_content_text.font.size = Mm(5.5)
             
-    '''except UnidentifiedImageError as error:
+            # Código PDF
+            pdf.setFont('Helvetica-Bold', 5.5*mm)
+            pdf.drawString(180*mm, 10*mm, 'Código:')
+            
+            pdf.setFont('Helvetica', 5.5*mm)
+            pdf.drawString(202*mm, 10*mm, str(linha[codigo_column]))
+
+            # Código PPTX
+            codigo = slide.shapes.add_textbox(Mm(180), Mm(205), Mm(30), Mm(5))
+            codigo_text_frame = codigo.text_frame
+            codigo_text_frame.clear()
+            codigo_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+            codigo_text = codigo_text_frame.paragraphs[0].add_run()
+            codigo_text.text = 'Codigo:'
+            codigo_text.font.name = 'Helvetica'
+            codigo_text.font.bold = True
+            codigo_text.font.size = Mm(5.5)
+
+            codigo_content = slide.shapes.add_textbox(Mm(202), Mm(205), Mm(50), Mm(6))
+            codigo_content_text_frame = codigo_content.text_frame
+            codigo_content_text_frame.clear()
+            codigo_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+            codigo_content_text = codigo_content_text_frame.paragraphs[0].add_run()
+            codigo_content_text.text = str(linha[codigo_column])
+            codigo_content_text.font.name = 'Helvetica'
+            codigo_content_text.font.size = Mm(5.5)
+
+            eixo_y_pdf = 194
+            eixo_y_pptx = 20
+
+            for coluna in other_columns:
+                titulo = str(coluna)
+                if titulo == 'nan':
+                    titulo = ''
+                
+                conteudo = str(linha[coluna])
+                if conteudo == 'nan':
+                    conteudo = ''
+                # Outras Colunas PDF
+                pdf.setFont('Helvetica-Bold', 5.5*mm)
+                pdf.drawString(267*mm, eixo_y_pdf*mm, titulo)
+                
+                pdf.setFont('Helvetica', 5.5*mm)
+                pdf.drawString(267*mm, (eixo_y_pdf - 7.5) * mm, conteudo)
+                eixo_y_pdf -= 17
+
+                # Outras colunas PPTX
+                outros = slide.shapes.add_textbox(Mm(266), Mm(eixo_y_pptx), Mm(30), Mm(6))
+                outros_text_frame = outros.text_frame
+                outros_text_frame.clear()
+                outros_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                outros_text_frame.paragraphs[0].word_wrap = True
+                outros_text = outros_text_frame.paragraphs[0].add_run()
+                outros_text.text = titulo
+                outros_text.font.name = 'Helvetica'
+                outros_text.font.bold = True
+                outros_text.font.size = Mm(5.5)
+
+                outros_content = slide.shapes.add_textbox(Mm(266), Mm(eixo_y_pptx + 7.5), Mm(30), Mm(6))
+                outros_content_text_frame = outros_content.text_frame
+                outros_content_text_frame.clear()
+                outros_content_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+                outros_content_text_frame.paragraphs[0].word_wrap = True
+                outros_content_text = outros_content_text_frame.paragraphs[0].add_run()
+                outros_content_text.text = conteudo
+                outros_content_text.font.name = 'Helvetica'
+                outros_content_text.font.size = Mm(5.5)
+                eixo_y_pptx += 17
+            
+            # Página PDF
+            pdf.setFont('Helvetica-Bold', 8*mm)
+            pdf.setFillColor(colors.white)
+            pdf.drawCentredString(387*mm, 6.5*mm, str(pdf.getPageNumber()))
+
+            # Página PPTX
+            pagina = slide.shapes.add_textbox(Mm(380), Mm(203.5), Mm(10), Mm(10))
+            pagina_text_frame = pagina.text_frame
+            pagina_text_frame.clear()
+            pagina_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
+            pagina_text = pagina_text_frame.paragraphs[0].add_run()
+            pagina_text.text = str(pdf.getPageNumber())
+            pagina_text.font.name = 'Helvetica'
+            pagina_text.font.bold = True
+            pagina_text.font.size = Mm(8)
+            pagina_text.font.color.rgb = RGBColor(255,255,255)
+            
+            pdf.showPage()
+            
+        pdf.save()
+
+        #Gravando pdf
+        with pdf_buffer as pdf_file:
+            pdf_upload = upload_file_to_s3(pdf_file.getvalue(), f'pdf/{image_id}.pdf', 'application/pdf')
+            if pdf_upload == False:
+                message = 'Falha ao salvar o arquivo PDF. Apague o book e tente novamente.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+        pdf_buffer.close()
+        
+        # Gravando pptx
+        pptx_buffer = BytesIO()
+        apresentacao.save(pptx_buffer)
+        with pptx_buffer as pptx_file:
+            pptx_upload = upload_file_to_s3(pptx_file.getvalue(), f'pptx/{image_id}.pptx', 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+            if pptx_upload == False:
+                message = 'Falha ao salvar o arquivo PPTX. Apague o book e tente novamente.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+        pptx_buffer.close()
+
+        if is_worker == True:
+            session.add(Worksheet_Content(
+                user_id,
+                capa['nome'].title(),
+                capa['cliente'],
+                capa['pessoa'],
+                dumps(content),
+                date.today(),
+                image_id
+            ))
+            session.commit()
+        message = f'Book {capa["nome"].title()} cadastrado e seus arquivos PDF e PPTX gerados com sucesso.'
+        send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+        print('terminando de gerar pdf')
+            
+    except UnidentifiedImageError as error:
         print(str(error))
         message = f'Falha ao gerar o Book {capa["nome"]}. Motivo: Link de imagem inválido. Você deve fornecer um link de imagem .jpg, .jpeg ou .png. Links de telas de Google Maps ou Street View não são aceitas.'
         send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
     except Exception as error:
         print(str(error))
         message = f'Falha ao gerar o Boook {capa["nome"]}. Motivo: Erro no servidor.'
-        send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})'''
+        send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
 
 def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_worker, db_session=None):
     messages = []
