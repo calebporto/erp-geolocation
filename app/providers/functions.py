@@ -1,3 +1,4 @@
+import time
 from openpyxl import Workbook
 from app.models.basemodels import Register_Response_
 from app.models.tables import Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
@@ -900,6 +901,7 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
             return
 
 def book_register(arquivo, dados_capa, colunas, lang, user_id):
+    inicio = time.time()
     messages = []
     if len(colunas) > 15:
         if lang == 'es' or lang == 'es-ar':
@@ -946,7 +948,7 @@ def book_register(arquivo, dados_capa, colunas, lang, user_id):
                 messages.append('Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são "Código", "Endereço", "Latitude", "Longitude" e "Foto".')
                 return False, messages
         
-        book = pd.read_excel(arquivo, sheet_name=planilha).to_dict('records')
+        book = pd.read_excel(arquivo, sheet_name=planilha, nrows=500).to_dict('records')
         for i, linha in enumerate(book):
             nova_linha = {}
             for key, value in linha.items():
@@ -964,6 +966,8 @@ def book_register(arquivo, dados_capa, colunas, lang, user_id):
             messages.append(f'The book {(dados_capa["nome"]).title()} is being generated. When completed, it will appear in "List of Books" or notify on screen in case of error.')
         else:
             messages.append(f'O book {(dados_capa["nome"]).title()} está sendo gerado. Quando estiver concluído, ele aparecerá em "Lista de Books" ou notificará na tela em caso de erro.')
+        fim = time.time()
+        print(fim - inicio)
         return True, messages
     
 def bookGenerateWithPoints(lang, columns, idList, userId, bookName, personName, clientName):
