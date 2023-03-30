@@ -1,5 +1,6 @@
 from json import dumps
 import os
+import time
 from flask import Blueprint, Response, flash, redirect, render_template, make_response, request
 from flask_login import current_user, login_required
 from app.models.basemodels import Person_, Register_Response_, Worksheet_For_View_
@@ -67,10 +68,9 @@ def criar():
                     message = 'Su hoja de trabajo tiene más de una pestaña y solo se procesó la primera.'
                 else:
                     message = 'Sua planilha possui mais de uma aba, e somente a primeira foi processada.'
-            planilha = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0]).to_dict('records')
-            colunas = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0])
+            colunas = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0], nrows=1)
             code_col, address_col, latitude_col, longitude_col, image_col = None, None, None, None, None
-            for i, coluna in enumerate(colunas):
+            for coluna in colunas:
                 if is_in_the_column(coluna.lower(), ['cod', 'cod.', 'cód', 'cód.', 'código', 'codigo', 'code']):
                     code_col = coluna
                 elif is_in_the_column(coluna.lower(), ['endereço', 'endereco', 'direccion', 'dirección', 'ubicacion', 'ubicación', 'address']):
