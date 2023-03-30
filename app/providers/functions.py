@@ -949,15 +949,19 @@ def book_register(arquivo, dados_capa, colunas, lang, user_id):
                 return False, messages
         
         book = pd.read_excel(arquivo, sheet_name=planilha, nrows=500).to_dict('records')
-        for i, linha in enumerate(book):
-            nova_linha = {}
-            for key, value in linha.items():
-                if key in colunas:
-                    nova_linha[key] = value
-            book[i] = nova_linha
+        new_book = []
+        for linha in book:
+            if str(linha[colunas[0]]) == 'nan' and\
+            str(linha[colunas[1]]) == 'nan' and\
+            str(linha[colunas[2]]) == 'nan' and\
+            str(linha[colunas[3]]) == 'nan' and\
+            str(linha[colunas[4]]) == 'nan':
+                # Pula linhas em branco
+                continue
+            new_book.append(linha)
         image_id = image_id_generator()
         capa = {'nome': dados_capa['nome'], 'cliente': dados_capa['cliente'], 'pessoa': dados_capa['pessoa']}
-        content = {'colunas': colunas, 'conteudo': book}
+        content = {'colunas': colunas, 'conteudo': new_book}
         
         result = q.enqueue(pdf_generator, capa, content, image_id, lang, user_id, True, job_timeout='30m')
         if lang == 'es' or lang == 'es-ar':
