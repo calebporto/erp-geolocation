@@ -23,9 +23,9 @@ def get_pontos(filtros):
         empresa = filtros['empresa']
         if len(codigo) > 0:
             if len(codigo) == 1:
-                query = query.filter(Spot.code == codigo[0])
+                query = query.filter(Spot.code.like('%'+ codigo[0] +'%'))
             else:
-                items = [Spot.code == term for term in codigo]
+                items = [Spot.code.like('%'+ term +'%') for term in codigo]
                 query = query.filter(or_(*items))
         if len(pais) > 0:
             if len(pais) == 1:
@@ -35,9 +35,9 @@ def get_pontos(filtros):
                 query = query.filter(or_(*items))
         if len(estado) > 0:
             if len(estado) == 1:
-                query = query.filter(Spot.state == estado[0])
+                query = query.filter(Spot.state.like('%'+ estado[0] +'%'))
             else:
-                items = [Spot.state == term for term in estado]
+                items = [Spot.state.like('%'+ term +'%') for term in estado]
                 query = query.filter(or_(*items))
         if len(cidade) > 0:
             if len(cidade) == 1:
@@ -47,21 +47,21 @@ def get_pontos(filtros):
                 query = query.filter(or_(*items))
         if len(zona) > 0:
             if len(zona) == 1:
-                query = query.filter(Spot.zone == zona[0])
+                query = query.filter(Spot.zone.like('%'+ zona[0] +'%'))
             else:
-                items = [Spot.zone == term for term in zona]
+                items = [Spot.zone.like('%'+ term +'%') for term in zona]
                 query = query.filter(or_(*items))
         if len(bairro) > 0:
             if len(bairro) == 1:
-                query = query.filter(Spot.district == bairro[0])
+                query = query.filter(Spot.district.like('%'+ bairro[0] +'%'))
             else:
-                items = [Spot.district == term for term in bairro]
+                items = [Spot.district.like('%'+ term +'%') for term in bairro]
                 query = query.filter(or_(*items))
         if len(endereco) > 0:
             if len(endereco) == 1:
-                query = query.filter(Spot.address == endereco[0])
+                query = query.filter(Spot.address.like('%'+ endereco[0] +'%'))
             else:
-                items = [Spot.address == term for term in endereco]
+                items = [Spot.address.like('%'+ term +'%') for term in endereco]
                 query = query.filter(or_(*items))
         if len(formato) > 0:
             if len(formato) == 1:
@@ -71,9 +71,9 @@ def get_pontos(filtros):
                 query = query.filter(or_(*items))
         if len(empresa) > 0:
             if len(empresa) == 1:
-                query = query.filter(Spot_Private_Info.empresa == empresa[0])
+                query = query.filter(Spot_Private_Info.empresa.like(f'%{empresa[0]}%'))
             else:
-                items = [Spot_Private_Info.empresa == term for term in empresa]
+                items = [Spot_Private_Info.empresa.like(f'%{term}%')for term in empresa]
                 query = query.filter(or_(*items))
         
         count = query.count()
