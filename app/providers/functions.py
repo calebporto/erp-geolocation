@@ -544,7 +544,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 eixo_y_pptx += 17
             
             # Página PDF
-            pdf.setFont('Helvetica-Bold', 8*mm)
+            pdf.setFont('Helvetica-Bold', 5.5*mm)
             pdf.setFillColor(colors.white)
             pdf.drawCentredString(387*mm, 6.5*mm, str(pdf.getPageNumber()))
 
@@ -557,7 +557,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             pagina_text.text = str(pdf.getPageNumber())
             pagina_text.font.name = 'Helvetica'
             pagina_text.font.bold = True
-            pagina_text.font.size = Mm(8)
+            pagina_text.font.size = Mm(5.5)
             pagina_text.font.color.rgb = RGBColor(255,255,255)
             
             pdf.showPage()
@@ -718,6 +718,12 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                     return
             if not is_float(linha[latitude_col]) or not is_float(linha[longitude_col]):
                 if not is_worker:
+                    if lang == 'es' or lang == 'es-ar':
+                        messages.append(f'La linea {i + 1} de la hoja de cálculo {nome_arquivo} tiene una latitud o longitud no válida. Corrija y vuelva a intentarlo.')
+                    elif lang == 'en':
+                        messages.append(f'The row {i + 1} of the spreadsheet {nome_arquivo} has an invalid latitude or longitude. Please correct and try again.')
+                    else:
+                        messages.append(f'A linha {i + 1} da planilha {nome_arquivo} está com a latitude ou longitude inválida. Corrija e tente novamente.')
                     return 'invalid_lat_lng', messages
                 else:
                     if lang == 'es' or lang == 'es-ar':

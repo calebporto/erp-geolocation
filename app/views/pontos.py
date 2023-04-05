@@ -179,17 +179,11 @@ def importar():
                     message=file_check[1]
                 )
                 return response.json()
-            register_status, register_messages = points_register(arquivo, None, lang, None, None, False)
+            register_status, register_messages = points_register(arquivo, arquivo.filename, lang, None, None, False)
             if register_status == 'invalid_lat_lng':
-                if lang == 'es-ar' or lang == 'es':
-                    messages.append(f'Error al procesar la hoja de cálculo. Latitud o longitud no válida en ninguna de las filas de la tabla.')
-                elif lang == 'en':
-                    messages.append(f'Error processing worksheet. Invalid latitude or longitude in any of the rows in the table.')
-                else:
-                    messages.append(f'Erro ao processar a planilha. Latitude ou longitude inválida em alguma das linhas da tabela.')
                 response = Register_Response_(
                     status=False,
-                    message=messages
+                    message=register_messages
                 )
                 return response.json()
             

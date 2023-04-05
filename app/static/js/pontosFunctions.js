@@ -661,7 +661,7 @@ function gerarLista(index) {
         linhaTitle.appendChild(formatoTitle)
         let valorTitle = document.createElement('div')
         valorTitle.className = 'linha-valor'
-        valorTitle.innerHTML = '$$'
+        valorTitle.innerHTML = texts.empresa
         linhaTitle.appendChild(valorTitle)
         let btsTitle = document.createElement('div')
         btsTitle.className = 'linha-btsTitle'
@@ -744,7 +744,7 @@ function gerarLista(index) {
         
         let valorColumn = document.createElement('div')
         valorColumn.className = 'linha-valor'
-        valorColumn.innerHTML = valor_negociado_int
+        valorColumn.innerHTML = empresa
         linha.appendChild(valorColumn)
 
         // Visualizar
