@@ -194,6 +194,640 @@ var filtros = {
 }
 var pontosSelecionadosId = []
 
+var markerClickAction; // Altera clique no marcador do mapa entre visualizar modal ou selecionar
+var allMarkers = []
+
+function createMarkerClickBt() {
+    let divActionsBtGroup = document.querySelector('.divActionsBtGroup')
+    let selectAll = document.querySelector('#selectAll')
+    let changeMarkerClickBt = document.createElement('div')
+    changeMarkerClickBt.className = 'viewBt viewBtMap'
+    changeMarkerClickBt.id = 'viewBtMap'
+    changeMarkerClickBt.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-circle" viewBox="0 0 16 16">
+        <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z"/>
+        <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z"/>
+    </svg>
+    `
+    changeMarkerClickBt.addEventListener('click', () => {
+        selectAll.checked = false
+        if (markerClickAction == 'view') {
+            markerClickAction = 'select'
+            changeMarkerClickBt.classList.add('select')
+        } else if (markerClickAction == 'select') {
+            markerClickAction = 'view'
+            changeMarkerClickBt.classList.remove('select')
+        }
+    })
+    return changeMarkerClickBt
+}
+function createDivActions(texts) {
+    let divActions = document.createElement('div')
+    divActions.className = 'divActions'
+    let divSelectAll = document.createElement('div')
+    divSelectAll.className = 'divSelectAll'
+    let selectAll = document.createElement('input')
+    selectAll.type = 'checkbox'
+    selectAll.id = 'selectAll'
+    selectAll.className = 'selectAll'
+    selectAll.addEventListener('change', () => {
+        console.log(filtros['view'])
+        console.log(filtros.view)
+        if (filtros['view'] != 'map') {
+            selectAllCheckbox()
+        } else {
+            selectAllMarkers()
+        }
+    })
+    divSelectAll.appendChild(selectAll)
+    divActions.appendChild(divSelectAll)
+    let divActionsBtGroup = document.createElement('div')
+    divActionsBtGroup.className = 'divActionsBtGroup'
+    let divGerarExcel = document.createElement('div')
+    divGerarExcel.className = 'divActionsOpt'
+    divGerarExcel.id = 'divGerarExcel'
+    let divGerarExcelText = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet" viewBox="0 0 16 16">
+        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5v2zM3 12v-2h2v2H3zm0 1h2v2H4a1 1 0 0 1-1-1v-1zm3 2v-2h3v2H6zm4 0v-2h3v1a1 1 0 0 1-1 1h-2zm3-3h-3v-2h3v2zm-7 0v-2h3v2H6z"/>
+    </svg>
+    `
+    divGerarExcel.innerHTML = divGerarExcelText
+    divGerarExcel.removeEventListener('click', gerarExcelEvent)
+    divGerarExcel.addEventListener('click', gerarExcelEvent = () => {
+        divGerarExcel.innerHTML = `
+        <div class="spinner-border spinner-border-sm text-warning" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        `
+        let send = new FormData()
+        send.append('type', 'gerarExcel')
+        send.append('ids', JSON.stringify(pontosSelecionadosId))
+        fetch('/painel/pontos/visualizar', {
+            method: 'POST',
+            body: send
+        })
+        .then((response) => {
+            if (!response.ok) {
+                divGerarExcel.innerHTML = divGerarExcelText
+                if (lang == 'es' || lang == 'es-ar') {
+                    alertGenerate(body, 'Erro del servidor.')
+                } else if (lang == 'en') {
+                    alertGenerate(body, 'Server error.')
+                } else {
+                    alertGenerate(body, 'Erro no servidor.')
+                }
+            } else {
+                return response.json()
+                .then((dados) => {
+                    divGerarExcel.innerHTML = divGerarExcelText
+                    dados.message.forEach(message => {
+                        alertGenerate(body, message)
+                    })
+                    window.open(`/painel/conversor/kml/download/${dados.data}`)
+                })
+            }
+        })
+    })
+    divActionsBtGroup.appendChild(divGerarExcel)
+    let divCriarBook = document.createElement('div')
+    divCriarBook.className = 'divActionsOpt'
+    divCriarBook.id = 'divCriarBook'
+    divCriarBook.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf" viewBox="0 0 16 16">
+        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+        <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029zm1.379-1.901c-.166.076-.32.156-.459.238-.328.194-.541.383-.647.547-.094.145-.096.25-.04.361.01.022.02.036.026.044a.266.266 0 0 0 .035-.012c.137-.056.355-.235.635-.572a8.18 8.18 0 0 0 .45-.606zm1.64-1.33a12.71 12.71 0 0 1 1.01-.193 11.744 11.744 0 0 1-.51-.858 20.801 20.801 0 0 1-.5 1.05zm2.446.45c.15.163.296.3.435.41.24.19.407.253.498.256a.107.107 0 0 0 .07-.015.307.307 0 0 0 .094-.125.436.436 0 0 0 .059-.2.095.095 0 0 0-.026-.063c-.052-.062-.2-.152-.518-.209a3.876 3.876 0 0 0-.612-.053zM8.078 7.8a6.7 6.7 0 0 0 .2-.828c.031-.188.043-.343.038-.465a.613.613 0 0 0-.032-.198.517.517 0 0 0-.145.04c-.087.035-.158.106-.196.283-.04.192-.03.469.046.822.024.111.054.227.09.346z"/>
+    </svg>
+    `
+    let sendBookEvent;
+    let cancelBookEvent;
+    divCriarBook.addEventListener('click', () => {
+        $('#criarBookModal').modal('show')
+        let modalBody = document.querySelector('#selectModalBody')
+        let modalTitle = document.querySelector('#modalColumnsTitle')
+        let allColumnsCheckbox = document.getElementsByClassName('select-column-checkbox')
+        let sendBookBt = document.querySelector('#sendBook')
+        sendBookBt.removeEventListener('click', sendBookEvent)
+        sendBookBt.addEventListener('click', sendBookEvent = () => {
+            sendBookBt.innerHTML = `
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            `
+            let bookColumnList = []
+            for (let i = 0; i < allColumnsCheckbox.length; i++) {
+                let checkbox = allColumnsCheckbox[i]
+                if (checkbox.checked == true) {
+                    bookColumnList.push(checkbox.value)
+                }
+            }
+            if (bookColumnList.length > 15) {
+                if (lang == 'es' || lang == 'es-ar'){
+                    alertGenerate(modalBody, 'Máximo 15 columnas')
+                } else if (lang == 'en'){
+                    alertGenerate(modalBody, 'Máximum 15 columns')
+                } else {
+                    alertGenerate(modalBody, '15 colunas no máximo')
+                }
+                modalTitle.focus()
+                sendBookBt.innerHTML = texts.confirmarBt
+                return
+            }
+            let bookName = document.querySelector('#bookName').value
+            let personName = document.querySelector('#personName').value
+            let clientName = document.querySelector('#clientName').value
+            if (!bookName) {
+                if (lang == 'es' || lang == 'es-ar'){
+                    alertGenerate(modalBody, 'Elije um nombre para el book')
+                } else if (lang == 'en'){
+                    alertGenerate(modalBody, 'Choose a name for the book')
+                } else {
+                    alertGenerate(modalBody, 'Escolha um nome para o book')
+                }
+                modalTitle.focus()
+                sendBookBt.innerHTML = texts.confirmarBt
+                return
+            }
+            let send = new FormData()
+            send.append('type', 'gerarBook')
+            send.append('columns', JSON.stringify(bookColumnList))
+            send.append('idList', JSON.stringify(pontosSelecionadosId))
+            send.append('bookName', bookName)
+            send.append('personName', personName)
+            send.append('clientName', clientName)
+            fetch('/painel/pontos/visualizar', {
+                method: 'POST',
+                body: send
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    sendBookBt.innerHTML = texts.confirmarBt
+                    cancelBookEvent()
+                    $('#criarBookModal').modal('hide')
+                    if (lang == 'es' || lang == 'es-ar') {
+                        alertGenerate(body, 'Erro del servidor.')
+                    } else if (lang == 'en') {
+                        alertGenerate(body, 'Server error.')
+                    } else {
+                        alertGenerate(body, 'Erro no servidor.')
+                    }
+                    carregarPontos()
+                } else {
+                    return response.json()
+                    .then((dados) => {
+                        sendBookBt.innerHTML = texts.confirmarBt
+                        cancelBookEvent()
+                        $('#criarBookModal').modal('hide')
+                        dados.message.forEach(message => {
+                            alertGenerate(body, message)
+                        })
+                        carregarPontos()
+                        
+                    })
+                }
+            })
+        })
+        let cancelBookBt = document.querySelector('#cancelBook')
+        cancelBookBt.removeEventListener('click', cancelBookEvent)
+        cancelBookBt.addEventListener('click', cancelBookEvent = () => {
+            for (let i = 0; i < allColumnsCheckbox.length; i++) {
+                let checkbox = allColumnsCheckbox[i]
+                if (checkbox.disabled == false) {
+                    checkbox.checked = false
+                }
+            }
+            let bookName = document.querySelector('#bookName')
+            let personName = document.querySelector('#personName')
+            let clientName = document.querySelector('#clientName')
+            bookName.value = ''  
+            personName.value = ''  
+            clientName.value = ''  
+        })
+    })
+    let divCriarBookModal = document.createElement('div')
+    divCriarBookModal.className = 'modal fade'
+    divCriarBookModal.id = 'criarBookModal'
+    divCriarBookModal.setAttribute('data-bs-backdrop', 'static')
+    divCriarBookModal.setAttribute('data-bs-keyboard', 'false')
+    divCriarBookModal.setAttribute('aria-labelledby', 'modalColumnsTitle')
+    divCriarBookModal.tabIndex = '-1'
+    divCriarBookModal.ariaHidden = true
+    divCriarBookModal.innerHTML = `
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalColumnsTitle">${texts.divCriarBookModalTitle}</h5>
+            </div>
+            <div class="modal-body" id="selectModalBody">
+                <div class="div-select-columns">
+                    <div class="select-columns-title">${texts.selectColumnsTitle}</div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.codigo}" checked disabled>
+                        <p class="select-column-label">${texts.codigo}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.endereco}" checked disabled>
+                        <p class="select-column-label">${texts.endereco}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.latitude}" checked disabled>
+                        <p class="select-column-label">${texts.latitude}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.longitude}" checked disabled>
+                        <p class="select-column-label">${texts.longitude}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternImageLink}" checked disabled>
+                        <p class="select-column-label">${texts.image_link}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.reference}">
+                        <p class="select-column-label">${texts.reference}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.district}">
+                        <p class="select-column-label">${texts.district}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.city}">
+                        <p class="select-column-label">${texts.city}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.zone}">
+                        <p class="select-column-label">${texts.zone}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.state}">
+                        <p class="select-column-label">${texts.state}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.country}">
+                        <p class="select-column-label">${texts.country}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.format}">
+                        <p class="select-column-label">${texts.format}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.measure}">
+                        <p class="select-column-label">${texts.measure}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.impacto}">
+                        <p class="select-column-label">${texts.impacto}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternValorTabelaComm}">
+                        <p class="select-column-label">${texts.valor_tabela_comm}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternValorNegociadoComm}">
+                        <p class="select-column-label">${texts.valor_negociado_comm}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.producao}">
+                        <p class="select-column-label">${texts.producao}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternObservacoesComm}">
+                        <p class="select-column-label">${texts.observacoes_comm}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.empresa}">
+                        <p class="select-column-label">${texts.empresa}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.valor_negociado_int}">
+                        <p class="select-column-label">${texts.valor_negociado_int}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.custo_liq}">
+                        <p class="select-column-label">${texts.custo_liq}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.medida_int}">
+                        <p class="select-column-label">${texts.medida_int}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternObservacoesInt}">
+                        <p class="select-column-label">${texts.observacoes_int}</p>
+                    </div>
+                </div>
+                <div class="div-book-inputs">
+                    <div class="book-input-group">
+                        <p class="book-label">${texts.bookName}</p>
+                        <input type="text" class="book-input" id="bookName">
+                    </div>
+                    <div class="book-input-group">
+                        <p class="book-label">${texts.personName}</p>
+                        <input type="text" class="book-input" id="personName">
+                    </div>
+                    <div class="book-input-group">
+                        <p class="book-label">${texts.clientName}</p>
+                        <input type="text" class="book-input" id="clientName">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelBook" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
+                <button id="sendBook" type="button" class="btn btn-warning">${texts.confirmarBt}</button>
+            </div>
+        </div>
+    </div>
+    `
+    divActionsBtGroup.appendChild(divCriarBookModal)
+    divActionsBtGroup.appendChild(divCriarBook)
+    divActions.appendChild(divActionsBtGroup)
+    let divEditarGrupo = document.createElement('div')
+    divEditarGrupo.className = 'divActionsOpt'
+    divEditarGrupo.id = 'divEditarGrupo'
+    divEditarGrupo.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+    </svg>
+    `
+    let allCheckboxEvent;
+    let editarGrupoCancelarBtEvent;
+    let editarGrupoConfirmarBtEvent;
+    divEditarGrupo.addEventListener('click', () => {
+        $('#editarGrupoModal').modal('show')
+        let modalBody = document.querySelector('#editarGrupoModalBody')
+        let modalTitle = document.querySelector('#editarGrupoModalTitle')
+        let allCheckbox = document.getElementsByClassName('divEditarRadio')
+        for (let i = 0; i < allCheckbox.length; i++) {
+            let checkbox = allCheckbox[i]
+            checkbox.removeEventListener('change', allCheckboxEvent)
+            checkbox.addEventListener('change', allCheckboxEvent = () => {
+                let input = document.querySelector('#'+ checkbox.value)
+                if (checkbox.checked == true) {
+                    input.disabled = false
+                } else {
+                    input.value = ''
+                    input.disabled = true
+                }
+            })
+        }
+        let editarGrupoCancelarBt = document.querySelector('#editarGrupoCancelarBt')
+        editarGrupoCancelarBt.removeEventListener('click', editarGrupoCancelarBtEvent)
+        editarGrupoCancelarBt.addEventListener('click', editarGrupoCancelarBtEvent = () => {
+            for (let i = 0; i < allCheckbox.length; i++) {
+                let checkbox = allCheckbox[i]
+                checkbox.checked = false
+                let input = document.querySelector('#' + checkbox.value)
+                input.value = ''
+                input.disabled = true
+            }
+        })
+        let editarGrupoConfirmarBt = document.querySelector('#editarGrupoConfirmarBt')
+        editarGrupoConfirmarBt.removeEventListener('click', editarGrupoConfirmarBtEvent)
+        editarGrupoConfirmarBt.addEventListener('click', editarGrupoConfirmarBtEvent = () => {
+            editarGrupoConfirmarBt.innerHTML = `
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            `
+            let inputs = document.getElementsByClassName('divEditarInput')
+            let enabledInputCount = 0
+            let send = new FormData()
+            send.append('type', 'editarGrupo')
+            send.append('idList', JSON.stringify(pontosSelecionadosId))
+            for (let i = 0; i < inputs.length; i++) {
+                let input = inputs[i]
+                if (!input.value) {
+                    continue
+                }
+                enabledInputCount++
+                send.append(input.id, input.value)
+            }
+            
+            fetch('/painel/pontos/visualizar', {
+                method: 'POST',
+                body: send
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    editarGrupoConfirmarBt.innerHTML = texts.confirmarBt
+                    editarGrupoCancelarBtEvent()
+                    $('#editarGrupoModal').modal('hide')
+                    if (lang == 'es' || lang == 'es-ar') {
+                        alertGenerate(body, 'Erro del servidor.')
+                    } else if (lang == 'en') {
+                        alertGenerate(body, 'Server error.')
+                    } else {
+                        alertGenerate(body, 'Erro no servidor.')
+                    }
+                    carregarPontos()
+                } else {
+                    return response.json()
+                    .then((dados) => {
+                        editarGrupoConfirmarBt.innerHTML = texts.confirmarBt
+                        editarGrupoCancelarBtEvent()
+                        $('#editarGrupoModal').modal('hide')
+                        dados.message.forEach(message => {
+                            alertGenerate(body, message)
+                        })
+                        carregarPontos()
+                    })
+                }
+            })
+        })
+    })
+    divActionsBtGroup.appendChild(divEditarGrupo)
+    let divEditarGrupoModal = document.createElement('div')
+    divEditarGrupoModal.className = 'modal fade'
+    divEditarGrupoModal.id = 'editarGrupoModal'
+    divEditarGrupoModal.setAttribute('data-bs-backdrop', 'static')
+    divEditarGrupoModal.setAttribute('data-bs-keyboard', 'false')
+    divEditarGrupoModal.setAttribute('aria-labelledby', 'modalColumnsTitle')
+    divEditarGrupoModal.tabIndex = '-1'
+    divEditarGrupoModal.ariaHidden = true
+    divEditarGrupoModal.innerHTML = `
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarGrupoModalTitle">${texts.divEditarGrupoModalTitle}</h5>
+            </div>
+            <div class="modal-body" id="editarGrupoModalBody">
+                <div class="divEditarItem">
+                    <input type="checkbox" value="district" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.district}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="district" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="reference" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.reference}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="reference" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="city" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.city}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="city" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="zone" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.zone}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="zone" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="state" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.state}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="state" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="country" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.country}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="country" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="format" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.format}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="format" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="measure" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.measure}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="measure" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="impacto" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.impacto}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="impacto" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="valor_tabela_comm" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.valor_tabela_comm}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="valor_tabela_comm" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="valor_negociado_comm" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.valor_negociado_comm}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="valor_negociado_comm" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="producao" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.producao}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="producao" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="observacoes_comm" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.observacoes_comm}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="observacoes_comm" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="empresa" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.empresa}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="empresa" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="valor_negociado_int" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.valor_negociado_int}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="valor_negociado_int" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="custo_liq" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.custo_liq}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="custo_liq" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="medida_int" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.medida_int}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="medida_int" disabled> 
+                </div>
+                <div class="divEditarItem">
+                    <input type="checkbox" value="observacoes_int" class="divEditarRadio">
+                    <p class="divEditarLabel">${texts.observacoes_int}</p>
+                    <input type="text" maxlength="50" class="divEditarInput" id="observacoes_int" disabled> 
+                </div>
+            <div class="modal-footer">
+                <button id="editarGrupoCancelarBt" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
+                <button id="editarGrupoConfirmarBt" type="button" class="btn btn-warning">${texts.confirmarBt}</button>
+            </div>
+        </div>
+    </div>
+    `
+    divActionsBtGroup.appendChild(divEditarGrupoModal)
+    divActions.appendChild(divActionsBtGroup)
+    let divExcluirGrupo = document.createElement('div')
+    divExcluirGrupo.className = 'divActionsOpt'
+    divExcluirGrupo.id = 'divExcluirGrupo'
+    divExcluirGrupo.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+    </svg>
+    `
+    let excluirGrupoModalBtEvent;
+    divExcluirGrupo.addEventListener('click', () => {
+        $('#excluirGrupoModal').modal('show')
+        let excluirGrupoModalConfirmarBt = document.querySelector('#excluirGrupoModalConfirmarBt')
+        excluirGrupoModalConfirmarBt.removeEventListener('click', excluirGrupoModalBtEvent)
+        excluirGrupoModalConfirmarBt.addEventListener('click', excluirGrupoModalBtEvent = () => {
+            excluirGrupoModalConfirmarBt.innerHTML = `
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            `
+            let send = new FormData()
+            send.append('type', 'excluirGrupo')
+            send.append('idList', JSON.stringify(pontosSelecionadosId))
+            fetch('/painel/pontos/visualizar', {
+                method: 'POST',
+                body: send
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    excluirGrupoModalConfirmarBt.innerHTML = texts.confirmarBt
+                    $('#excluirGrupoModal').modal('hide')
+                    if (lang == 'es' || lang == 'es-ar') {
+                        alertGenerate(body, 'Erro del servidor.')
+                    } else if (lang == 'en') {
+                        alertGenerate(body, 'Server error.')
+                    } else {
+                        alertGenerate(body, 'Erro no servidor.')
+                    }
+                    carregarPontos()
+                } else {
+                    return response.json()
+                    .then((dados) => {
+                        excluirGrupoModalConfirmarBt.innerHTML = texts.confirmarBt
+                        $('#excluirGrupoModal').modal('hide')
+                        dados.message.forEach(message => {
+                            alertGenerate(body, message)
+                        })
+                        carregarPontos()
+                    })
+                }
+            })
+        })
+    })
+    divActionsBtGroup.appendChild(divExcluirGrupo)
+    let excluirGrupoModal = document.createElement('div')
+    excluirGrupoModal.className = 'modal'
+    excluirGrupoModal.classList.add('fade')
+    excluirGrupoModal.id = `excluirGrupoModal`
+    excluirGrupoModal.tabIndex = '-1'
+    excluirGrupoModal.ariaHidden = true
+    excluirGrupoModal.innerHTML = `
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabelexcluir">${texts.certeza}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            ${texts.excluirGrupoModalBody}
+            </div>
+            <div class="modal-footer">
+                <button id="excluirGrupoModalCancelarBt" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
+                <button id="excluirGrupoModalConfirmarBt" type="submit" class="btn btn-warning">${texts.confirmarBt}</button>
+            </div>
+        </div>
+    </div>
+    `
+    divActionsBtGroup.appendChild(excluirGrupoModal)
+    divActions.appendChild(divActionsBtGroup)
+    return divActions
+}
 function cleanFilters() {
     filtros = {
         'view': 'list',
@@ -213,6 +847,7 @@ function cleanFilters() {
     }
 }
 function selectAllCheckbox() {
+    console.log('allCheckbox')
     let selectAll = document.querySelector('#selectAll')
     let allCheckbox = document.getElementsByClassName('linhaCheckbox')
     if (selectAll.checked == true) {
@@ -221,7 +856,7 @@ function selectAllCheckbox() {
             let linha = document.querySelector(`#linha${checkbox.value}`)
             linha.classList.add('select')
             checkbox.checked = true
-            pontosSelecionadosId.push(checkbox.value)
+            pontosSelecionadosId.push(parseInt(checkbox.value))
         }
     } else {
         for (let i = 0; i < allCheckbox.length; i++) {
@@ -234,6 +869,47 @@ function selectAllCheckbox() {
         }
     }
     displayActionsBts()
+}
+function selectAllMarkers() {
+    console.log('selectAllMarker')
+
+    let selectAll = document.querySelector('#selectAll')
+    let viewBtMap = document.querySelector('#viewBtMap')
+    pontosSelecionadosId = []
+    if (allMarkers.length == 0) {
+        return
+    }
+    allMarkers.forEach((el, index) => {
+        if (selectAll.checked) {
+            if (index == 0) {
+                viewBtMap.classList.add('select')
+                markerClickAction = 'select'
+            }
+            pontosSelecionadosId.push(parseInt(el.id))
+            el.marker.setIcon('/static/media/icons8-maps-40.png')
+        } else {
+            if (index == 0) {
+                viewBtMap.classList.remove('select')
+                markerClickAction = 'view'
+            }
+            el.marker.setIcon(null)
+        }
+    })
+    displayActionsBtsMap()
+}
+function displayActionsBtsMap() {
+    let divActionsBtGroup = document.querySelector('.divActionsBtGroup')
+    let selectAll = document.querySelector('#selectAll')
+    if (pontosSelecionadosId.length > 0) {
+        divActionsBtGroup.style.display = 'flex'
+    } else {
+        divActionsBtGroup.style.display = 'none'
+    }
+    if (pontosSelecionadosId.length == allMarkers.length) {
+        selectAll.checked = true
+    } else {
+        selectAll.checked = false
+    }
 }
 function displayActionsBts() {
     let allCheckbox = document.getElementsByClassName('linhaCheckbox')
@@ -264,6 +940,8 @@ function displayActionsBts() {
     }
 }
 var initMap = function(divMap, center=null, radius=null) {
+    pontosSelecionadosId = []
+    markerClickAction = 'view'
     let texts;
     if (lang == 'es' || lang == 'es-ar') {
         texts = allTexts.es
@@ -278,6 +956,7 @@ var initMap = function(divMap, center=null, radius=null) {
         mapTypeId: google.maps.MapTypeId.ROADMAP
         }
     var map = new google.maps.Map(divMap, mapOptions)
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMarkerClickBt());
     var latlngbounds = new google.maps.LatLngBounds() // Adequar o zoom para ver todos os pontos
     if (center) {
         map.setCenter(center)
@@ -427,10 +1106,34 @@ var initMap = function(divMap, center=null, radius=null) {
             </div>
         </div>
         `
+        let markerClicked = false
         google.maps.event.addListener(marker, 'click', () => {
-            $('#markerModal' + id).modal('show')
+            if (markerClickAction == 'view') {
+                $('#markerModal' + id).modal('show')
+            } else if (markerClickAction == 'select') {
+                if (pontosSelecionadosId.indexOf(id) != -1) {
+                    markerClicked = true
+                }
+                if (markerClicked == false) {
+                    markerClicked = true
+                    pontosSelecionadosId.push(id)
+                    marker.setIcon('/static/media/icons8-maps-40.png')
+                } else {
+                    markerClicked = false
+                    let index = pontosSelecionadosId.indexOf(id)
+                    pontosSelecionadosId.splice(index, 1)
+                    marker.setIcon(null)
+                }
+                console.log(pontosSelecionadosId)
+                displayActionsBtsMap()
+            }
         })
         divMap.appendChild(markerModal)
+        let markerInfo = {
+            id: id,
+            marker: marker
+        }
+        allMarkers.push(markerInfo)
     }
     if (pontos.pontos.length > 0) {
         map.fitBounds(latlngbounds)
@@ -455,6 +1158,7 @@ function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBt
     })
     google.maps.event.addListener(drawingManager, 'markercomplete', function(marker) {
         cleanFilters()
+        filtros.view = 'map'
         raioSearchBt.removeEventListener('click', searchBtEvent)
         raioSearchBt.addEventListener('click', () => {
             if (lang == 'es' || lang == 'es-ar') {
@@ -480,7 +1184,6 @@ function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBt
         .then((dados) => {
             pontos.length = dados.length
             dados.pontos.forEach((dado) => {
-                pontosSelecionadosId.push(dado.basic.id)
                 let ponto = {
                     'basic': null,
                     'commercial': null,
@@ -531,6 +1234,8 @@ function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBt
             let resultLimparBt = document.querySelector('#resultLimparBt')
             resultLimparBt.disabled = false
             let center = {lat: latitude, lng: longitude}
+            let selectAll = document.querySelector('#selectAll')
+            selectAll.checked = false
             let resultMap = initMap(divMap, center=center, radius=radius)
         })
     })
@@ -614,7 +1319,8 @@ function getPointsByLatLng(latitude, longitude, radius, bt) {
         let resultLimparBt = document.querySelector('#resultLimparBt')
         resultLimparBt.disabled = false
         let center = {lat: parseFloat(latitude.value), lng: parseFloat(longitude.value)}
-        console.log(center)
+        let selectAll = document.querySelector('#selectAll')
+        selectAll.checked = false
         let resultMap = initMap(divMap, center=center, radius=parseFloat(radius.value))
     })
 }
@@ -715,7 +1421,7 @@ function gerarLista(index) {
         linhaCheckbox.value = id
         linhaCheckbox.addEventListener('change', () => {
             if (linhaCheckbox.checked == true) {
-                pontosSelecionadosId.push(linhaCheckbox.value)
+                pontosSelecionadosId.push(parseInt(linhaCheckbox.value))
                 linha.classList.add('select')
             } else {
                 let index = pontosSelecionadosId.indexOf(linhaCheckbox.value)
@@ -1327,19 +2033,28 @@ function gerarMapa() {
     let body_content = document.querySelector('#body-content')
     let listaViewBt = document.querySelector('#listaViewBt')
     let mapaViewBt = document.querySelector('#mapaViewBt')
-    listaViewBt.classList.remove('select')
-    mapaViewBt.classList.add('select')
+    if (listaViewBt) {
+        listaViewBt.classList.remove('select')
+    }
+    if (mapaViewBt) {
+        mapaViewBt.classList.add('select')
+    }
     
     let divActions = document.querySelector('.divActions')
-    divActions.style.display = 'none'
 
-    let divViewList = document.querySelector('#divViewList')
-    divViewList.style.height = '50rem'
     let checkDivVerMais =  document.getElementById('divVerMais')
     if (checkDivVerMais) {
         checkDivVerMais.innerHTML = ''
     }
-    initMap(divViewList)
+
+    let divViewList = document.querySelector('#divViewList')
+    if (divViewList) {
+        divViewList.style.height = '50rem'
+        initMap(divViewList)
+    } else {
+        let divMap = document.querySelector('#divMap')
+        initMap(divMap)
+    }
 }
 function verMais() {
     let verMaisFiltros = Object.assign({}, filtros)
@@ -1727,11 +2442,13 @@ function visualizarPontos() {
 }
 function carregarPontos() {
     let divViewList = document.querySelector('#divViewList')
-    divViewList.innerHTML = `
-    <div class="spinner-border text-warning" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-    `
+    if (divViewList) {
+        divViewList.innerHTML = `
+        <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        `
+    }
     fetch(`/painel/pontos/visualizar?filter=${JSON.stringify(filtros)}`)
     .then((response) => {
         return response.json()
@@ -1784,6 +2501,8 @@ function carregarPontos() {
             pontos.pontos.push(ponto)
         })
         pontosSelecionadosId = []
+        allMarkers = []
+        //console.log(allMarkers.length)
         visualizarPontos()
         displayActionsBts()
     })
@@ -1792,6 +2511,7 @@ var gerarExcelEvent;
 export var listaPontos = function() {
     cleanFilters()
     pontosSelecionadosId = []
+    filtros.view = 'list'
     let texts;
     if (lang == 'es' || lang == 'es-ar') {
         texts = allTexts.es
@@ -1855,12 +2575,6 @@ export var listaPontos = function() {
                                     let key = input.id
                                     let value = input.value
                                     filtros[key].push(value)
-                                    confirmarBt.innerHTML = textContent.adicionarFiltroConfirmarBt
-                                    $('#filtroModal').modal('hide')
-                                    filtros.pontosLength = 0
-                                    carregarPontos()
-                                    gerarFiltros()
-                                    break
                                 }
                             }
                             if (checkFiltroSelecionado == false) {
@@ -1874,29 +2588,29 @@ export var listaPontos = function() {
                                 }
                                 return
                             }
+                            confirmarBt.innerHTML = textContent.adicionarFiltroConfirmarBt
+                            $('#filtroModal').modal('hide')
+                            filtros.pontosLength = 0
+                            carregarPontos()
+                            gerarFiltros()
                             modalBody.innerHTML = ''
                         })
                     }
                     let divPais = document.createElement('div')
                     divPais.className = 'divFiltroItem'
                     let paisRadio = document.createElement('input')
-                    paisRadio.type = 'radio'
+                    paisRadio.type = 'checkbox'
                     paisRadio.value = 'pais'
                     paisRadio.className = 'divFiltroRadio'
                     paisRadio.name = 'filtroRadio'
                     paisRadio.addEventListener('change', () => {
                         let paisInput = document.querySelector('#pais')
-                        paisInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == paisInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (paisRadio.checked) {
+                            paisInput.disabled = false
+                        } else {
+                            paisInput.disabled = true
+                            paisInput.selectedIndex = 0
+                        }
                     })
                     let paisLabel = document.createElement('p')
                     paisLabel.className = 'divFiltroLabel'
@@ -1931,23 +2645,18 @@ export var listaPontos = function() {
                     let divCodigo = document.createElement('div')
                     divCodigo.className = 'divFiltroItem'
                     let codigoRadio = document.createElement('input')
-                    codigoRadio.type = 'radio'
+                    codigoRadio.type = 'checkbox'
                     codigoRadio.className = 'divFiltroRadio'
                     codigoRadio.value = 'codigo'
                     codigoRadio.name = 'filtroRadio'
                     codigoRadio.addEventListener('change', () => {
                         let codigoInput = document.querySelector('#codigo')
-                        codigoInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == codigoInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (codigoRadio.checked) {
+                            codigoInput.disabled = false
+                        } else {
+                            codigoInput.disabled = true
+                            codigoInput.value = ''
+                        }
                     })
                     let codigoLabel = document.createElement('p')
                     codigoLabel.className = 'divFiltroLabel'
@@ -1965,23 +2674,18 @@ export var listaPontos = function() {
                     let divCidade = document.createElement('div')
                     divCidade.className = 'divFiltroItem'
                     let cidadeRadio = document.createElement('input')
-                    cidadeRadio.type = 'radio'
+                    cidadeRadio.type = 'checkbox'
                     cidadeRadio.className = 'divFiltroRadio'
                     cidadeRadio.value = 'cidade'
                     cidadeRadio.name = 'filtroRadio'
                     cidadeRadio.addEventListener('change', () => {
                         let cidadeInput = document.querySelector('#cidade')
-                        cidadeInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == cidadeInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (cidadeRadio.checked) {
+                            cidadeInput.disabled = false
+                        } else {
+                            cidadeInput.disabled = true
+                            cidadeInput.value = ''
+                        }
                     })
                     let cidadeLabel = document.createElement('p')
                     cidadeLabel.className = 'divFiltroLabel'
@@ -1999,23 +2703,18 @@ export var listaPontos = function() {
                     let divEstado = document.createElement('div')
                     divEstado.className = 'divFiltroItem'
                     let estadoRadio = document.createElement('input')
-                    estadoRadio.type = 'radio'
+                    estadoRadio.type = 'checkbox'
                     estadoRadio.className = 'divFiltroRadio'
                     estadoRadio.value = 'estado'
                     estadoRadio.name = 'filtroRadio'
                     estadoRadio.addEventListener('change', () => {
                         let estadoInput = document.querySelector('#estado')
-                        estadoInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == estadoInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (estadoRadio.checked) {
+                            estadoInput.disabled = false
+                        } else {
+                            estadoInput.disabled = true
+                            estadoInput.value = ''
+                        }
                     })
                     let estadoLabel = document.createElement('p')
                     estadoLabel.className = 'divFiltroLabel'
@@ -2033,23 +2732,18 @@ export var listaPontos = function() {
                     let divZona = document.createElement('div')
                     divZona.className = 'divFiltroItem'
                     let zonaRadio = document.createElement('input')
-                    zonaRadio.type = 'radio'
+                    zonaRadio.type = 'checkbox'
                     zonaRadio.className = 'divFiltroRadio'
                     zonaRadio.value = 'zona'
                     zonaRadio.name = 'filtroRadio'
                     zonaRadio.addEventListener('change', () => {
                         let zonaInput = document.querySelector('#zona')
-                        zonaInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == zonaInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (zonaRadio.checked) {
+                            zonaInput.disabled = false
+                        } else {
+                            zonaInput.disabled = true
+                            zonaInput.value = ''
+                        }
                     })
                     let zonaLabel = document.createElement('p')
                     zonaLabel.className = 'divFiltroLabel'
@@ -2067,23 +2761,18 @@ export var listaPontos = function() {
                     let divBairro = document.createElement('div')
                     divBairro.className = 'divFiltroItem'
                     let bairroRadio = document.createElement('input')
-                    bairroRadio.type = 'radio'
+                    bairroRadio.type = 'checkbox'
                     bairroRadio.className = 'divFiltroRadio'
                     bairroRadio.value = 'bairro'
                     bairroRadio.name = 'filtroRadio'
                     bairroRadio.addEventListener('change', () => {
                         let bairroInput = document.querySelector('#bairro')
-                        bairroInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == bairroInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (bairroRadio.checked) {
+                            bairroInput.disabled = false
+                        } else {
+                            bairroInput.disabled = true
+                            bairroInput.value = ''
+                        }
                     })
                     let bairroLabel = document.createElement('p')
                     bairroLabel.className = 'divFiltroLabel'
@@ -2101,23 +2790,18 @@ export var listaPontos = function() {
                     let divEndereco = document.createElement('div')
                     divEndereco.className = 'divFiltroItem'
                     let enderecoRadio = document.createElement('input')
-                    enderecoRadio.type = 'radio'
+                    enderecoRadio.type = 'checkbox'
                     enderecoRadio.className = 'divFiltroRadio'
                     enderecoRadio.value = 'endereco'
                     enderecoRadio.name = 'filtroRadio'
                     enderecoRadio.addEventListener('change', () => {
                         let enderecoInput = document.querySelector('#endereco')
-                        enderecoInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == enderecoInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (enderecoRadio.checked) {
+                            enderecoInput.disabled = false
+                        } else {
+                            enderecoInput.disabled = true
+                            enderecoInput.value = ''
+                        }
                     })
                     let enderecoLabel = document.createElement('p')
                     enderecoLabel.className = 'divFiltroLabel'
@@ -2135,23 +2819,18 @@ export var listaPontos = function() {
                     let divEmpresa = document.createElement('div')
                     divEmpresa.className = 'divFiltroItem'
                     let empresaRadio = document.createElement('input')
-                    empresaRadio.type = 'radio'
+                    empresaRadio.type = 'checkbox'
                     empresaRadio.className = 'divFiltroRadio'
                     empresaRadio.value = 'empresa'
                     empresaRadio.name = 'filtroRadio'
                     empresaRadio.addEventListener('change', () => {
                         let empresaInput = document.querySelector('#empresa')
-                        empresaInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == empresaInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (empresaRadio.checked) {
+                            empresaInput.disabled = false
+                        } else {
+                            empresaInput.disabled = true
+                            empresaInput.value = ''
+                        }
                     })
                     let empresaLabel = document.createElement('p')
                     empresaLabel.className = 'divFiltroLabel'
@@ -2169,23 +2848,18 @@ export var listaPontos = function() {
                     let divFormato = document.createElement('div')
                     divFormato.className = 'divFiltroItem'
                     let formatoRadio = document.createElement('input')
-                    formatoRadio.type = 'radio'
+                    formatoRadio.type = 'checkbox'
                     formatoRadio.className = 'divFiltroRadio'
                     formatoRadio.value = 'formato'
                     formatoRadio.name = 'filtroRadio'
                     formatoRadio.addEventListener('change', () => {
                         let formatoInput = document.querySelector('#formato')
-                        formatoInput.disabled = false
-                        let todosRadios = document.getElementsByName('filtroRadio')
-                        todosRadios.forEach(item => {
-                            if (item.value == formatoInput.id) {
-                                return
-                            } else {
-                                let input = document.querySelector(`#${item.value}`)
-                                input.disabled = true
-                                input.value = ''
-                            }
-                        })
+                        if (formatoRadio.checked) {
+                            formatoInput.disabled = false
+                        } else {
+                            formatoInput.disabled = true
+                            formatoInput.value = ''
+                        }
                     })
                     let formatoLabel = document.createElement('p')
                     formatoLabel.className = 'divFiltroLabel'
@@ -2262,6 +2936,7 @@ export var listaPontos = function() {
                 `
                 listaViewBt.addEventListener('click', () => {
                     filtros['view'] = 'list'
+                    markerClickAction = 'view'
                     visualizarPontos()
                 })
                 divViewBts.appendChild(listaViewBt)
@@ -2275,611 +2950,14 @@ export var listaPontos = function() {
                 `
                 mapViewBt.addEventListener('click', () => {
                     filtros['view'] = 'map'
+                    markerClickAction = 'view'
                     visualizarPontos()
                 })
                 divViewBts.appendChild(mapViewBt)
                 body_content.appendChild(divViewBts)
 
-                let divActions = document.createElement('div')
-                divActions.className = 'divActions'
-                let divSelectAll = document.createElement('div')
-                divSelectAll.className = 'divSelectAll'
-                let selectAll = document.createElement('input')
-                selectAll.type = 'checkbox'
-                selectAll.id = 'selectAll'
-                selectAll.className = 'selectAll'
-                selectAll.addEventListener('change', () => {
-                    selectAllCheckbox()
-                })
-                divSelectAll.appendChild(selectAll)
-                divActions.appendChild(divSelectAll)
-                let divActionsBtGroup = document.createElement('div')
-                divActionsBtGroup.className = 'divActionsBtGroup'
-                let divGerarExcel = document.createElement('div')
-                divGerarExcel.className = 'divActionsOpt'
-                divGerarExcel.id = 'divGerarExcel'
-                let divGerarExcelText = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet" viewBox="0 0 16 16">
-                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5v2zM3 12v-2h2v2H3zm0 1h2v2H4a1 1 0 0 1-1-1v-1zm3 2v-2h3v2H6zm4 0v-2h3v1a1 1 0 0 1-1 1h-2zm3-3h-3v-2h3v2zm-7 0v-2h3v2H6z"/>
-                </svg>
-                `
-                divGerarExcel.innerHTML = divGerarExcelText
-                divGerarExcel.removeEventListener('click', gerarExcelEvent)
-                divGerarExcel.addEventListener('click', gerarExcelEvent = () => {
-                    divGerarExcel.innerHTML = `
-                    <div class="spinner-border spinner-border-sm text-warning" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    `
-                    let send = new FormData()
-                    send.append('type', 'gerarExcel')
-                    send.append('ids', JSON.stringify(pontosSelecionadosId))
-                    fetch('/painel/pontos/visualizar', {
-                        method: 'POST',
-                        body: send
-                    })
-                    .then((response) => {
-                        if (!response.ok) {
-                            divGerarExcel.innerHTML = divGerarExcelText
-                            if (lang == 'es' || lang == 'es-ar') {
-                                alertGenerate(body, 'Erro del servidor.')
-                            } else if (lang == 'en') {
-                                alertGenerate(body, 'Server error.')
-                            } else {
-                                alertGenerate(body, 'Erro no servidor.')
-                            }
-                        } else {
-                            return response.json()
-                            .then((dados) => {
-                                divGerarExcel.innerHTML = divGerarExcelText
-                                dados.message.forEach(message => {
-                                    alertGenerate(body, message)
-                                })
-                                window.open(`/painel/conversor/kml/download/${dados.data}`)
-                            })
-                        }
-                    })
-                })
-                divActionsBtGroup.appendChild(divGerarExcel)
-                let divCriarBook = document.createElement('div')
-                divCriarBook.className = 'divActionsOpt'
-                divCriarBook.id = 'divCriarBook'
-                divCriarBook.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf" viewBox="0 0 16 16">
-                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
-                    <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029zm1.379-1.901c-.166.076-.32.156-.459.238-.328.194-.541.383-.647.547-.094.145-.096.25-.04.361.01.022.02.036.026.044a.266.266 0 0 0 .035-.012c.137-.056.355-.235.635-.572a8.18 8.18 0 0 0 .45-.606zm1.64-1.33a12.71 12.71 0 0 1 1.01-.193 11.744 11.744 0 0 1-.51-.858 20.801 20.801 0 0 1-.5 1.05zm2.446.45c.15.163.296.3.435.41.24.19.407.253.498.256a.107.107 0 0 0 .07-.015.307.307 0 0 0 .094-.125.436.436 0 0 0 .059-.2.095.095 0 0 0-.026-.063c-.052-.062-.2-.152-.518-.209a3.876 3.876 0 0 0-.612-.053zM8.078 7.8a6.7 6.7 0 0 0 .2-.828c.031-.188.043-.343.038-.465a.613.613 0 0 0-.032-.198.517.517 0 0 0-.145.04c-.087.035-.158.106-.196.283-.04.192-.03.469.046.822.024.111.054.227.09.346z"/>
-                </svg>
-                `
-                let sendBookEvent;
-                let cancelBookEvent;
-                divCriarBook.addEventListener('click', () => {
-                    $('#criarBookModal').modal('show')
-                    let modalBody = document.querySelector('#selectModalBody')
-                    let modalTitle = document.querySelector('#modalColumnsTitle')
-                    let allColumnsCheckbox = document.getElementsByClassName('select-column-checkbox')
-                    let sendBookBt = document.querySelector('#sendBook')
-                    sendBookBt.removeEventListener('click', sendBookEvent)
-                    sendBookBt.addEventListener('click', sendBookEvent = () => {
-                        sendBookBt.innerHTML = `
-                        <div class="spinner-border spinner-border-sm" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        `
-                        let bookColumnList = []
-                        for (let i = 0; i < allColumnsCheckbox.length; i++) {
-                            let checkbox = allColumnsCheckbox[i]
-                            if (checkbox.checked == true) {
-                                bookColumnList.push(checkbox.value)
-                            }
-                        }
-                        if (bookColumnList.length > 15) {
-                            if (lang == 'es' || lang == 'es-ar'){
-                                alertGenerate(modalBody, 'Máximo 15 columnas')
-                            } else if (lang == 'en'){
-                                alertGenerate(modalBody, 'Máximum 15 columns')
-                            } else {
-                                alertGenerate(modalBody, '15 colunas no máximo')
-                            }
-                            modalTitle.focus()
-                            sendBookBt.innerHTML = texts.confirmarBt
-                            return
-                        }
-                        let bookName = document.querySelector('#bookName').value
-                        let personName = document.querySelector('#personName').value
-                        let clientName = document.querySelector('#clientName').value
-                        if (!bookName) {
-                            if (lang == 'es' || lang == 'es-ar'){
-                                alertGenerate(modalBody, 'Elije um nombre para el book')
-                            } else if (lang == 'en'){
-                                alertGenerate(modalBody, 'Choose a name for the book')
-                            } else {
-                                alertGenerate(modalBody, 'Escolha um nome para o book')
-                            }
-                            modalTitle.focus()
-                            sendBookBt.innerHTML = texts.confirmarBt
-                            return
-                        }
-                        let send = new FormData()
-                        send.append('type', 'gerarBook')
-                        send.append('columns', JSON.stringify(bookColumnList))
-                        send.append('idList', JSON.stringify(pontosSelecionadosId))
-                        send.append('bookName', bookName)
-                        send.append('personName', personName)
-                        send.append('clientName', clientName)
-                        fetch('/painel/pontos/visualizar', {
-                            method: 'POST',
-                            body: send
-                        })
-                        .then((response) => {
-                            if (!response.ok) {
-                                sendBookBt.innerHTML = texts.confirmarBt
-                                cancelBookEvent()
-                                $('#criarBookModal').modal('hide')
-                                if (lang == 'es' || lang == 'es-ar') {
-                                    alertGenerate(body, 'Erro del servidor.')
-                                } else if (lang == 'en') {
-                                    alertGenerate(body, 'Server error.')
-                                } else {
-                                    alertGenerate(body, 'Erro no servidor.')
-                                }
-                                carregarPontos()
-                            } else {
-                                return response.json()
-                                .then((dados) => {
-                                    sendBookBt.innerHTML = texts.confirmarBt
-                                    cancelBookEvent()
-                                    $('#criarBookModal').modal('hide')
-                                    dados.message.forEach(message => {
-                                        alertGenerate(body, message)
-                                    })
-                                    carregarPontos()
-                                    
-                                })
-                            }
-                        })
-                    })
-                    let cancelBookBt = document.querySelector('#cancelBook')
-                    cancelBookBt.removeEventListener('click', cancelBookEvent)
-                    cancelBookBt.addEventListener('click', cancelBookEvent = () => {
-                        for (let i = 0; i < allColumnsCheckbox.length; i++) {
-                            let checkbox = allColumnsCheckbox[i]
-                            if (checkbox.disabled == false) {
-                                checkbox.checked = false
-                            }
-                        }
-                        let bookName = document.querySelector('#bookName')
-                        let personName = document.querySelector('#personName')
-                        let clientName = document.querySelector('#clientName')
-                        bookName.value = ''  
-                        personName.value = ''  
-                        clientName.value = ''  
-                    })
-                })
-                let divCriarBookModal = document.createElement('div')
-                divCriarBookModal.className = 'modal fade'
-                divCriarBookModal.id = 'criarBookModal'
-                divCriarBookModal.setAttribute('data-bs-backdrop', 'static')
-                divCriarBookModal.setAttribute('data-bs-keyboard', 'false')
-                divCriarBookModal.setAttribute('aria-labelledby', 'modalColumnsTitle')
-                divCriarBookModal.tabIndex = '-1'
-                divCriarBookModal.ariaHidden = true
-                divCriarBookModal.innerHTML = `
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalColumnsTitle">${texts.divCriarBookModalTitle}</h5>
-                        </div>
-                        <div class="modal-body" id="selectModalBody">
-                            <div class="div-select-columns">
-                                <div class="select-columns-title">${texts.selectColumnsTitle}</div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.codigo}" checked disabled>
-                                    <p class="select-column-label">${texts.codigo}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.endereco}" checked disabled>
-                                    <p class="select-column-label">${texts.endereco}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.latitude}" checked disabled>
-                                    <p class="select-column-label">${texts.latitude}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.longitude}" checked disabled>
-                                    <p class="select-column-label">${texts.longitude}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.patternImageLink}" checked disabled>
-                                    <p class="select-column-label">${texts.image_link}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.reference}">
-                                    <p class="select-column-label">${texts.reference}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.district}">
-                                    <p class="select-column-label">${texts.district}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.city}">
-                                    <p class="select-column-label">${texts.city}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.zone}">
-                                    <p class="select-column-label">${texts.zone}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.state}">
-                                    <p class="select-column-label">${texts.state}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.country}">
-                                    <p class="select-column-label">${texts.country}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.format}">
-                                    <p class="select-column-label">${texts.format}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.measure}">
-                                    <p class="select-column-label">${texts.measure}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.impacto}">
-                                    <p class="select-column-label">${texts.impacto}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.patternValorTabelaComm}">
-                                    <p class="select-column-label">${texts.valor_tabela_comm}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.patternValorNegociadoComm}">
-                                    <p class="select-column-label">${texts.valor_negociado_comm}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.producao}">
-                                    <p class="select-column-label">${texts.producao}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.patternObservacoesComm}">
-                                    <p class="select-column-label">${texts.observacoes_comm}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.empresa}">
-                                    <p class="select-column-label">${texts.empresa}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.valor_negociado_int}">
-                                    <p class="select-column-label">${texts.valor_negociado_int}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.custo_liq}">
-                                    <p class="select-column-label">${texts.custo_liq}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.medida_int}">
-                                    <p class="select-column-label">${texts.medida_int}</p>
-                                </div>
-                                <div class="select-column">
-                                    <input type="checkbox" class="select-column-checkbox" value="${texts.patternObservacoesInt}">
-                                    <p class="select-column-label">${texts.observacoes_int}</p>
-                                </div>
-                            </div>
-                            <div class="div-book-inputs">
-                                <div class="book-input-group">
-                                    <p class="book-label">${texts.bookName}</p>
-                                    <input type="text" class="book-input" id="bookName">
-                                </div>
-                                <div class="book-input-group">
-                                    <p class="book-label">${texts.personName}</p>
-                                    <input type="text" class="book-input" id="personName">
-                                </div>
-                                <div class="book-input-group">
-                                    <p class="book-label">${texts.clientName}</p>
-                                    <input type="text" class="book-input" id="clientName">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="cancelBook" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
-                            <button id="sendBook" type="button" class="btn btn-warning">${texts.confirmarBt}</button>
-                        </div>
-                    </div>
-                </div>
-                `
-                divActionsBtGroup.appendChild(divCriarBookModal)
-                divActionsBtGroup.appendChild(divCriarBook)
-                divActions.appendChild(divActionsBtGroup)
-                let divEditarGrupo = document.createElement('div')
-                divEditarGrupo.className = 'divActionsOpt'
-                divEditarGrupo.id = 'divEditarGrupo'
-                divEditarGrupo.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                </svg>
-                `
-                let allCheckboxEvent;
-                let editarGrupoCancelarBtEvent;
-                let editarGrupoConfirmarBtEvent;
-                divEditarGrupo.addEventListener('click', () => {
-                    $('#editarGrupoModal').modal('show')
-                    let modalBody = document.querySelector('#editarGrupoModalBody')
-                    let modalTitle = document.querySelector('#editarGrupoModalTitle')
-                    let allCheckbox = document.getElementsByClassName('divEditarRadio')
-                    for (let i = 0; i < allCheckbox.length; i++) {
-                        let checkbox = allCheckbox[i]
-                        checkbox.removeEventListener('change', allCheckboxEvent)
-                        checkbox.addEventListener('change', allCheckboxEvent = () => {
-                            let input = document.querySelector('#'+ checkbox.value)
-                            if (checkbox.checked == true) {
-                                input.disabled = false
-                            } else {
-                                input.value = ''
-                                input.disabled = true
-                            }
-                        })
-                    }
-                    let editarGrupoCancelarBt = document.querySelector('#editarGrupoCancelarBt')
-                    editarGrupoCancelarBt.removeEventListener('click', editarGrupoCancelarBtEvent)
-                    editarGrupoCancelarBt.addEventListener('click', editarGrupoCancelarBtEvent = () => {
-                        for (let i = 0; i < allCheckbox.length; i++) {
-                            let checkbox = allCheckbox[i]
-                            checkbox.checked = false
-                            let input = document.querySelector('#' + checkbox.value)
-                            input.value = ''
-                            input.disabled = true
-                        }
-                    })
-                    let editarGrupoConfirmarBt = document.querySelector('#editarGrupoConfirmarBt')
-                    editarGrupoConfirmarBt.removeEventListener('click', editarGrupoConfirmarBtEvent)
-                    editarGrupoConfirmarBt.addEventListener('click', editarGrupoConfirmarBtEvent = () => {
-                        editarGrupoConfirmarBt.innerHTML = `
-                        <div class="spinner-border spinner-border-sm" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        `
-                        let inputs = document.getElementsByClassName('divEditarInput')
-                        let enabledInputCount = 0
-                        let send = new FormData()
-                        send.append('type', 'editarGrupo')
-                        send.append('idList', JSON.stringify(pontosSelecionadosId))
-                        for (let i = 0; i < inputs.length; i++) {
-                            let input = inputs[i]
-                            if (!input.value) {
-                                continue
-                            }
-                            enabledInputCount++
-                            send.append(input.id, input.value)
-                        }
-                        
-                        fetch('/painel/pontos/visualizar', {
-                            method: 'POST',
-                            body: send
-                        })
-                        .then((response) => {
-                            if (!response.ok) {
-                                editarGrupoConfirmarBt.innerHTML = texts.confirmarBt
-                                editarGrupoCancelarBtEvent()
-                                $('#editarGrupoModal').modal('hide')
-                                if (lang == 'es' || lang == 'es-ar') {
-                                    alertGenerate(body, 'Erro del servidor.')
-                                } else if (lang == 'en') {
-                                    alertGenerate(body, 'Server error.')
-                                } else {
-                                    alertGenerate(body, 'Erro no servidor.')
-                                }
-                                carregarPontos()
-                            } else {
-                                return response.json()
-                                .then((dados) => {
-                                    editarGrupoConfirmarBt.innerHTML = texts.confirmarBt
-                                    editarGrupoCancelarBtEvent()
-                                    $('#editarGrupoModal').modal('hide')
-                                    dados.message.forEach(message => {
-                                        alertGenerate(body, message)
-                                    })
-                                    carregarPontos()
-                                    
-                                })
-                            }
-                        })
-                    })
-                })
-                divActionsBtGroup.appendChild(divEditarGrupo)
-                let divEditarGrupoModal = document.createElement('div')
-                divEditarGrupoModal.className = 'modal fade'
-                divEditarGrupoModal.id = 'editarGrupoModal'
-                divEditarGrupoModal.setAttribute('data-bs-backdrop', 'static')
-                divEditarGrupoModal.setAttribute('data-bs-keyboard', 'false')
-                divEditarGrupoModal.setAttribute('aria-labelledby', 'modalColumnsTitle')
-                divEditarGrupoModal.tabIndex = '-1'
-                divEditarGrupoModal.ariaHidden = true
-                divEditarGrupoModal.innerHTML = `
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editarGrupoModalTitle">${texts.divEditarGrupoModalTitle}</h5>
-                        </div>
-                        <div class="modal-body" id="editarGrupoModalBody">
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="district" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.district}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="district" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="reference" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.reference}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="reference" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="city" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.city}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="city" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="zone" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.zone}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="zone" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="state" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.state}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="state" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="country" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.country}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="country" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="format" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.format}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="format" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="measure" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.measure}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="measure" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="impacto" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.impacto}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="impacto" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="valor_tabela_comm" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.valor_tabela_comm}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="valor_tabela_comm" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="valor_negociado_comm" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.valor_negociado_comm}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="valor_negociado_comm" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="producao" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.producao}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="producao" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="observacoes_comm" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.observacoes_comm}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="observacoes_comm" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="empresa" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.empresa}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="empresa" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="valor_negociado_int" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.valor_negociado_int}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="valor_negociado_int" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="custo_liq" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.custo_liq}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="custo_liq" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="medida_int" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.medida_int}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="medida_int" disabled> 
-                            </div>
-                            <div class="divEditarItem">
-                                <input type="checkbox" value="observacoes_int" class="divEditarRadio">
-                                <p class="divEditarLabel">${texts.observacoes_int}</p>
-                                <input type="text" maxlength="50" class="divEditarInput" id="observacoes_int" disabled> 
-                            </div>
-                        <div class="modal-footer">
-                            <button id="editarGrupoCancelarBt" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
-                            <button id="editarGrupoConfirmarBt" type="button" class="btn btn-warning">${texts.confirmarBt}</button>
-                        </div>
-                    </div>
-                </div>
-                `
-                divActionsBtGroup.appendChild(divEditarGrupoModal)
-                divActions.appendChild(divActionsBtGroup)
-                let divExcluirGrupo = document.createElement('div')
-                divExcluirGrupo.className = 'divActionsOpt'
-                divExcluirGrupo.id = 'divExcluirGrupo'
-                divExcluirGrupo.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
-                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
-                </svg>
-                `
-                let excluirGrupoModalBtEvent;
-                divExcluirGrupo.addEventListener('click', () => {
-                    $('#excluirGrupoModal').modal('show')
-                    let excluirGrupoModalConfirmarBt = document.querySelector('#excluirGrupoModalConfirmarBt')
-                    excluirGrupoModalConfirmarBt.removeEventListener('click', excluirGrupoModalBtEvent)
-                    excluirGrupoModalConfirmarBt.addEventListener('click', excluirGrupoModalBtEvent = () => {
-                        excluirGrupoModalConfirmarBt.innerHTML = `
-                        <div class="spinner-border spinner-border-sm" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        `
-                        let send = new FormData()
-                        send.append('type', 'excluirGrupo')
-                        send.append('idList', JSON.stringify(pontosSelecionadosId))
-                        fetch('/painel/pontos/visualizar', {
-                            method: 'POST',
-                            body: send
-                        })
-                        .then((response) => {
-                            if (!response.ok) {
-                                excluirGrupoModalConfirmarBt.innerHTML = texts.confirmarBt
-                                $('#excluirGrupoModal').modal('hide')
-                                if (lang == 'es' || lang == 'es-ar') {
-                                    alertGenerate(body, 'Erro del servidor.')
-                                } else if (lang == 'en') {
-                                    alertGenerate(body, 'Server error.')
-                                } else {
-                                    alertGenerate(body, 'Erro no servidor.')
-                                }
-                                carregarPontos()
-                            } else {
-                                return response.json()
-                                .then((dados) => {
-                                    excluirGrupoModalConfirmarBt.innerHTML = texts.confirmarBt
-                                    $('#excluirGrupoModal').modal('hide')
-                                    dados.message.forEach(message => {
-                                        alertGenerate(body, message)
-                                    })
-                                    carregarPontos()
-                                })
-                            }
-                        })
-                    })
-                })
-                divActionsBtGroup.appendChild(divExcluirGrupo)
-                let excluirGrupoModal = document.createElement('div')
-                excluirGrupoModal.className = 'modal'
-                excluirGrupoModal.classList.add('fade')
-                excluirGrupoModal.id = `excluirGrupoModal`
-                excluirGrupoModal.tabIndex = '-1'
-                excluirGrupoModal.ariaHidden = true
-                excluirGrupoModal.innerHTML = `
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabelexcluir">${texts.certeza}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                        ${texts.excluirGrupoModalBody}
-                        </div>
-                        <div class="modal-footer">
-                            <button id="excluirGrupoModalCancelarBt" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
-                            <button id="excluirGrupoModalConfirmarBt" type="submit" class="btn btn-warning">${texts.confirmarBt}</button>
-                        </div>
-                    </div>
-                </div>
-                `
-                divActionsBtGroup.appendChild(excluirGrupoModal)
-                divActions.appendChild(divActionsBtGroup)
-                body_content.appendChild(divActions)
+                
+                body_content.appendChild(createDivActions(texts))
 
                 let divViewList = document.createElement('div')
                 divViewList.className = 'divViewList'
@@ -3707,6 +3785,10 @@ var gerarBookEvent;
 export var mapaPontos = function() {
     cleanFilters()
     pontosSelecionadosId = []
+    allMarkers = []
+    pontos.length = 0
+    pontos.pontos = []
+    filtros.view = 'map'
     let texts;
     if (lang == 'es' || lang == 'es-ar') {
         texts = allTexts.es
@@ -3728,9 +3810,6 @@ export var mapaPontos = function() {
     let body_content = document.querySelector('#body-content')
     body_content.innerHTML = ''
     body_content.style.minHeight = '50rem'
-
-    pontos.length = 0
-    pontos.pontos = []
 
     let divOptions = document.createElement('div')
     divOptions.className = 'divOptions'
@@ -3821,10 +3900,9 @@ export var mapaPontos = function() {
     divMapActions.appendChild(divraioSearch)
 
     let raioSearchBtClicked = false
-    raioSearchBt.removeEventListener('click', searchBtEvent)
     let drawingManager;
+    raioSearchBt.removeEventListener('click', searchBtEvent)
     raioSearchBt.addEventListener('click', searchBtEvent = () => {
-        console.log(raioSearchBtClicked)
         if (raioSearchBtClicked == false) {
             raioSearchBtClicked = true
             raioSearchBt.className = 'searchBt gold-bt'
@@ -4124,5 +4202,6 @@ export var mapaPontos = function() {
     divResultOpt.appendChild(resultLimparBt)
     divOptions.appendChild(divMapActions)
     divOptions.appendChild(divResultOpt)
+    divOptions.appendChild(createDivActions(texts))
 
 }

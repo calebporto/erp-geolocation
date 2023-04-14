@@ -180,6 +180,7 @@
     padding-bottom: 1rem;
 }
 .viewBt {
+    background-color: white;
     width: 8%;
     margin: .5rem;
     text-align: center;
@@ -189,6 +190,15 @@
     box-shadow: 3px 2px 5px rgba(20, 20, 20, 0.2);
     cursor: pointer;
     border-radius: 1rem;
+}
+.viewBt:active {
+    position: relative;
+    top: 3px;
+    box-shadow: 3px 2px 2px rgba(20, 20, 20, 0.2);
+}
+.viewBtMap.select {
+    background-color: rgb(39, 39, 39)!important;
+    color: white;
 }
 .linhaTitle {
     padding: 3px 0;
