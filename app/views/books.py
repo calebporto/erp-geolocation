@@ -89,14 +89,31 @@ def criar():
                 else:
                     message = 'Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.'
                 return Response(message, 400)
+            
+            # Colunas que não são obrigatórias mas devem estar no book, mesmo que vazias
+            bairro, referencia, zona, cidade, formato, medida = None, None, None, None, None, None
+            if lang == 'en':
+                bairro, referencia, zona, cidade, formato, medida = 'District', 'Reference', 'Zone', 'City', 'Format', 'Measure'
+            elif lang == 'es' or lang == 'es-ar':
+                bairro, referencia, zona, cidade, formato, medida = 'Barrio', 'Referencia', 'Zona', 'Ciudad', 'Formato', 'Medida'
+            else:
+                bairro, referencia, zona, cidade, formato, medida = 'Bairro', 'Referencia', 'Zona', 'Cidade', 'Formato', 'Medida'
             colunas_dict = {
-                'obrigatorias': [code_col, address_col, latitude_col, longitude_col, image_col],
+                'obrigatorias': [code_col, address_col, latitude_col, longitude_col, image_col,
+                                 bairro, referencia, zona, cidade, formato, medida],
                 'outras': []
             }
             for coluna in colunas:
                 if coluna in colunas_dict['obrigatorias']:
                     continue
                 else:
+                    if coluna.lower() in ['cidade', 'cidade ', 'ciudad', 'ciudad ', 'city', 'city ', 'county', 'county ',
+                                          'bairro', 'bairro ', 'distrito', 'distrito ', 'barrio', 'barrio ', 'district', 'district ',
+                                          'zona', 'zona ', 'zone', 'zone ', 'regiao', 'regiao ', 'região', 'região ', 'región', 'región ', 'region', 'region ',
+                                          'referencia', 'referencia ', 'referência', 'referência ', 'reference', 'reference ',
+                                          'formato', 'formato ', 'format', 'format ',
+                                          'medida', 'medida ', 'tamanho', 'tamanho ', 'tamaño', 'tamaño ', 'tamano', 'tamano ', 'measure', 'measure ', 'size', 'size ']:
+                        continue
                     colunas_dict['outras'].append(coluna)
             return dumps(
                 {

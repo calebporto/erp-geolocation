@@ -203,7 +203,6 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         codigo_column = None
         foto_column = None
         other_columns = []
-
         for coluna in colunas:
             if coluna.lower().rsplit(' ')[0] == 'endereco' or coluna.lower().rsplit(' ')[0] == 'endereço' or coluna.lower().rsplit(' ')[0] == 'direccion' or coluna.lower().rsplit(' ')[0] == 'dirección' or coluna.lower().rsplit(' ')[0] == 'ubicacion' or coluna.lower().rsplit(' ')[0] == 'ubicación' or coluna.lower().rsplit(' ')[0] == 'address':
                 endereco_column = coluna
@@ -509,9 +508,9 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 if titulo == 'nan':
                     titulo = ''
                 
-                conteudo = str(linha[coluna])
-                if conteudo == 'nan':
-                    conteudo = ''
+                conteudo = ''
+                if coluna in linha and str(linha[coluna]) != 'nan':
+                    conteudo = str(linha[coluna])
                 # Outras Colunas PDF
                 pdf.setFont('Helvetica-Bold', 5.5*mm)
                 pdf.drawString(267*mm, eixo_y_pdf*mm, titulo)

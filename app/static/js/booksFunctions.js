@@ -337,7 +337,7 @@ export var criarBooks = function() {
                                 if (data.message) {
                                     alertGenerate(modalBody, data.message)
                                 }
-                                data.colunas.obrigatorias.forEach(function(element, index, colunasObrigatorias){
+                                data.colunas.obrigatorias.forEach(function(element, index){
                                     let divCheckboxModal = document.createElement('div')
                                     divCheckboxModal.className = 'divCheckboxModal'
                                     let checkboxBlocked = document.createElement('input')

@@ -441,19 +441,19 @@ function createDivActions(texts) {
                         <p class="select-column-label">${texts.image_link}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.reference}">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.reference}" checked disabled>
                         <p class="select-column-label">${texts.reference}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.district}">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.district}" checked disabled>
                         <p class="select-column-label">${texts.district}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.city}">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.city}" checked disabled>
                         <p class="select-column-label">${texts.city}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.zone}">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.zone}" checked disabled>
                         <p class="select-column-label">${texts.zone}</p>
                     </div>
                     <div class="select-column">
@@ -465,11 +465,11 @@ function createDivActions(texts) {
                         <p class="select-column-label">${texts.country}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.format}">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.format}" checked disabled>
                         <p class="select-column-label">${texts.format}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.measure}">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.measure}" checked disabled>
                         <p class="select-column-label">${texts.measure}</p>
                     </div>
                     <div class="select-column">
@@ -3938,259 +3938,6 @@ export var mapaPontos = function() {
     resultText.className = 'resultText'
     resultText.id = 'resultText'
     divResultOpt.appendChild(resultText)
-    let resultGerarBookbt = document.createElement('button')
-    resultGerarBookbt.className = 'btn btn-warning resultBt gerarBook'
-    resultGerarBookbt.id = 'resultGerarBookBt'
-    resultGerarBookbt.innerHTML = texts.gerarBookBt
-    resultGerarBookbt.removeEventListener('click', gerarBookEvent)
-    let sendBookEvent;
-    let cancelBookEvent;
-    resultGerarBookbt.addEventListener('click', gerarBookEvent = () => {
-        if (pontos.length == 0) {
-            if (lang == 'es' || lang == 'es-ar') {
-                alertGenerate(body_content, 'No se encontró ningún punto.')
-            } else if (lang == 'en') {
-                alertGenerate(body_content, 'No point was found.')
-            } else {
-                alertGenerate(body_content, 'Nenhum ponto foi encontrado.')
-            }
-            return
-        }
-        $('#criarBookModal').modal('show')
-        let modalBody = document.querySelector('#selectModalBody')
-        let modalTitle = document.querySelector('#modalColumnsTitle')
-        let allColumnsCheckbox = document.getElementsByClassName('select-column-checkbox')
-        let sendBookBt = document.querySelector('#sendBook')
-        sendBookBt.removeEventListener('click', sendBookEvent)
-        sendBookBt.addEventListener('click', sendBookEvent = () => {
-            sendBookBt.innerHTML = `
-            <div class="spinner-border spinner-border-sm" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            `
-            let bookColumnList = []
-            for (let i = 0; i < allColumnsCheckbox.length; i++) {
-                let checkbox = allColumnsCheckbox[i]
-                if (checkbox.checked == true) {
-                    bookColumnList.push(checkbox.value)
-                }
-            }
-            if (bookColumnList.length > 15) {
-                if (lang == 'es' || lang == 'es-ar'){
-                    alertGenerate(modalBody, 'Máximo 15 columnas')
-                } else if (lang == 'en'){
-                    alertGenerate(modalBody, 'Máximum 15 columns')
-                } else {
-                    alertGenerate(modalBody, '15 colunas no máximo')
-                }
-                modalTitle.focus()
-                sendBookBt.innerHTML = texts.confirmarBt
-                return
-            }
-            let bookName = document.querySelector('#bookName').value
-            let personName = document.querySelector('#personName').value
-            let clientName = document.querySelector('#clientName').value
-            if (!bookName) {
-                if (lang == 'es' || lang == 'es-ar'){
-                    alertGenerate(modalBody, 'Elije um nombre para el book')
-                } else if (lang == 'en'){
-                    alertGenerate(modalBody, 'Choose a name for the book')
-                } else {
-                    alertGenerate(modalBody, 'Escolha um nome para o book')
-                }
-                modalTitle.focus()
-                sendBookBt.innerHTML = texts.confirmarBt
-                return
-            }
-            let send = new FormData()
-            send.append('type', 'gerarBook')
-            send.append('columns', JSON.stringify(bookColumnList))
-            send.append('idList', JSON.stringify(pontosSelecionadosId))
-            send.append('bookName', bookName)
-            send.append('personName', personName)
-            send.append('clientName', clientName)
-            fetch('/painel/pontos/visualizar', {
-                method: 'POST',
-                body: send
-            })
-            .then((response) => {
-                if (!response.ok) {
-                    sendBookBt.innerHTML = texts.confirmarBt
-                    cancelBookEvent()
-                    $('#criarBookModal').modal('hide')
-                    if (lang == 'es' || lang == 'es-ar') {
-                        alertGenerate(body, 'Erro del servidor.')
-                    } else if (lang == 'en') {
-                        alertGenerate(body, 'Server error.')
-                    } else {
-                        alertGenerate(body, 'Erro no servidor.')
-                    }
-                    mapaPontos()
-                } else {
-                    return response.json()
-                    .then((dados) => {
-                        sendBookBt.innerHTML = texts.confirmarBt
-                        cancelBookEvent()
-                        $('#criarBookModal').modal('hide')
-                        dados.message.forEach(message => {
-                            alertGenerate(body, message)
-                        })
-                        mapaPontos()
-                    })
-                }
-            })
-        })
-        let cancelBookBt = document.querySelector('#cancelBook')
-        cancelBookBt.removeEventListener('click', cancelBookEvent)
-        cancelBookBt.addEventListener('click', cancelBookEvent = () => {
-            for (let i = 0; i < allColumnsCheckbox.length; i++) {
-                let checkbox = allColumnsCheckbox[i]
-                if (checkbox.disabled == false) {
-                    checkbox.checked = false
-                }
-            }
-            let bookName = document.querySelector('#bookName')
-            let personName = document.querySelector('#personName')
-            let clientName = document.querySelector('#clientName')
-            bookName.value = ''  
-            personName.value = ''  
-            clientName.value = ''  
-        })
-    })
-    divResultOpt.appendChild(resultGerarBookbt)
-    let divCriarBookModal = document.createElement('div')
-    divCriarBookModal.className = 'modal fade'
-    divCriarBookModal.id = 'criarBookModal'
-    divCriarBookModal.setAttribute('data-bs-backdrop', 'static')
-    divCriarBookModal.setAttribute('data-bs-keyboard', 'false')
-    divCriarBookModal.setAttribute('aria-labelledby', 'modalColumnsTitle')
-    divCriarBookModal.tabIndex = '-1'
-    divCriarBookModal.ariaHidden = true
-    divCriarBookModal.innerHTML = `
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalColumnsTitle">${texts.divCriarBookModalTitle}</h5>
-            </div>
-            <div class="modal-body" id="selectModalBody">
-                <div class="div-select-columns">
-                    <div class="select-columns-title">${texts.selectColumnsTitle}</div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.codigo}" checked disabled>
-                        <p class="select-column-label">${texts.codigo}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.endereco}" checked disabled>
-                        <p class="select-column-label">${texts.endereco}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.latitude}" checked disabled>
-                        <p class="select-column-label">${texts.latitude}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.longitude}" checked disabled>
-                        <p class="select-column-label">${texts.longitude}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternImageLink}" checked disabled>
-                        <p class="select-column-label">${texts.image_link}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.reference}">
-                        <p class="select-column-label">${texts.reference}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.district}">
-                        <p class="select-column-label">${texts.district}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.city}">
-                        <p class="select-column-label">${texts.city}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.zone}">
-                        <p class="select-column-label">${texts.zone}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.state}">
-                        <p class="select-column-label">${texts.state}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.country}">
-                        <p class="select-column-label">${texts.country}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.format}">
-                        <p class="select-column-label">${texts.format}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.measure}">
-                        <p class="select-column-label">${texts.measure}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.impacto}">
-                        <p class="select-column-label">${texts.impacto}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternValorTabelaComm}">
-                        <p class="select-column-label">${texts.valor_tabela_comm}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternValorNegociadoComm}">
-                        <p class="select-column-label">${texts.valor_negociado_comm}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.producao}">
-                        <p class="select-column-label">${texts.producao}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternObservacoesComm}">
-                        <p class="select-column-label">${texts.observacoes_comm}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.empresa}">
-                        <p class="select-column-label">${texts.empresa}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.valor_negociado_int}">
-                        <p class="select-column-label">${texts.valor_negociado_int}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.custo_liq}">
-                        <p class="select-column-label">${texts.custo_liq}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.medida_int}">
-                        <p class="select-column-label">${texts.medida_int}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.patternObservacoesInt}">
-                        <p class="select-column-label">${texts.observacoes_int}</p>
-                    </div>
-                </div>
-                <div class="div-book-inputs">
-                    <div class="book-input-group">
-                        <p class="book-label">${texts.bookName}</p>
-                        <input type="text" class="book-input" id="bookName">
-                    </div>
-                    <div class="book-input-group">
-                        <p class="book-label">${texts.personName}</p>
-                        <input type="text" class="book-input" id="personName">
-                    </div>
-                    <div class="book-input-group">
-                        <p class="book-label">${texts.clientName}</p>
-                        <input type="text" class="book-input" id="clientName">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="cancelBook" type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.cancelarBt}</button>
-                <button id="sendBook" type="button" class="btn btn-warning">${texts.confirmarBt}</button>
-            </div>
-        </div>
-    </div>
-    `
-    divResultOpt.appendChild(divCriarBookModal)
     let resultLimparBt = document.createElement('button')
     resultLimparBt.className = 'btn btn-secondary resultBt'
     resultLimparBt.id = 'resultLimparBt'
