@@ -509,3 +509,22 @@
     height: 35px;
     margin-top: auto;
 }
+.divPlacesSearch {
+    width: 100%;
+    display: flex;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    justify-content: space-between;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.placesSearchInput {
+    width: 40rem;
+    padding: 2px;
+    height: 2.5rem;
+    margin: .5rem;
+}
+.placesSearchButton {
+    width: 20%;
+    height: 35px;
+}

@@ -69,7 +69,7 @@ def criar():
                 else:
                     message = 'Sua planilha possui mais de uma aba, e somente a primeira foi processada.'
             colunas = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0], nrows=1)
-            code_col, address_col, latitude_col, longitude_col, image_col = None, None, None, None, None
+            code_col, address_col, latitude_col, longitude_col, image_col, cidade_col = None, None, None, None, None, None
             for coluna in colunas:
                 if is_in_the_column(coluna.lower(), ['cod', 'cod.', 'cód', 'cód.', 'código', 'codigo', 'code']):
                     code_col = coluna
@@ -81,6 +81,8 @@ def criar():
                     longitude_col = coluna
                 elif is_in_the_column(coluna.lower(), ['foto', 'imagem', 'imagen', 'fotografia', 'fotografía', 'image', 'photo', 'picture']):
                     image_col = coluna
+                elif is_in_the_column(coluna.lower(), ['cidade', 'cidade ', 'ciudad', 'ciudad ', 'city', 'city ', 'county', 'county ']):
+                    cidade_col = coluna
             if not code_col or not address_col or not latitude_col or not longitude_col or not image_col:
                 if lang == 'en':
                     message = 'Some mandatory column was not recognized. The mandatory columns are: Code, Address, Latitude, Longitude and Photo.'
@@ -91,29 +93,21 @@ def criar():
                 return Response(message, 400)
             
             # Colunas que não são obrigatórias mas devem estar no book, mesmo que vazias
-            bairro, referencia, zona, cidade, formato, medida = None, None, None, None, None, None
-            if lang == 'en':
-                bairro, referencia, zona, cidade, formato, medida = 'District', 'Reference', 'Zone', 'City', 'Format', 'Measure'
-            elif lang == 'es' or lang == 'es-ar':
-                bairro, referencia, zona, cidade, formato, medida = 'Barrio', 'Referencia', 'Zona', 'Ciudad', 'Formato', 'Medida'
-            else:
-                bairro, referencia, zona, cidade, formato, medida = 'Bairro', 'Referencia', 'Zona', 'Cidade', 'Formato', 'Medida'
+            if not cidade_col:
+                if lang == 'en':
+                    cidade_col = 'City'
+                elif lang == 'es' or lang == 'es-ar':
+                    cidade_col = 'Ciudad'
+                else:
+                    cidade_col = 'Cidade'
             colunas_dict = {
-                'obrigatorias': [code_col, address_col, latitude_col, longitude_col, image_col,
-                                 bairro, referencia, zona, cidade, formato, medida],
+                'obrigatorias': [code_col, address_col, latitude_col, longitude_col, image_col, cidade_col],
                 'outras': []
             }
             for coluna in colunas:
                 if coluna in colunas_dict['obrigatorias']:
                     continue
                 else:
-                    if coluna.lower() in ['cidade', 'cidade ', 'ciudad', 'ciudad ', 'city', 'city ', 'county', 'county ',
-                                          'bairro', 'bairro ', 'distrito', 'distrito ', 'barrio', 'barrio ', 'district', 'district ',
-                                          'zona', 'zona ', 'zone', 'zone ', 'regiao', 'regiao ', 'região', 'região ', 'región', 'región ', 'region', 'region ',
-                                          'referencia', 'referencia ', 'referência', 'referência ', 'reference', 'reference ',
-                                          'formato', 'formato ', 'format', 'format ',
-                                          'medida', 'medida ', 'tamanho', 'tamanho ', 'tamaño', 'tamaño ', 'tamano', 'tamano ', 'measure', 'measure ', 'size', 'size ']:
-                        continue
                     colunas_dict['outras'].append(coluna)
             return dumps(
                 {

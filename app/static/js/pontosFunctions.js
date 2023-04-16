@@ -57,7 +57,8 @@ var allTexts = {
         'resultText': ' pontos encontrados.',
         'gerarBookBt': 'Gerar book',
         'limparBt':'Limpar Pesquisa',
-        'buscarBt': 'Buscar'
+        'buscarBt': 'Buscar',
+        'searchBox': 'Digite um endereço'
     }, 'es': {
         'codigo': 'Código',
         'endereco': 'Dirección',
@@ -113,7 +114,8 @@ var allTexts = {
         'resultText': ' puntos encontrados.',
         'gerarBookBt': 'Generar book',
         'limparBt':'Borrar búsqueda',
-        'buscarBt': 'Buscar'
+        'buscarBt': 'Buscar',
+        'searchBox': 'Introduce una dirección'
     }, 'en': {
         'codigo': 'Code',
         'endereco': 'Address',
@@ -169,7 +171,8 @@ var allTexts = {
         'resultText': ' points found.',
         'gerarBookBt': 'Book generate',
         'limparBt':'Clear search' ,
-        'buscarBt': 'Search'
+        'buscarBt': 'Search',
+        'searchBox': 'Enter an address'
     }
 }
 var pontos = {
@@ -220,6 +223,46 @@ function createMarkerClickBt() {
         }
     })
     return changeMarkerClickBt
+}
+function createSearchBox(map) {
+    let texts;
+    if (lang == 'es' || lang == 'es-ar') {
+        texts = allTexts.es
+    } else if (lang == 'en') {
+        texts = allTexts.en
+    } else {
+        texts = allTexts.pt
+    }
+    let input = document.createElement('input')
+    input.className = 'placesSearchInput'
+    input.id = 'placesSearchInput'
+    input.placeholder = texts.searchBox
+    let searchBox = new google.maps.places.SearchBox(input)
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(input);
+    // Bias the SearchBox results towards current map's viewport.
+    searchBox.addListener("places_changed", (e) => {
+        const places = searchBox.getPlaces();
+
+        if (places.length == 0) {
+            return
+        }
+        const bounds = new google.maps.LatLngBounds()
+        places.forEach(place => {
+            if (place.geometry.viewport) {
+            // Only geocodes have viewport.
+            bounds.union(place.geometry.viewport);
+            } else {
+            bounds.extend(place.geometry.location);
+            }
+            let marker = new google.maps.Marker({
+                position: place.geometry.location,//seta posição
+                map: map,//Objeto mapa
+                title: place.name,//string que será exibida quando passar o mouse no marker
+                icon: '/static/media/icons8-aqui-24.png'
+            });
+        })
+        map.fitBounds(bounds)
+    })
 }
 function createDivActions(texts) {
     let divActions = document.createElement('div')
@@ -441,19 +484,19 @@ function createDivActions(texts) {
                         <p class="select-column-label">${texts.image_link}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.reference}" checked disabled>
-                        <p class="select-column-label">${texts.reference}</p>
-                    </div>
-                    <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.district}" checked disabled>
-                        <p class="select-column-label">${texts.district}</p>
-                    </div>
-                    <div class="select-column">
                         <input type="checkbox" class="select-column-checkbox" value="${texts.city}" checked disabled>
                         <p class="select-column-label">${texts.city}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.zone}" checked disabled>
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.reference}">
+                        <p class="select-column-label">${texts.reference}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.district}">
+                        <p class="select-column-label">${texts.district}</p>
+                    </div>
+                    <div class="select-column">
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.zone}">
                         <p class="select-column-label">${texts.zone}</p>
                     </div>
                     <div class="select-column">
@@ -465,11 +508,11 @@ function createDivActions(texts) {
                         <p class="select-column-label">${texts.country}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.format}" checked disabled>
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.format}">
                         <p class="select-column-label">${texts.format}</p>
                     </div>
                     <div class="select-column">
-                        <input type="checkbox" class="select-column-checkbox" value="${texts.measure}" checked disabled>
+                        <input type="checkbox" class="select-column-checkbox" value="${texts.measure}">
                         <p class="select-column-label">${texts.measure}</p>
                     </div>
                     <div class="select-column">
@@ -953,10 +996,15 @@ var initMap = function(divMap, center=null, radius=null) {
     var mapOptions = {
         center: {lat: -23.5489, lng: -46.6388},
         zoom: 8,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.BOTTOM_RIGHT,
+        },
+    }
     var map = new google.maps.Map(divMap, mapOptions)
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMarkerClickBt());
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(createMarkerClickBt());
+    createSearchBox(map)
     var latlngbounds = new google.maps.LatLngBounds() // Adequar o zoom para ver todos os pontos
     if (center) {
         map.setCenter(center)
@@ -1153,7 +1201,8 @@ function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBt
     let drawingManager = new google.maps.drawing.DrawingManager({
         map: map,
         drawingControlOptions: {
-            drawingModes: ['marker']
+            drawingModes: ['marker'],
+            position: google.maps.ControlPosition.LEFT_TOP
         }
     })
     google.maps.event.addListener(drawingManager, 'markercomplete', function(marker) {
@@ -3895,8 +3944,21 @@ export var mapaPontos = function() {
     coordenadasSearchBt.innerHTML = texts.buscarBt
     divCoordenadasSearch.appendChild(coordenadasSearchBt)
 
+    // let divPlacesSearch = document.createElement('div')
+    // divPlacesSearch.className = 'divPlacesSearch'
+    // let placesSearchInput = document.createElement('input')
+    // placesSearchInput.className = 'placesSearchInput'
+    // placesSearchInput.id = 'placesSearchInput'
+    // divPlacesSearch.appendChild(placesSearchInput)
+    // let placesSearchButton = document.createElement('button')
+    // placesSearchButton.id = 'placesSearchButton'
+    // placesSearchButton.className = 'placesSearchButton btn btn-dark'
+    // placesSearchButton.innerHTML = texts.buscarBt
+    // divPlacesSearch.appendChild(placesSearchButton)
+
     divraioSearch.appendChild(divRaioRange)
     divraioSearch.appendChild(divCoordenadasSearch)
+    // divraioSearch.appendChild(divPlacesSearch)
     divMapActions.appendChild(divraioSearch)
 
     let raioSearchBtClicked = false
