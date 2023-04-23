@@ -2,7 +2,7 @@ from io import BytesIO
 import os
 import time
 from flask_login import current_user, login_required
-from app.providers.db_services import delete_ponto, delete_pontos, edit_pontos, get_point_in_radius, get_pontos
+from app.providers.db_services import delete_ponto, delete_pontos, edit_pontos, get_fornecedores_list, get_point_in_radius, get_pontos
 from app.providers.redis_services import get_redis_msg
 from app.providers.texts import main_en_texts, main_es_texts, main_pt_texts, pontos_menu_texts, importar_content_text, importar_zip_content_text, visualizar_pontos_content_text
 from app.providers.functions import allowed_file, book_register, bookGenerateWithPoints, editar_grupo, file_validator, flash_dif_languages, gerar_excel, is_in_the_column, points_register
@@ -63,115 +63,7 @@ def importar():
         lang = str(request.form.get('lang'))
         arquivo = request.files.get('arquivo')
         request_type = request.form.get('type')
-        if request_type == 'retornarColunas':
-            tabela = pd.ExcelFile(arquivo)
-            planilhas_count = len(tabela.sheet_names)
-            message = None
-            if planilhas_count != 1:
-                if lang == 'en':
-                    message = 'Your worksheet more than tabs, and only the first one was processed.'
-                elif lang == 'es' or lang == 'es-ar':
-                    message = 'Su hoja de trabajo tiene más de una pestaña y solo se procesó la primera.'
-                else:
-                    message = 'Sua planilha possui mais de uma aba, e somente a primeira foi processada.'
-            planilha = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0]).to_dict('records')
-            colunas = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0])
-            code_col, address_col, latitude_col, longitude_col, image_col = None, None, None, None, None
-            for i, coluna in enumerate(colunas):
-                if is_in_the_column(coluna.lower(), ['cod', 'cod.', 'cód', 'cód.', 'código', 'codigo', 'code']):
-                    code_col = coluna
-                elif is_in_the_column(coluna.lower(), ['endereço', 'endereco', 'direccion', 'dirección', 'ubicacion', 'ubicación', 'address']):
-                    address_col = coluna
-                elif is_in_the_column(coluna.lower(), ['latitude', 'latitud', 'latitúd']):
-                    latitude_col = coluna
-                elif is_in_the_column(coluna.lower(), ['longitude', 'longitud', 'longitúd']):
-                    longitude_col = coluna
-                elif is_in_the_column(coluna.lower(), ['foto', 'imagem', 'imagen', 'fotografia', 'fotografía', 'image', 'photo', 'picture']):
-                    image_col = coluna
-            if not code_col or not address_col or not latitude_col or not longitude_col or not image_col:
-                if lang == 'en':
-                    message = 'Some mandatory column was not recognized. The mandatory columns are: Code, Address, Latitude, Longitude and Photo.'
-                elif lang == 'es' or lang == 'es-ar':
-                    message = 'No se reconoció alguna columna obligatoria. Las columnas obligatorias son: Código, Dirección, Latitud, Longitud y Foto.'
-                else:
-                    message = 'Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.'
-                return Response(message, 400)
-            colunas_dict = {
-                'obrigatorias': [code_col, address_col, latitude_col, longitude_col, image_col],
-                'outras': []
-            }
-            for coluna in colunas:
-                if coluna in colunas_dict['obrigatorias']:
-                    continue
-                else:
-                    colunas_dict['outras'].append(coluna)
-            clientes = Person.query.filter(Person.person_type == 2).all()
-            for i, cliente in enumerate(clientes):
-                data = Person_(
-                    id=cliente.id,
-                    name=cliente.name,
-                    person_name=cliente.person_name
-                )
-                clientes[i] = data.dict()
-            return dumps(
-                {
-                'colunas': colunas_dict,
-                'message': message,
-                'clientes': clientes
-                }
-            )
-        elif request_type == 'registrar&book':
-            file_check = file_validator(arquivo, lang)
-            if file_check[0] == False:
-                response = Register_Response_(
-                    status=False,
-                    message=file_check[1]
-                )
-                return response.json()
-            register_status, register_messages = points_register(arquivo, None, lang, None, None, False)
-            if register_status == False:
-                response = Register_Response_(
-                    status=False,
-                    message=register_messages
-                )
-                return response.json()
-            elif register_status == 'invalid_lat_lng':
-                if lang == 'es-ar' or lang == 'es':
-                    messages.append(f'Error al procesar la hoja de cálculo. Latitud o longitud no válida en ninguna de las filas de la tabla.')
-                elif lang == 'en':
-                    messages.append(f'Error processing worksheet. Invalid latitude or longitude in any of the rows in the table.')
-                else:
-                    messages.append(f'Erro ao processar a planilha. Latitude ou longitude inválida em alguma das linhas da tabela.')
-                response = Register_Response_(
-                    status=False,
-                    message=register_messages
-                )
-                return response.json()
-            else:
-                for message in register_messages:
-                    messages.append(message)
-            book_name = request.form.get('bookName') if request.form.get('bookName') else None
-            book_client = int(request.form.get('clientId')) if int(request.form.get('clientId')) != -1 else None
-            book_person = request.form.get('personName') if request.form.get('personName') else None
-            columns = str(request.form.get('colunas')).rsplit(',')
-            
-            dados_capa = {'nome': book_name, 'cliente': book_client, 'pessoa': book_person}
-            book_status, book_messages = book_register(arquivo, dados_capa, columns, lang, current_user.id)
-            for message in book_messages:
-                messages.append(message)
-            if book_status == False:
-                response = Register_Response_(
-                    status=False,
-                    message=messages
-                )
-                return response.json()
-            else:
-                response = Register_Response_(
-                    status=True,
-                    message=messages
-                )
-                return response.json()
-        elif request_type == 'registrar':
+        if request_type == 'registrar':
             file_check = file_validator(arquivo, lang)
             if file_check[0] == False:
                 response = Register_Response_(

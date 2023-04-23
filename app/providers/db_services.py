@@ -2,7 +2,7 @@ from json import dumps
 from math import acos, cos, radians, sin
 from app import db
 from app.models.basemodels import Register_Response_, Spot_Commercial_For_View_, Spot_For_View_, Spot_Private_For_View_
-from app.models.tables import Spot, Spot_Commercial_Info, Spot_Private_Info
+from app.models.tables import Person, Spot, Spot_Commercial_Info, Spot_Private_Info
 from sqlalchemy import or_
 from sqlalchemy.sql.functions import func
 
@@ -334,3 +334,10 @@ def get_point_in_radius(lat, lng, radius):
         'pontos': pontos
     }
     return dumps(response, default=str)
+
+def get_fornecedores_list():
+    query = Person.query.with_entities(Person.name).all()
+    fornecedores = []
+    for item in query:
+        fornecedores.append(item[0])
+    return fornecedores

@@ -1,9 +1,9 @@
 import time
 from openpyxl import Workbook
 from app.models.basemodels import Register_Response_
-from app.models.tables import Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
+from app.models.tables import Person, Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, create_engine
-from app.providers.db_services import get_pontos_by_id_list
+from app.providers.db_services import get_fornecedores_list, get_pontos_by_id_list
 from app.providers.s3_services import upload_file_to_s3
 from sqlalchemy.orm import declarative_base, Session
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT
@@ -696,6 +696,7 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
         valorNegociado = pattern_columns['valorNegociado'] if pattern_columns else None
         formato = pattern_columns['formato'] if pattern_columns else None
 
+        empresas = []
         for i, linha in enumerate(planilha):
             if str(linha[code_col]) == 'nan' or str(linha[address_col]) == 'nan' or str(linha[latitude_col]) == 'nan' or str(linha[longitude_col]) == 'nan' or str(linha[image_col]) == 'nan':
                 if not is_worker:
@@ -743,6 +744,10 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
             linhaValorTabela = linha[valor_tab_comm] if valor_tab_comm and str(linha[valor_tab_comm]) != 'nan' else None
             linhaValorNegociado = linha[valor_negociado_comm] if valor_negociado_comm and str(linha[valor_negociado_comm]) != 'nan' else None
             linhaFormato = linha[format_col] if format_col and str(linha[format_col]) != 'nan' else None
+
+            empresa_for_register = empresa if empresa else linhaEmpresa
+            if empresa_for_register and not empresa_for_register in empresas:
+                empresas.append(empresa_for_register)
             if not is_worker:
                 new_spot = Flask_Spot(
                     linha[code_col],
@@ -844,13 +849,23 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                 session.add(new_spot_int)
         
         if not is_worker:
+            fornecedores = get_fornecedores_list()
+            fornecedores_novos = []
+            for empresa in empresas:
+                if not empresa in fornecedores:
+                    fornecedores_novos.append(empresa)
+                
             if db_session == None:
+                if len(fornecedores_novos) > 0:
+                    for fornecedor in fornecedores_novos:
+                        new = Person(fornecedor, None, None, None, None, None, None, None, 1)
+                        db.session.add(new)
                 db.session.commit()
-        else:
-            session.commit()
-            session.close()
-        
-        if not is_worker:
+            else:
+                if len(fornecedores_novos) > 0:
+                    for fornecedor in fornecedores_novos:
+                        new = Person(fornecedor, None, None, None, None, None, None, None, 1)
+                        db_session.add(new)
             if lang == 'es' or lang == 'es-ar':
                 messages.append('Los puntos se han registrado con éxito.')
             elif lang == 'en':
@@ -859,6 +874,8 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                 messages.append('Os pontos foram cadastrados com sucesso.')
             return True, messages
         else:
+            session.commit()
+            session.close()
             if lang == 'es' or lang == 'es-ar':
                 message = f'La hoja de cálculo {nome_arquivo} se registró correctamente.'
             elif lang == 'en':
