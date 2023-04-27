@@ -114,7 +114,7 @@ def get_pontos(filtros):
             query = query.filter(Spot.id > int(filtros['id']))
 
         
-        query = query.limit(50).all()
+        query = query.limit(200).all()
         pontos = []
         for item in query:
             ponto = {}
