@@ -1,10 +1,42 @@
 from json import dumps
 from math import acos, cos, radians, sin
+import os
 from app import db
 from app.models.basemodels import Register_Response_, Spot_Commercial_For_View_, Spot_For_View_, Spot_Private_For_View_
 from app.models.tables import Person, Spot, Spot_Commercial_Info, Spot_Private_Info
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.functions import func
+from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, create_engine
+
+Base = declarative_base()
+
+class Person(Base):
+    __tablename__ = 'person'
+    id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    site = Column(String(255))
+    person_name = Column(String(255))
+    email1 = Column(String(255))
+    email2 = Column(String(255))
+    tel1 = Column(String(255))
+    tel2 = Column(String(255))
+    relation_level = Column(Integer)
+    person_type = Column(Integer) # 1 = Fornecedor. 2 = Cliente
+
+    def __init__(self, name, site, person_name, email1, email2, tel1, tel2, relation_level, person_type):
+        self.name = name
+        self.site = site
+        self.person_name = person_name
+        self.email1 = email1
+        self.email2 = email2
+        self.tel1 = tel1
+        self.tel2 = tel2
+        self.relation_level = relation_level
+        self.person_type = person_type
+
+engine = create_engine(os.environ['SQLALCHEMY_DATABASE_URI'], echo=False, future=True)
+session = Session(engine)
 
 def get_pontos(filtros):
         query = Spot.query\
@@ -340,4 +372,15 @@ def get_fornecedores_list():
     fornecedores = []
     for item in query:
         fornecedores.append(item[0])
+    return fornecedores
+
+def get_fornecedores_list_off_context():
+    fornecedores = []
+    result = session.execute(
+        select(Person.name)
+    )
+    query = result.scalars().all()
+    for item in query:
+        fornecedores.append(item)
+
     return fornecedores

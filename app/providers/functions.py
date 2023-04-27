@@ -1,9 +1,9 @@
 import time
 from openpyxl import Workbook
 from app.models.basemodels import Register_Response_
-from app.models.tables import Person, Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
+from app.models.tables import Person as Flask_Person, Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, create_engine
-from app.providers.db_services import get_fornecedores_list, get_pontos_by_id_list
+from app.providers.db_services import get_fornecedores_list, get_fornecedores_list_off_context, get_pontos_by_id_list
 from app.providers.s3_services import upload_file_to_s3
 from sqlalchemy.orm import declarative_base, Session
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT
@@ -28,7 +28,9 @@ from app import db, q
 import requests
 import os
 from sqlalchemy.orm import relationship
+import googlemaps
 
+gmaps = googlemaps.Client(key='AIzaSyAdLDJ7M8krlagfM-HOHUxxfgr9N6_nto8')
 Base = declarative_base()
 
 class Worksheet_Content(Base):
@@ -126,6 +128,30 @@ class Spot_Private_Info(Base):
         self.custo_liq = custo_liq
         self.observacoes = observacoes
         self.outros = outros
+
+class Person(Base):
+    __tablename__ = 'person'
+    id = Column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    site = Column(String(255))
+    person_name = Column(String(255))
+    email1 = Column(String(255))
+    email2 = Column(String(255))
+    tel1 = Column(String(255))
+    tel2 = Column(String(255))
+    relation_level = Column(Integer)
+    person_type = Column(Integer) # 1 = Fornecedor. 2 = Cliente
+
+    def __init__(self, name, site, person_name, email1, email2, tel1, tel2, relation_level, person_type):
+        self.name = name
+        self.site = site
+        self.person_name = person_name
+        self.email1 = email1
+        self.email2 = email2
+        self.tel1 = tel1
+        self.tel2 = tel2
+        self.relation_level = relation_level
+        self.person_type = person_type
 
 engine = create_engine(os.environ['SQLALCHEMY_DATABASE_URI'], echo=False, future=True)
 session = Session(engine)
@@ -511,6 +537,11 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 conteudo = ''
                 if coluna in linha and str(linha[coluna]) != 'nan':
                     conteudo = str(linha[coluna])
+                
+                # Se não tiver conteúdo, pula a linha
+                if not conteudo.strip() or conteudo.strip() == '':
+                    print(titulo)
+                    continue
                 # Outras Colunas PDF
                 pdf.setFont('Helvetica-Bold', 5.5*mm)
                 pdf.drawString(267*mm, eixo_y_pdf*mm, titulo)
@@ -605,26 +636,41 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         message = f'Falha ao gerar o Boook {capa["nome"]}. Motivo: Erro no servidor.'
         send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
 
+def concatLinhas(linhasList):
+    text = ''
+    for linha in linhasList:
+        text = f'{text} {str(linha)},'
+    return text
+
 def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_worker, db_session=None):
     messages = []
+    print('até aqui')
     try:
         tabela = pd.ExcelFile(arquivo)
-        if not is_worker:
-            planilhas_count = len(tabela.sheet_names)
-            if planilhas_count != 1:
+        planilhas_count = len(tabela.sheet_names)
+        if planilhas_count != 1:
+            if not is_worker:
                 if lang == 'es' or lang == 'es-ar':
                     messages.append('Su hoja de trabajo tiene dos pestañas y solo se procesó la primera.')
                 elif lang == 'en':
                     messages.append('Your worksheet has two tabs, and only the first one was processed.')
                 else:
                     messages.append('Sua planilha possui duas abas, e somente a primeira foi processada.')
+            else:
+                if lang == 'es' or lang == 'es-ar':
+                    message = 'Su hoja de trabajo tiene dos pestañas y solo se procesó la primera.'
+                elif lang == 'en':
+                    message = 'Your worksheet has two tabs, and only the first one was processed.'
+                else:
+                    message = 'Sua planilha possui duas abas, e somente a primeira foi processada.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+
         planilha = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0]).to_dict('records')
         colunas = pd.read_excel(arquivo, sheet_name=tabela.sheet_names[0])
         code_col, address_col, latitude_col, longitude_col, image_col = None, None, None, None, None
         reference_col, district_col, county_col, zone_col, state_col, country_col, format_col, measure_col = None, None, None, None, None, None, None, None
         impacto_col, valor_tab_comm, valor_negociado_comm, producao_col, observacoes_col, outros_comm_col = None, None, None, None, None, None
         empresa_col, measure_int_col, valor_negociado_int, custo_liq_col, observacoes_int_col, outros_int_col = None, None, None, None, None, None
-
         for i, coluna in enumerate(colunas):
             if is_in_the_column(coluna.lower(), ['cod', 'cod.', 'cód', 'cód.', 'código', 'codigo', 'code']):
                 code_col = coluna
@@ -685,6 +731,14 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                 else:
                     messages.append('Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.')
                     return False, messages
+            else:
+                if lang == 'es' or lang == 'es-ar':
+                    message = 'No se reconoció alguna columna obligatoria. Las columnas obligatorias son: Código, Dirección, Latitud, Longitud y Foto.'
+                elif lang == 'en':
+                    message = 'Some mandatory column was not recognized. The mandatory columns are: Code, Address, Latitude, Longitude and Photo.'
+                else:
+                    message = 'Alguma coluna obrigatória não foi reconhecida. As colunas obrigatórias são: Código, Endereço, Latitude, Longitude e Foto.'
+                send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
 
         pais = pattern_columns['pais'] if pattern_columns else None
         zona = pattern_columns['zona'] if pattern_columns else None
@@ -697,7 +751,23 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
         formato = pattern_columns['formato'] if pattern_columns else None
 
         empresas = []
+        linhasNaoProcessadas = []
         for i, linha in enumerate(planilha):
+            # Buscando lat e lng com api Google Maps caso não haja latitude e longitude cadastrada na linha
+            if not str(linha[latitude_col]) or str(linha[latitude_col]) == 'nan' or not str(linha[longitude_col]) or str(linha[longitude_col]) == 'nan':
+                temp_endereco = str(linha[address_col])
+                temp_bairro = linha[district_col] if district_col and str(linha[district_col]) != 'nan' else ''
+                temp_zona = zona if zona else linha[zone_col] if zone_col and str(linha[zone_col]) != 'nan' else ''
+                temp_cidade = cidade if cidade else linha[county_col] if county_col and str(linha[county_col]) != 'nan' else ''
+                endereco_completo = f'{temp_endereco}, {temp_bairro}, {temp_zona}, {temp_cidade}'
+                geocode_result = gmaps.geocode(endereco_completo)
+                if len(geocode_result) > 0:
+                    linha[latitude_col] = geocode_result[0]['geometry']['location']['lat']
+                    linha[longitude_col] = geocode_result[0]['geometry']['location']['lng']
+                else:
+                    linhasNaoProcessadas.append(i + 2)
+                    continue
+
             if str(linha[code_col]) == 'nan' or str(linha[address_col]) == 'nan' or str(linha[latitude_col]) == 'nan' or str(linha[longitude_col]) == 'nan' or str(linha[image_col]) == 'nan':
                 if not is_worker:
                     if lang == 'es' or lang == 'es-ar':
@@ -717,23 +787,8 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                     send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
                     return
             if not is_float(linha[latitude_col]) or not is_float(linha[longitude_col]):
-                if not is_worker:
-                    if lang == 'es' or lang == 'es-ar':
-                        messages.append(f'La linea {i + 1} de la hoja de cálculo {nome_arquivo} tiene una latitud o longitud no válida. Corrija y vuelva a intentarlo.')
-                    elif lang == 'en':
-                        messages.append(f'The row {i + 1} of the spreadsheet {nome_arquivo} has an invalid latitude or longitude. Please correct and try again.')
-                    else:
-                        messages.append(f'A linha {i + 1} da planilha {nome_arquivo} está com a latitude ou longitude inválida. Corrija e tente novamente.')
-                    return 'invalid_lat_lng', messages
-                else:
-                    if lang == 'es' or lang == 'es-ar':
-                        message = f'Alguna fila de la hoja de cálculo {nome_arquivo} tiene una latitud o longitud no válida. Corrija y vuelva a intentarlo.'
-                    elif lang == 'en':
-                        message = f'Some row of the spreadsheet {nome_arquivo} has an invalid latitude or longitude. Please correct and try again.'
-                    else:
-                        message = f'Alguma linha da planilha {nome_arquivo} está com a latitude ou longitude inválida. Corrija e tente novamente.'
-                    send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
-                    return
+                linhasNaoProcessadas.append(i + 2)
+                continue
             
             linhaPais = linha[country_col] if country_col and str(linha[country_col]) != 'nan' else None
             linhaZona = linha[zone_col] if zone_col and str(linha[zone_col]) != 'nan' else None
@@ -858,14 +913,22 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
             if db_session == None:
                 if len(fornecedores_novos) > 0:
                     for fornecedor in fornecedores_novos:
-                        new = Person(fornecedor, None, None, None, None, None, None, None, 1)
+                        new = Flask_Person(fornecedor, None, None, None, None, None, None, None, 1)
                         db.session.add(new)
                 db.session.commit()
             else:
                 if len(fornecedores_novos) > 0:
                     for fornecedor in fornecedores_novos:
-                        new = Person(fornecedor, None, None, None, None, None, None, None, 1)
+                        new = Flask_Person(fornecedor, None, None, None, None, None, None, None, 1)
                         db_session.add(new)
+
+            if len(linhasNaoProcessadas) > 0:
+                if lang == 'es' or lang == 'es-ar':
+                    messages.append(f'Las lineas{concatLinhas(linhasNaoProcessadas)} no se procesaron, ya que no se encontraron datos de latitud y longitud.')
+                elif lang == 'en':
+                    messages.append(f'Lines{concatLinhas(linhasNaoProcessadas)} were not processed, as no latitude and longitude data were found.')
+                else:
+                    messages.append(f'As linhas{concatLinhas(linhasNaoProcessadas)} não foram processadas, pois não foram encontrados dados de Latitude e Longitude.')
             if lang == 'es' or lang == 'es-ar':
                 messages.append('Los puntos se han registrado con éxito.')
             elif lang == 'en':
@@ -874,6 +937,15 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                 messages.append('Os pontos foram cadastrados com sucesso.')
             return True, messages
         else:
+            fornecedores = get_fornecedores_list_off_context()
+            fornecedores_novos = []
+            for empresa in empresas:
+                if not empresa in fornecedores:
+                    fornecedores_novos.append(empresa)
+            if len(fornecedores_novos) > 0:
+                for fornecedor in fornecedores_novos:
+                    new = Person(fornecedor, None, None, None, None, None, None, None, 1)
+                    session.add(new)
             session.commit()
             session.close()
             if lang == 'es' or lang == 'es-ar':
@@ -882,9 +954,18 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                 message = f'Spreadsheet {nome_arquivo} was successfully registered.'
             else:
                 message = f'A planilha {nome_arquivo} foi registrada com sucesso.'
+            if len(linhasNaoProcessadas) > 0:
+                if lang == 'es' or lang == 'es-ar':
+                    message = message + f' Las lineas{concatLinhas(linhasNaoProcessadas)} no se procesaron, ya que no se encontraron datos validos de latitud y longitud.'
+                elif lang == 'en':
+                    message = message + f' Lines{concatLinhas(linhasNaoProcessadas)} were not processed, as no latitude and longitude valid data were found.'
+                else:
+                    message = message + f' As linhas{concatLinhas(linhasNaoProcessadas)} não foram processadas, pois não foram encontrados válidos dados de Latitude e Longitude.'
             send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
             return
+        
     except ValueError as error:
+        print(f'erro = {str(error)}')
         if 'Excel file format cannot be determined, you must specify an engine manually.' in str(error):
             if not is_worker:
                 if lang == 'es' or lang == 'es-ar':
@@ -903,17 +984,18 @@ def points_register(arquivo, nome_arquivo, lang, user_id, pattern_columns, is_wo
                     message = f'Spreadsheet {nome_arquivo} was not registered. Reason: Invalid file format.'
                 else:
                     message = f'A planilha {nome_arquivo} não foi cadastrada. Motivo: Formato de arquivo inválido.'
+                
                 send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
                 return
         else:
             if not is_worker:
-                print(f'erro = {str(error)}')
                 return False, ['Erro no servidor. Tente novamente mais tarde.']
             else:
                 message = f'A planilha {nome_arquivo} não foi cadastrada. Erro no servidor.'
                 send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={user_id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
                 return
     except Exception as error:
+        print(f'erro = {str(error)}')
         if not is_worker:
             print(f'erro = {str(error)}')
             return False, ['Erro no servidor. Tente novamente mais tarde.']

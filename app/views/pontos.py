@@ -71,17 +71,19 @@ def importar():
                     message=file_check[1]
                 )
                 return response.json()
-            register_status, register_messages = points_register(arquivo, arquivo.filename, lang, None, None, False)
-            if register_status == 'invalid_lat_lng':
-                response = Register_Response_(
-                    status=False,
-                    message=register_messages
-                )
-                return response.json()
+            print(type(arquivo))
+            sendQueue = q.enqueue(points_register, arquivo.read(), arquivo.filename, lang, current_user.id, None, True, job_timeout='30m')
             
+            if lang == 'es' or lang == 'es-ar':
+                messages.append('La hoja de trabajo se está registrando. Espere unos momentos y actualice la página, y se mostrará un mensaje con el estado del registro.')
+            elif lang == 'en':
+                messages.append('The worksheet is being registered. Wait a few moments and refresh the page, and a message will be displayed with the registration status.')
+            else:
+                messages.append('A planilha está sendo cadastrada. Aguarde alguns instantes e atualize a página, e uma mensagem será exibida com o status do cadastro.')
+
             response = Register_Response_(
-                status=register_status,
-                message=register_messages
+                status=True,
+                message=messages
             )
             return response.json()
             
@@ -166,6 +168,7 @@ def importar_zip():
         for nome_planilha in lista:
             print(nome_planilha)
             planilha = zip.read(nome_planilha)
+            print(type(planilha))
             try:
                 abas = pd.ExcelFile(planilha).sheet_names
             except ValueError as error:
