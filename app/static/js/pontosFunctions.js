@@ -1828,7 +1828,7 @@ function gerarLista(index) {
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.image_link}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="image_link-edit${id}" value="${image_link}">
+                        <input maxlength="200" type="text" class="input-edit" id="image_link-edit${id}" value="${image_link}">
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.reference}</p>
