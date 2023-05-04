@@ -437,7 +437,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             pdf.drawCentredString(190*mm,207*mm, str(linha[endereco_column]))
 
             # Endereço PPTX
-            endereco = slide.shapes.add_textbox(Mm(0), Mm(5), Mm(420), Mm(5))
+            endereco = slide.shapes.add_textbox(Mm(0), Mm(5), Mm(370), Mm(10))
             endereco_text_frame = endereco.text_frame
             endereco_text_frame.clear()
             endereco_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
@@ -1267,7 +1267,7 @@ def gerar_excel(ids, lang):
         colunas = [
             'Código',
             'Dirección',
-            'Latidud',
+            'Latitud',
             'Longitud',
             'Foto',
             'Barrio',
@@ -1293,7 +1293,7 @@ def gerar_excel(ids, lang):
         colunas = [
             'Code',
             'Address',
-            'Latidude',
+            'Latitude',
             'Longitude',
             'Photo',
             'District',
@@ -1319,7 +1319,7 @@ def gerar_excel(ids, lang):
         colunas = [
             'Código',
             'Endereço',
-            'Latidude',
+            'Latitude',
             'Longitude',
             'Foto',
             'Bairro',

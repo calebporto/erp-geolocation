@@ -175,6 +175,24 @@ var allTexts = {
         'searchBox': 'Enter an address'
     }
 }
+var icons = [
+    '/static/media/icons/vermelho.png',
+    '/static/media/icons/amarelo.png',
+    '/static/media/icons/azul-escuro.png',
+    '/static/media/icons/laranja-escuro.png',
+    '/static/media/icons/verde-escuro.png',
+    '/static/media/icons/preto.png',
+    '/static/media/icons/rosa-escuro.png',
+    '/static/media/icons/flamengo.png',
+    '/static/media/icons/azul-claro.png',
+    '/static/media/icons/verde-claro.png',
+    '/static/media/icons/rosa-claro.png',
+    '/static/media/icons/laranja-claro.png',
+    '/static/media/icons/branco-preto.png',
+    '/static/media/icons/preto-branco.png',
+    '/static/media/icons/vermelho-branco.png',
+    '/static/media/icons/branco.png'
+]
 var pontos = {
     'length': null,
     'pontos': []
@@ -258,7 +276,7 @@ function createSearchBox(map) {
                 position: place.geometry.location,//seta posição
                 map: map,//Objeto mapa
                 title: place.name,//string que será exibida quando passar o mouse no marker
-                icon: '/static/media/icons8-aqui-24.png'
+                icon: '/static/media/icons/aqui.png'
             });
         })
         map.fitBounds(bounds)
@@ -929,7 +947,7 @@ function selectAllMarkers() {
                 markerClickAction = 'select'
             }
             pontosSelecionadosId.push(parseInt(el.id))
-            el.marker.setIcon('/static/media/icons8-maps-40.png')
+            el.marker.setIcon('/static/media/icons/cinza.png')
         } else {
             if (index == 0) {
                 viewBtMap.classList.remove('select')
@@ -1020,10 +1038,16 @@ var initMap = function(divMap, center=null, radius=null) {
             radius: radius * 1000
           });
     }
+    var formatos = []
     for (let i = 0; i < pontos.pontos.length; i++) {
         let ponto = pontos.pontos[i]
         let id = ponto.basic.id
         let coordenadas = new google.maps.LatLng(ponto.basic.latitude, ponto.basic.longitude)
+        
+        if (formatos.indexOf(ponto.basic.format) == -1) {
+            formatos.push(ponto.basic.format)
+            console.log(formatos)
+        }
         let marker = new google.maps.Marker({
             position: coordenadas,//seta posição
             map: map,//Objeto mapa
@@ -1165,7 +1189,7 @@ var initMap = function(divMap, center=null, radius=null) {
                 if (markerClicked == false) {
                     markerClicked = true
                     pontosSelecionadosId.push(id)
-                    marker.setIcon('/static/media/icons8-maps-40.png')
+                    marker.setIcon('/static/media/icons/cinza.png')
                 } else {
                     markerClicked = false
                     let index = pontosSelecionadosId.indexOf(id)
@@ -1812,7 +1836,7 @@ function gerarLista(index) {
                 <div class="modal-body" id="editModalBody${id}">
                     <div class="visualizar-item">
                         <p class="label-item">${texts.endereco}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="endereco-edit${id}" value="${endereco}">
+                        <input maxlength="200" type="text" class="input-edit" id="endereco-edit${id}" value="${endereco}">
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.codigo}</p>
@@ -1832,7 +1856,7 @@ function gerarLista(index) {
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.reference}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="reference-edit${id}" value="${reference}">
+                        <input maxlength="200" type="text" class="input-edit" id="reference-edit${id}" value="${reference}">
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.district}</p>
@@ -1880,11 +1904,11 @@ function gerarLista(index) {
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.observacoes_comm}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="observacoes_comm-edit${id}" value="${observacoes_comm}">
+                        <input maxlength="200" type="text" class="input-edit" id="observacoes_comm-edit${id}" value="${observacoes_comm}">
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.outros_comm}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="outros_comm-edit${id}" value="${outros_comm}">
+                        <input maxlength="200" type="text" class="input-edit" id="outros_comm-edit${id}" value="${outros_comm}">
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.empresa}</p>
@@ -1904,11 +1928,11 @@ function gerarLista(index) {
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.observacoes_int}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="observacoes_int-edit${id}" value="${observacoes_int}">
+                        <input maxlength="200" type="text" class="input-edit" id="observacoes_int-edit${id}" value="${observacoes_int}">
                     </div>
                     <div class="visualizar-item">
                         <p class="label-item">${texts.outros_int}</p>
-                        <input maxlength="50" type="text" class="input-edit" id="outros_int-edit${id}" value="${outros_int}">
+                        <input maxlength="200" type="text" class="input-edit" id="outros_int-edit${id}" value="${outros_int}">
                     </div>
                 </div>
                 <div class="modal-footer">
