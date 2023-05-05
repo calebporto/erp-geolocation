@@ -1004,7 +1004,7 @@ function chooseMarker(formato) {
     let includes = (array, formato) => {
         for (let i = 0; i < array.length; i++) {
             let item = array[i]
-            if (item.includes(formato.toLowerCase().trim())) {
+            if (formato.toLowerCase().trim().includes(item)) {
                 return true
             }
         }
