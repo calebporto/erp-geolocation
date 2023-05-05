@@ -1000,6 +1000,63 @@ function displayActionsBts() {
         selectAll.checked = false
     }
 }
+function chooseMarker(formato) {
+    let includes = (array, formato) => {
+        for (let i = 0; i < array.length; i++) {
+            let item = array[i]
+            if (item.includes(formato.toLowerCase().trim())) {
+                return true
+            }
+        }
+        return false
+    }
+    if (includes(['outdoor', 'sextuples', 'billaboard classic'], formato)) {
+        return '/static/media/icons/vermelho.png'
+    }
+    if (includes(['painel led', 'painel de led', 'pantalla led', 'billaboard led'], formato)) {
+        return '/static/media/icons/preto.png'
+    }
+    if (includes(['painel rodoviario', 'columna'], formato)) {
+        return '/static/media/icons/rosa-claro.png'
+    }
+    if (includes(['painel de rodovia', 'ruteros'], formato)) {
+        return '/static/media/icons/rosa-escuro.png'
+    }
+    if (includes(['mega painel', 'espectacular'], formato)) {
+        return '/static/media/icons/verde-escuro.png'
+    }
+    if (includes(['painel', 'front light', 'frontlight', 'pantalla', 'billaboard smart / large'], formato)) {
+        return '/static/media/icons/amarelo.png'
+    }
+    if (includes(['totem led'], formato)) {
+        return '/static/media/icons/flamengo.png'
+    }
+    if (includes(['banca led', 'kiosco led'], formato)) {
+        return '/static/media/icons/azul-escuro.png'
+    }
+    if (includes(['banca', 'kiosco'], formato)) {
+        return '/static/media/icons/verde-claro.png'
+    }
+    if (includes(['empena led'], formato)) {
+        return '/static/media/icons/laranja-claro.png'
+    }
+    if (includes(['empena', 'medianera'], formato)) {
+        return '/static/media/icons/laranja-escuro.png'
+    }
+    if (includes(['ppl'], formato)) {
+        return '/static/media/icons/vermelho-branco.png'
+    }
+    if (includes(['transiluminado'], formato)) {
+        return '/static/media/icons/preto-branco.png'
+    }
+    if (includes(['mub led'], formato)) {
+        return '/static/media/icons/azul-claro.png'
+    }
+    if (includes(['mub'], formato)) {
+        return '/static/media/icons/branco-preto.png'
+    }
+    return '/static/media/icons/branco.png'
+}
 var initMap = function(divMap, center=null, radius=null) {
     pontosSelecionadosId = []
     markerClickAction = 'view'
@@ -1043,16 +1100,13 @@ var initMap = function(divMap, center=null, radius=null) {
         let ponto = pontos.pontos[i]
         let id = ponto.basic.id
         let coordenadas = new google.maps.LatLng(ponto.basic.latitude, ponto.basic.longitude)
-        
-        if (formatos.indexOf(ponto.basic.format) == -1) {
-            formatos.push(ponto.basic.format)
-            console.log(formatos)
-        }
+        let formato = ponto.basic.format
+        let icon = chooseMarker(formato)
         let marker = new google.maps.Marker({
             position: coordenadas,//seta posição
             map: map,//Objeto mapa
-            title: ponto.basic.address//string que será exibida quando passar o mouse no marker
-            //icon: caminho_da_imagem
+            title: ponto.basic.address, //string que será exibida quando passar o mouse no marker
+            icon: icon
         });
         latlngbounds.extend(marker.position);
         let markerModal = document.createElement('div')
@@ -1194,9 +1248,8 @@ var initMap = function(divMap, center=null, radius=null) {
                     markerClicked = false
                     let index = pontosSelecionadosId.indexOf(id)
                     pontosSelecionadosId.splice(index, 1)
-                    marker.setIcon(null)
+                    marker.setIcon(icon)
                 }
-                console.log(pontosSelecionadosId)
                 displayActionsBtsMap()
             }
         })
