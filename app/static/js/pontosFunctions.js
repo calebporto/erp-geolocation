@@ -261,7 +261,9 @@ var filtros = {
     'type': 'all',
     'coordinates': {'lat': null, 'lng': null},
     'radius': null,
+    'order_by': 'ordId',
     'id': 0,
+    'offset': 0,
     'codigo': [],
     'pais': [],
     'estado': [],
@@ -1149,7 +1151,9 @@ function cleanFilters() {
         'type': 'all',
         'coordinates': {'lat': null, 'lng': null},
         'radius': null,
+        'order_by': 'ordId',
         'id': 0,
+        'offset': 0,
         'codigo': [],
         'pais': [],
         'estado': [],
@@ -2421,8 +2425,9 @@ function gerarMapa() {
 }
 function verMais() {
     let verMaisFiltros = Object.assign({}, filtros)
-    let index = pontos.pontos.length -1
+    let index = pontos.pontos.length - 1
     verMaisFiltros.id = pontos.pontos[index].basic.id
+    verMaisFiltros.offset = pontos.pontos.length
     fetch(`/painel/pontos/visualizar?filter=${JSON.stringify(verMaisFiltros)}`)
     .then((response) => {
         return response.json()
@@ -2889,7 +2894,7 @@ export var listaPontos = function() {
     body_content.innerHTML = ''
 
     let body_header = document.querySelector('#body-header')
-
+    let ordenarEvent;
     fetch(`/painel/pontos/visualizar?lang=${lang}`)
     .then((response) => {
         if (!response.ok) {
@@ -3231,6 +3236,43 @@ export var listaPontos = function() {
             
                 })
                 divFiltroBt.appendChild(filtroBt)
+                
+                let ordenarBt = document.createElement('button')
+                ordenarBt.className = 'btn btn-primary limparFiltroBt'
+                ordenarBt.id = 'ordenarBt'
+                ordenarBt.innerHTML = textContent.ordenar
+                let optionsEventList = []
+                ordenarBt.removeEventListener('click', ordenarEvent)
+                ordenarBt.addEventListener('click', ordenarEvent = () => {
+                    // Altera order_by dos filtros
+                    $('#ordenarModal').modal('show')
+                    let options = document.getElementsByClassName('ordenarItem')
+                    for (let i = 0; i < options.length; i++) {
+                        let option = options[i]
+                        if (!optionsEventList[i]) {
+                            let event;
+                            optionsEventList[i] = event
+                        }
+                        option.removeEventListener('click', optionsEventList[i])
+                        option.addEventListener('click', optionsEventList[i] = () => {
+                            if (option.id != filtros.order_by) {
+                                for (let x = 0; x < options.length; x++) {
+                                    if (options[x].id != option.id) {
+                                        options[x].classList.remove('select')
+                                    } else {
+                                        options[x].classList.add('select')
+                                    }
+                                }
+                                filtros.order_by = option.id
+                                $('#ordenarModal').modal('hide')
+                                carregarPontos()
+                                return
+                            }
+                            $('#ordenarModal').modal('hide')
+                        })
+                    }
+                })
+                divFiltroBt.appendChild(ordenarBt)
 
                 let limparFiltrosBt = document.createElement('button')
                 limparFiltrosBt.className = 'btn btn-secondary limparFiltroBt'
@@ -3265,6 +3307,35 @@ export var listaPontos = function() {
             
                 `
                 divFiltroBt.appendChild(filtroModal)
+
+                let ordenarModal = document.createElement('div')
+                ordenarModal.className = 'modal fade'
+                ordenarModal.id = 'ordenarModal'
+                ordenarModal.setAttribute('data-bs-backdrop', 'static')
+                ordenarModal.setAttribute('data-bs-keyboard', 'false')
+                ordenarModal.tabIndex = -1
+                ordenarModal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">${textContent.ordenar}</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="ordenarModalBody">
+                                <div class="ordenarItem select" id="ordId">Id</div>
+                                <div class="ordenarItem" id="ordEmpresa">${textContent.ordEmpresa}</div>
+                                <div class="ordenarItem" id="ordFormato">${textContent.ordFormato}</div>
+                                <div class="ordenarItem" id="ordCidade">${textContent.ordCidade}</div>
+                                <div class="ordenarItem" id="ordBairro">${textContent.ordBairro}</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${textContent.adicionarFiltroCancelarBt}</button>
+                        </div>
+                    </div>
+                </div>
+                `
+                divFiltroBt.appendChild(ordenarModal)
                 divFiltro.appendChild(divFiltroBt)
             
                 let divFiltroList = document.createElement('div')

@@ -283,6 +283,7 @@
     border-radius: 3px;
     padding: 3px;
     box-shadow: 3px 2px 5px rgba(20, 20, 20, 0.2);
+    height: 2rem;
 }
 .divFiltroIconeKey {
     font-size: 12px;
@@ -534,4 +535,24 @@
 .descriptionView p {
     height: auto;
     margin: auto 1rem;
+}
+.ordenarModalBody {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: .5rem;
+}
+.ordenarItem {
+    width: 18%;
+    padding: 3px;
+    border-radius: 5px;
+    background-color: rgb(230, 230, 230);
+    color: black;
+    margin: 3px;
+    text-align: center;
+    cursor: pointer;
+}
+.ordenarItem.select {
+    background-color: rgb(83, 83, 83);
+    color: white;
 }

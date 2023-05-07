@@ -141,6 +141,7 @@ importar_zip_content_text = {
 visualizar_pontos_content_text = {
     'pt_br': {
         'adicionarFiltro': 'Adicionar Filtro',
+        'ordenar': 'Ordenar por',
         'limparFiltros': 'Limpar Filtros',
         'adicionarFiltroConfirmarBt': 'Adicionar',
         'adicionarFiltroCancelarBt': 'Cancelar',
@@ -158,9 +159,14 @@ visualizar_pontos_content_text = {
         'endereco': 'Endereço:',
         'empresa': 'Empresa:',
         'formato': 'Formato:',
-        'notFilters': 'Sem Filtros.'
+        'notFilters': 'Sem Filtros.',
+        'ordEmpresa': 'Empresa',
+        'ordFormato': 'Formato',
+        'ordCidade': 'Cidade',
+        'ordBairro': 'Bairro'
     }, 'es': {
         'adicionarFiltro': 'Añadir Filtro',
+        'ordenar': 'Ordenar por',
         'limparFiltros': 'Limpiar Filtros',
         'adicionarFiltroConfirmarBt': 'Agregar',
         'adicionarFiltroCancelarBt': 'Cancelar',
@@ -178,9 +184,14 @@ visualizar_pontos_content_text = {
         'endereco': 'Dirección:',
         'empresa': 'Empresa:',
         'formato': 'Formato:',
-        'notFilters': 'Sin Filtros.'
+        'notFilters': 'Sin Filtros.',
+        'ordEmpresa': 'Empresa',
+        'ordFormato': 'Formato',
+        'ordCidade': 'Ciudad',
+        'ordBairro': 'Barrio'
     }, 'en': {
         'adicionarFiltro': 'Add Filter',
+        'ordenar': 'Order by',
         'limparFiltros': 'Clear Filters',
         'adicionarFiltroConfirmarBt': 'Add',
         'adicionarFiltroCancelarBt': 'Cancel',
@@ -198,7 +209,11 @@ visualizar_pontos_content_text = {
         'endereco': 'Address:',
         'empresa': 'Company:',
         'formato': 'Format:',
-        'notFilters': 'No filters.'
+        'notFilters': 'No filters.',
+        'ordEmpresa': 'Company',
+        'ordFormato': 'Format',
+        'ordCidade': 'City',
+        'ordBairro': 'District'
     }
 }
 #Books

@@ -53,6 +53,7 @@ def get_pontos(filtros):
         endereco = filtros['endereco']
         formato = filtros['formato']
         empresa = filtros['empresa']
+        order_by = filtros['order_by']
         if len(codigo) > 0:
             if len(codigo) == 1:
                 query = query.filter(Spot.code.ilike('%'+ codigo[0] +'%'))
@@ -110,8 +111,22 @@ def get_pontos(filtros):
         
         count = query.count()
         
-        if int(filtros['id']) > 0:
-            query = query.filter(Spot.id > int(filtros['id']))
+        if order_by != 'ordId':
+            if order_by == 'ordEmpresa':
+                query = query.order_by(Spot_Private_Info.empresa)
+            elif order_by == 'ordFormato':
+                query = query.order_by(Spot.format)
+            elif order_by == 'ordCidade':
+                query = query.order_by(Spot.city)
+            elif order_by == 'ordBairro':
+                query = query.order_by(Spot.district)
+            
+            if int(filtros['offset']) > 0:
+                query = query.offset(filtros['offset'])
+        else:
+            if int(filtros['id']) > 0:
+                query = query.filter(Spot.id < int(filtros['id']))
+            query = query.order_by(Spot.id.desc())
 
         
         query = query.limit(200).all()

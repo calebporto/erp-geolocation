@@ -352,7 +352,6 @@ def visualizar_pontos():
                 response = get_pontos(request_filter)
                 return response
             elif request_filter['type'] == 'getPointsByMarkerPosition':
-                print(request_filter)
                 latitude = float(request_filter['coordinates']['lat'])
                 longitude = float(request_filter['coordinates']['lng'])
                 radius = int(request_filter['radius'])
