@@ -58,7 +58,24 @@ var allTexts = {
         'gerarBookBt': 'Gerar book',
         'limparBt':'Limpar Pesquisa',
         'buscarBt': 'Buscar',
-        'searchBox': 'Digite um endereço'
+        'searchBox': 'Digite um endereço',
+        'modalLegendsTitle': 'Descrição',
+        'vermelho': 'Outdoor',
+        'preto': 'Painel de Led',
+        'rosaclaro': 'Painel Rodoviário',
+        'rosaescuro': 'Painel de Rodovia',
+        'verdeescuro': 'Mega Painel',
+        'amarelo': 'Painel',
+        'flamengo': 'Totem Led',
+        'azulescuro': 'Banca Led',
+        'verdeclaro': 'Banca',
+        'laranjaclaro': 'Empena Led',
+        'laranjaescuro': 'Empena',
+        'vermelhobranco': 'MUB',
+        'pretobranco': 'MUB',
+        'azulclaro': 'MUB Led',
+        'brancopreto': 'MUB',
+        'branco': 'Formato desconhecido'
     }, 'es': {
         'codigo': 'Código',
         'endereco': 'Dirección',
@@ -115,7 +132,24 @@ var allTexts = {
         'gerarBookBt': 'Generar book',
         'limparBt':'Borrar búsqueda',
         'buscarBt': 'Buscar',
-        'searchBox': 'Introduce una dirección'
+        'searchBox': 'Introduce una dirección',
+        'modalLegendsTitle': 'Descriptión',
+        'vermelho': 'Sextuples',
+        'preto': 'Pantalla Led',
+        'rosaclaro': 'Columna',
+        'rosaescuro': 'Ruteros',
+        'verdeescuro': 'Espectacular',
+        'amarelo': 'Frontlight/Pantalla',
+        'flamengo': 'Totem Led',
+        'azulescuro': 'Kiosco Led',
+        'verdeclaro': 'Kiosco',
+        'laranjaclaro': 'Empena Led',
+        'laranjaescuro': 'Medianera',
+        'vermelhobranco': 'PPL',
+        'pretobranco': 'Transiluminado',
+        'azulclaro': 'MUB Led',
+        'brancopreto': 'MUB',
+        'branco': 'Formato desconocido'
     }, 'en': {
         'codigo': 'Code',
         'endereco': 'Address',
@@ -172,8 +206,33 @@ var allTexts = {
         'gerarBookBt': 'Book generate',
         'limparBt':'Clear search' ,
         'buscarBt': 'Search',
-        'searchBox': 'Enter an address'
+        'searchBox': 'Enter an address',
+        'modalLegendsTitle': 'Description',
+        'vermelho': 'Billaboard Classic',
+        'preto': 'Billaboard LED',
+        'rosaclaro': 'Painel Rodoviário',
+        'rosaescuro': 'Painel de Rodovia',
+        'verdeescuro': 'Mega Painel',
+        'amarelo': 'Billaboard Smart / Large',
+        'flamengo': 'Totem Led',
+        'azulescuro': 'Banca Led',
+        'verdeclaro': 'Banca',
+        'laranjaclaro': 'Empena Led',
+        'laranjaescuro': 'Empena',
+        'vermelhobranco': 'MUB',
+        'pretobranco': 'MUB',
+        'azulclaro': 'MUB Led',
+        'brancopreto': 'MUB',
+        'branco': 'Unknown format'
     }
+}
+var texts;
+if (lang == 'es' || lang == 'es-ar') {
+    texts = allTexts.es
+} else if (lang == 'en') {
+    texts = allTexts.en
+} else {
+    texts = allTexts.pt
 }
 var icons = [
     '/static/media/icons/vermelho.png',
@@ -218,8 +277,11 @@ var pontosSelecionadosId = []
 var markerClickAction; // Altera clique no marcador do mapa entre visualizar modal ou selecionar
 var allMarkers = []
 
+function isNumber(n) {
+    n = n.replace(',', '.')
+    return Number(n) == n
+}
 function createMarkerClickBt() {
-    let divActionsBtGroup = document.querySelector('.divActionsBtGroup')
     let selectAll = document.querySelector('#selectAll')
     let changeMarkerClickBt = document.createElement('div')
     changeMarkerClickBt.className = 'viewBt viewBtMap'
@@ -242,15 +304,207 @@ function createMarkerClickBt() {
     })
     return changeMarkerClickBt
 }
-function createSearchBox(map) {
-    let texts;
-    if (lang == 'es' || lang == 'es-ar') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
+function createLegendBt(div) {
+    let button = document.createElement('div')
+    button.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+    </svg>
+    `
+    button.className = 'viewBt'
+    let event;
+    button.removeEventListener('click', event)
+    button.addEventListener('click', event = () => {
+        console.log('clicou')
+        $('#legendView').modal('show')
+    })
+    let icons;
+    if (lang == 'en') {
+        icons = `
+        <div class="descriptionView">
+            <img src="/static/media/icons/vermelho.png" alt="">
+            <p>${texts.vermelho}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/preto.png" alt="">
+            <p>${texts.preto}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/amarelo.png" alt="">
+            <p>${texts.amarelo}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/vermelho-branco.png" alt="">
+            <p>${texts.vermelhobranco}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/preto-branco.png" alt="">
+            <p>${texts.pretobranco}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/branco-preto.png" alt="">
+            <p>${texts.brancopreto}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/branco.png" alt="">
+            <p>${texts.branco}</p>
+        </div>
+        `
+    } else if (lang == 'es' || lang == 'es-ar') {
+        icons = `
+        <div class="descriptionView">
+            <img src="/static/media/icons/vermelho.png" alt="">
+            <p>${texts.vermelho}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/preto.png" alt="">
+            <p>${texts.preto}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/rosa-claro.png" alt="">
+            <p>${texts.rosaclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/rosa-escuro.png" alt="">
+            <p>${texts.rosaescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/verde-escuro.png" alt="">
+            <p>${texts.verdeescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/amarelo.png" alt="">
+            <p>${texts.amarelo}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/flamengo.png" alt="">
+            <p>${texts.flamengo}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/azul-escuro.png" alt="">
+            <p>${texts.azulescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/verde-claro.png" alt="">
+            <p>${texts.verdeclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/laranja-escuro.png" alt="">
+            <p>${texts.laranjaescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/vermelho-branco.png" alt="">
+            <p>${texts.vermelhobranco}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/preto-branco.png" alt="">
+            <p>${texts.pretobranco}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/azul-claro.png" alt="">
+            <p>${texts.azulclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/branco-preto.png" alt="">
+            <p>${texts.brancopreto}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/branco.png" alt="">
+            <p>${texts.branco}</p>
+        </div>
+    </div>
+        `
     } else {
-        texts = allTexts.pt
+        icons = `
+        <div class="descriptionView">
+            <img src="/static/media/icons/vermelho.png" alt="">
+            <p>${texts.vermelho}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/preto.png" alt="">
+            <p>${texts.preto}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/rosa-claro.png" alt="">
+            <p>${texts.rosaclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/rosa-escuro.png" alt="">
+            <p>${texts.rosaescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/verde-escuro.png" alt="">
+            <p>${texts.verdeescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/amarelo.png" alt="">
+            <p>${texts.amarelo}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/azul-escuro.png" alt="">
+            <p>${texts.azulescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/verde-claro.png" alt="">
+            <p>${texts.verdeclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/laranja-claro.png" alt="">
+            <p>${texts.laranjaclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/laranja-escuro.png" alt="">
+            <p>${texts.laranjaescuro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/vermelho-branco.png" alt="">
+            <p>${texts.vermelhobranco}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/preto-branco.png" alt="">
+            <p>${texts.pretobranco}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/azul-claro.png" alt="">
+            <p>${texts.azulclaro}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/branco-preto.png" alt="">
+            <p>${texts.brancopreto}</p>
+        </div>
+        <div class="descriptionView">
+            <img src="/static/media/icons/branco.png" alt="">
+            <p>${texts.branco}</p>
+        </div>
+    </div>
+        `
     }
+    let modal = document.createElement('div')
+    modal.className = 'modal fade'
+    modal.id = `legendView`
+    modal.tabIndex = '-1'
+    modal.ariaLabel = `legendView`
+    modal.ariaHidden = true
+    modal.innerHTML = `
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="legendView">${texts.modalLegendsTitle}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ${icons}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.fecharBt}</button>
+            </div>
+        </div>
+    </div>
+    `
+    div.appendChild(modal)
+    return button
+}
+function createSearchBox(map) {
     let input = document.createElement('input')
     input.className = 'placesSearchInput'
     input.id = 'placesSearchInput'
@@ -1062,14 +1316,6 @@ function chooseMarker(formato) {
 var initMap = function(divMap, center=null, radius=null) {
     pontosSelecionadosId = []
     markerClickAction = 'view'
-    let texts;
-    if (lang == 'es' || lang == 'es-ar') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
-    } else {
-        texts = allTexts.pt
-    }
     var mapOptions = {
         center: {lat: -23.5489, lng: -46.6388},
         zoom: 8,
@@ -1081,6 +1327,7 @@ var initMap = function(divMap, center=null, radius=null) {
     }
     var map = new google.maps.Map(divMap, mapOptions)
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(createMarkerClickBt());
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(createLegendBt(divMap));
     createSearchBox(map)
     var latlngbounds = new google.maps.LatLngBounds() // Adequar o zoom para ver todos os pontos
     if (center) {
@@ -1268,14 +1515,6 @@ var initMap = function(divMap, center=null, radius=null) {
     return map
 }
 function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBtEvent) {
-    let texts;
-    if (lang == 'es' || lang == 'es-ar') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
-    } else {
-        texts = allTexts.pt
-    }
 
     let drawingManager = new google.maps.drawing.DrawingManager({
         map: map,
@@ -1373,14 +1612,6 @@ function removeMapMarkerPosition(drawingManager) {
     drawingManager.setOptions({ drawingControl: false })
 }
 function getPointsByLatLng(latitude, longitude, radius, bt) {
-    let texts;
-    if (lang == 'es' || lang == 'es-ar') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
-    } else {
-        texts = allTexts.pt
-    }
     latitude.disabled = true
     longitude.disabled = true
     radius.disabled = true
@@ -1453,14 +1684,6 @@ function getPointsByLatLng(latitude, longitude, radius, bt) {
     })
 }
 function gerarLista(index) {
-    let texts = null
-    if (lang == 'es') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
-    } else {
-        texts = allTexts.pt
-    }
     let body_content = document.querySelector('#body-content')
     let listaViewBt = document.querySelector('#listaViewBt')
     let mapaViewBt = document.querySelector('#mapaViewBt')
@@ -1601,7 +1824,7 @@ function gerarLista(index) {
         visualizarModal.className = 'modal fade'
         visualizarModal.id = `visualizar${id}`
         visualizarModal.tabIndex = '-1'
-        visualizar.ariaLabel = `exampleModalLabelVisualizar${id}`
+        visualizarModal.ariaLabel = `exampleModalLabelVisualizar${id}`
         visualizarModal.ariaHidden = true
         visualizarModal.innerHTML = `
         <div class="modal-dialog">
@@ -1812,6 +2035,18 @@ function gerarLista(index) {
                         alertGenerate(body, 'Some mandatory field is not filled.')
                     } else {
                         alertGenerate(body, 'Algum campo obrigatório não foi preenchido.')
+                    }
+                    return
+                }
+                if (!isNumber(latitudeInput.value) || !isNumber(longitudeInput.value)) {
+                    confirmarEditBt.innerHTML = texts.confirmarBt
+                    $(`#editar${id}`).modal('hide')
+                    if (lang == 'es' || lang == 'es-ar') {
+                        alertGenerate(body, 'Latitud o longitud inválida.')
+                    } else if (lang == 'en') {
+                        alertGenerate(body, 'Invalid latitude or longitude.')
+                    } else {
+                        alertGenerate(body, 'Latitude ou longitude inválida.')
                     }
                     return
                 }
@@ -2640,14 +2875,6 @@ export var listaPontos = function() {
     cleanFilters()
     pontosSelecionadosId = []
     filtros.view = 'list'
-    let texts;
-    if (lang == 'es' || lang == 'es-ar') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
-    } else {
-        texts = allTexts.pt
-    }
 
     let listaPontosOpt = document.querySelector('#listaPontosOpt')
     let mapaPontosOpt = document.querySelector('#mapaPontosOpt')
@@ -3603,14 +3830,6 @@ export var mapaPontos = function() {
     pontos.length = 0
     pontos.pontos = []
     filtros.view = 'map'
-    let texts;
-    if (lang == 'es' || lang == 'es-ar') {
-        texts = allTexts.es
-    } else if (lang == 'en') {
-        texts = allTexts.en
-    } else {
-        texts = allTexts.pt
-    }
 
     let listaPontosOpt = document.querySelector('#listaPontosOpt')
     let mapaPontosOpt = document.querySelector('#mapaPontosOpt')

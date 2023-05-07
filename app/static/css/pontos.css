@@ -528,3 +528,10 @@
     width: 20%;
     height: 35px;
 }
+.descriptionView {
+    display: flex;
+}
+.descriptionView p {
+    height: auto;
+    margin: auto 1rem;
+}

@@ -115,6 +115,7 @@ def get_pontos(filtros):
 
         
         query = query.limit(200).all()
+        print('até aqui ok')
         pontos = []
         for item in query:
             ponto = {}
