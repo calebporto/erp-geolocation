@@ -278,7 +278,20 @@ var pontosSelecionadosId = []
 
 var markerClickAction; // Altera clique no marcador do mapa entre visualizar modal ou selecionar
 var allMarkers = []
+var visibleMarkers = []
 
+function selectAllChecker() {
+    let selectAll = document.querySelector('#selectAll')
+    if (visibleMarkers.length == 0) {
+        selectAll.checked = false
+        return
+    }
+    if (pontosSelecionadosId.length == visibleMarkers.length) {
+        selectAll.checked = true
+    } else {
+        selectAll.checked = false
+    }
+}
 function isNumber(n) {
     n = n.replace(',', '.')
     return Number(n) == n
@@ -306,7 +319,7 @@ function createMarkerClickBt() {
     })
     return changeMarkerClickBt
 }
-function createLegendBt(div) {
+function createLegendBt(div, formats, map) {
     let button = document.createElement('div')
     button.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
@@ -317,169 +330,79 @@ function createLegendBt(div) {
     let event;
     button.removeEventListener('click', event)
     button.addEventListener('click', event = () => {
-        console.log('clicou')
         $('#legendView').modal('show')
     })
-    let icons;
-    if (lang == 'en') {
-        icons = `
-        <div class="descriptionView">
-            <img src="/static/media/icons/vermelho.png" alt="">
-            <p>${texts.vermelho}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/preto.png" alt="">
-            <p>${texts.preto}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/amarelo.png" alt="">
-            <p>${texts.amarelo}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/vermelho-branco.png" alt="">
-            <p>${texts.vermelhobranco}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/preto-branco.png" alt="">
-            <p>${texts.pretobranco}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/branco-preto.png" alt="">
-            <p>${texts.brancopreto}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/branco.png" alt="">
-            <p>${texts.branco}</p>
-        </div>
-        `
-    } else if (lang == 'es' || lang == 'es-ar') {
-        icons = `
-        <div class="descriptionView">
-            <img src="/static/media/icons/vermelho.png" alt="">
-            <p>${texts.vermelho}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/preto.png" alt="">
-            <p>${texts.preto}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/rosa-claro.png" alt="">
-            <p>${texts.rosaclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/rosa-escuro.png" alt="">
-            <p>${texts.rosaescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/verde-escuro.png" alt="">
-            <p>${texts.verdeescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/amarelo.png" alt="">
-            <p>${texts.amarelo}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/flamengo.png" alt="">
-            <p>${texts.flamengo}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/azul-escuro.png" alt="">
-            <p>${texts.azulescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/verde-claro.png" alt="">
-            <p>${texts.verdeclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/laranja-escuro.png" alt="">
-            <p>${texts.laranjaescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/vermelho-branco.png" alt="">
-            <p>${texts.vermelhobranco}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/preto-branco.png" alt="">
-            <p>${texts.pretobranco}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/azul-claro.png" alt="">
-            <p>${texts.azulclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/branco-preto.png" alt="">
-            <p>${texts.brancopreto}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/branco.png" alt="">
-            <p>${texts.branco}</p>
-        </div>
-    </div>
-        `
-    } else {
-        icons = `
-        <div class="descriptionView">
-            <img src="/static/media/icons/vermelho.png" alt="">
-            <p>${texts.vermelho}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/preto.png" alt="">
-            <p>${texts.preto}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/rosa-claro.png" alt="">
-            <p>${texts.rosaclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/rosa-escuro.png" alt="">
-            <p>${texts.rosaescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/verde-escuro.png" alt="">
-            <p>${texts.verdeescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/amarelo.png" alt="">
-            <p>${texts.amarelo}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/azul-escuro.png" alt="">
-            <p>${texts.azulescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/verde-claro.png" alt="">
-            <p>${texts.verdeclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/laranja-claro.png" alt="">
-            <p>${texts.laranjaclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/laranja-escuro.png" alt="">
-            <p>${texts.laranjaescuro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/vermelho-branco.png" alt="">
-            <p>${texts.vermelhobranco}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/preto-branco.png" alt="">
-            <p>${texts.pretobranco}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/azul-claro.png" alt="">
-            <p>${texts.azulclaro}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/branco-preto.png" alt="">
-            <p>${texts.brancopreto}</p>
-        </div>
-        <div class="descriptionView">
-            <img src="/static/media/icons/branco.png" alt="">
-            <p>${texts.branco}</p>
-        </div>
-    </div>
-        `
+    let divModalBody = document.createElement('div')
+    divModalBody.className = 'divModalBody'
+    for (let i = 0; i < formats.length; i++) {
+        let format = formats[i]
+        let cor;
+        let text;
+        switch (format) {
+            case ('outdoor'): cor = 'vermelho'; text = texts.vermelho; break;
+            case ('painelLed'): cor = 'preto'; text = texts.preto; break
+            case ('painelRodoviario'): cor = 'rosa-claro'; text = texts.rosaclaro; break
+            case ('painelRodovia'): cor = 'rosa-escuro'; text = texts.rosaescuro; break
+            case ('megaPainel'): cor = 'verde-escuro'; text = texts.verdeescuro; break
+            case ('painel'): cor = 'amarelo'; text = texts.amarelo; break
+            case ('totemLed'): cor = 'flamengo'; text = texts.flamengo; break
+            case ('bancaLed'): cor = 'azul-escuro'; text = texts.azulescuro; break
+            case ('banca'): cor = 'verde-claro'; text = texts.verdeclaro; break
+            case ('empenaLed'): cor = 'laranja-claro'; text = texts.laranjaclaro; break
+            case ('empena'): cor = 'laranja-escuro'; text = texts.laranjaescuro; break
+            case ('ppl'): cor = 'vermelho-branco'; text = texts.vermelhobranco; break
+            case ('transiluminado'): cor = 'preto-branco'; text = texts.pretobranco; break
+            case ('mubLed'): cor = 'azul-claro'; text = texts.azulclaro; break
+            case ('mub'): cor = 'branco-preto'; text = texts.brancopreto; break
+            case ('outro'): cor = 'branco'; text = texts.branco; break
+        }
+        let divDescriptionView = document.createElement('div')
+        divDescriptionView.className = 'descriptionView'
+        let img = document.createElement('img')
+        img.src = `/static/media/icons/${cor}.png`
+        let p = document.createElement('p')
+        p.innerHTML = text
+        let checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.className = 'divFiltroRadio'
+        checkbox.value = cor
+        checkbox.checked = true
+        checkbox.name = 'iconCheckbox'
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                allMarkers.forEach(markerObj => {
+                    if (markerObj.format == format) {
+                        markerObj.marker.setMap(map)
+                        visibleMarkers.push(markerObj)
+                    }
+                })
+            } else {
+                let temp = visibleMarkers.map(el => el)
+                visibleMarkers.forEach(markerObj => {
+                    if (markerObj.format == format) {
+                        markerObj.marker.setMap(null)
+
+                        // Retirar seleção do marcador e da lista de pontos selecionados
+                        markerObj.marker.setIcon(markerObj.icon)
+                        if (pontosSelecionadosId.indexOf(markerObj.id) != -1) {
+                            pontosSelecionadosId.splice(pontosSelecionadosId.indexOf(markerObj.id), 1)
+                        }
+                        console.log(pontosSelecionadosId.length)
+                        let index = temp.indexOf(markerObj)
+                        temp.splice(index, 1)
+                    }
+                })
+                visibleMarkers = temp
+            }
+            displayActionsBtsMap()
+            selectAllChecker()
+            console.log(visibleMarkers.length)
+            console.log(pontosSelecionadosId.length)
+        })
+        divDescriptionView.appendChild(checkbox)
+        divDescriptionView.appendChild(img)
+        divDescriptionView.appendChild(p)
+        divModalBody.appendChild(divDescriptionView)
     }
     let modal = document.createElement('div')
     modal.className = 'modal fade'
@@ -494,8 +417,7 @@ function createLegendBt(div) {
                 <h5 class="modal-title" id="legendView">${texts.modalLegendsTitle}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                ${icons}
+            <div class="modal-body" id="iconModalBody">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${texts.fecharBt}</button>
@@ -504,6 +426,10 @@ function createLegendBt(div) {
     </div>
     `
     div.appendChild(modal)
+    
+    let modalBody = document.querySelector('#iconModalBody')
+    modalBody.appendChild(divModalBody)
+    
     return button
 }
 function createSearchBox(map) {
@@ -538,7 +464,7 @@ function createSearchBox(map) {
         map.fitBounds(bounds)
     })
 }
-function createDivActions(texts) {
+function createDivActions() {
     let divActions = document.createElement('div')
     divActions.className = 'divActions'
     let divSelectAll = document.createElement('div')
@@ -548,8 +474,6 @@ function createDivActions(texts) {
     selectAll.id = 'selectAll'
     selectAll.className = 'selectAll'
     selectAll.addEventListener('change', () => {
-        console.log(filtros['view'])
-        console.log(filtros.view)
         if (filtros['view'] != 'map') {
             selectAllCheckbox()
         } else {
@@ -1190,15 +1114,16 @@ function selectAllCheckbox() {
     displayActionsBts()
 }
 function selectAllMarkers() {
-    console.log('selectAllMarker')
-
     let selectAll = document.querySelector('#selectAll')
     let viewBtMap = document.querySelector('#viewBtMap')
     pontosSelecionadosId = []
-    if (allMarkers.length == 0) {
+    if (visibleMarkers.length == 0) {
+        if (selectAll.checked) {
+            selectAll.checked = false
+        }
         return
     }
-    allMarkers.forEach((el, index) => {
+    visibleMarkers.forEach((el, index) => {
         if (selectAll.checked) {
             if (index == 0) {
                 viewBtMap.classList.add('select')
@@ -1211,9 +1136,11 @@ function selectAllMarkers() {
                 viewBtMap.classList.remove('select')
                 markerClickAction = 'view'
             }
-            el.marker.setIcon(null)
+            el.marker.setIcon(el.icon)
         }
     })
+    console.log(visibleMarkers.length)
+    console.log(pontosSelecionadosId.length)
     displayActionsBtsMap()
 }
 function displayActionsBtsMap() {
@@ -1224,7 +1151,7 @@ function displayActionsBtsMap() {
     } else {
         divActionsBtGroup.style.display = 'none'
     }
-    if (pontosSelecionadosId.length == allMarkers.length) {
+    if (pontosSelecionadosId.length == visibleMarkers.length) {
         selectAll.checked = true
     } else {
         selectAll.checked = false
@@ -1259,6 +1186,12 @@ function displayActionsBts() {
     }
 }
 function chooseMarker(formato) {
+    class IconFormat {
+        constructor(icon, format) {
+            this.icon = icon,
+            this.format = format
+        }
+    }
     let includes = (array, formato) => {
         for (let i = 0; i < array.length; i++) {
             let item = array[i]
@@ -1270,52 +1203,52 @@ function chooseMarker(formato) {
     }
     if (formato) {
         if (includes(['outdoor', 'sextuples', 'billaboard classic'], formato)) {
-            return '/static/media/icons/vermelho.png'
+            return new IconFormat('/static/media/icons/vermelho.png', 'outdoor')
         }
         if (includes(['painel led', 'painel de led', 'pantalla led', 'billaboard led'], formato)) {
-            return '/static/media/icons/preto.png'
+            return new IconFormat('/static/media/icons/preto.png', 'painelLed')
         }
         if (includes(['painel rodoviario', 'columna'], formato)) {
-            return '/static/media/icons/rosa-claro.png'
+            return new IconFormat('/static/media/icons/rosa-claro.png', 'painelRodoviario')
         }
         if (includes(['painel de rodovia', 'ruteros'], formato)) {
-            return '/static/media/icons/rosa-escuro.png'
+            return new IconFormat('/static/media/icons/rosa-escuro.png', 'painelRodovia')
         }
         if (includes(['mega painel', 'espectacular'], formato)) {
-            return '/static/media/icons/verde-escuro.png'
+            return new IconFormat('/static/media/icons/verde-escuro.png', 'megaPainel')
         }
         if (includes(['painel', 'front light', 'frontlight', 'pantalla', 'billaboard smart / large'], formato)) {
-            return '/static/media/icons/amarelo.png'
+            return new IconFormat('/static/media/icons/amarelo.png', 'painel')
         }
         if (includes(['totem led'], formato)) {
-            return '/static/media/icons/flamengo.png'
+            return new IconFormat('/static/media/icons/flamengo.png', 'totemLed')
         }
         if (includes(['banca led', 'kiosco led'], formato)) {
-            return '/static/media/icons/azul-escuro.png'
+            return new IconFormat('/static/media/icons/azul-escuro.png', 'bancaLed')
         }
         if (includes(['banca', 'kiosco'], formato)) {
-            return '/static/media/icons/verde-claro.png'
+            return new IconFormat('/static/media/icons/verde-claro.png', 'banca')
         }
         if (includes(['empena led'], formato)) {
-            return '/static/media/icons/laranja-claro.png'
+            return new IconFormat('/static/media/icons/laranja-claro.png', 'empenaLed')
         }
         if (includes(['empena', 'medianera'], formato)) {
-            return '/static/media/icons/laranja-escuro.png'
+            return new IconFormat('/static/media/icons/laranja-escuro.png', 'empena')
         }
         if (includes(['ppl'], formato)) {
-            return '/static/media/icons/vermelho-branco.png'
+            return new IconFormat('/static/media/icons/vermelho-branco.png', 'ppl')
         }
         if (includes(['transiluminado'], formato)) {
-            return '/static/media/icons/preto-branco.png'
+            return new IconFormat('/static/media/icons/preto-branco.png', 'transiluminado')
         }
         if (includes(['mub led'], formato)) {
-            return '/static/media/icons/azul-claro.png'
+            return new IconFormat('/static/media/icons/azul-claro.png', 'mubLed')
         }
         if (includes(['mub'], formato)) {
-            return '/static/media/icons/branco-preto.png'
+            return new IconFormat('/static/media/icons/branco-preto.png', 'mub')
         }
     }
-    return '/static/media/icons/branco.png'
+    return new IconFormat('/static/media/icons/branco.png', 'outro')
 }
 var initMap = function(divMap, center=null, radius=null) {
     pontosSelecionadosId = []
@@ -1330,9 +1263,6 @@ var initMap = function(divMap, center=null, radius=null) {
         },
     }
     var map = new google.maps.Map(divMap, mapOptions)
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(createMarkerClickBt());
-    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(createLegendBt(divMap));
-    createSearchBox(map)
     var latlngbounds = new google.maps.LatLngBounds() // Adequar o zoom para ver todos os pontos
     if (center) {
         map.setCenter(center)
@@ -1348,17 +1278,23 @@ var initMap = function(divMap, center=null, radius=null) {
             radius: radius * 1000
           });
     }
-    var formatos = []
+    var formats = []
     for (let i = 0; i < pontos.pontos.length; i++) {
         let ponto = pontos.pontos[i]
         let id = ponto.basic.id
         let coordenadas = new google.maps.LatLng(ponto.basic.latitude, ponto.basic.longitude)
         let formato = ponto.basic.format
-        let icon = chooseMarker(formato)
+
+        let iconFormat = chooseMarker(formato)
+        let icon = iconFormat.icon
+        if (formats.indexOf(iconFormat.format) == -1) {
+            formats.push(iconFormat.format)
+        }
+
         let marker = new google.maps.Marker({
             position: coordenadas,//seta posição
             map: map,//Objeto mapa
-            title: ponto.basic.address, //string que será exibida quando passar o mouse no marker
+            title: `${ponto.basic.address} / ${ponto.basic.format}`, //string que será exibida quando passar o mouse no marker
             icon: icon
         });
         latlngbounds.extend(marker.position);
@@ -1487,13 +1423,16 @@ var initMap = function(divMap, center=null, radius=null) {
         `
         let markerClicked = false
         google.maps.event.addListener(marker, 'click', () => {
+            console.log('clicou')
             if (markerClickAction == 'view') {
                 $('#markerModal' + id).modal('show')
             } else if (markerClickAction == 'select') {
+                console.log(markerClicked)
                 if (pontosSelecionadosId.indexOf(id) != -1) {
                     markerClicked = true
                 }
                 if (markerClicked == false) {
+                    console.log('clicou3')
                     markerClicked = true
                     pontosSelecionadosId.push(id)
                     marker.setIcon('/static/media/icons/cinza.png')
@@ -1503,16 +1442,23 @@ var initMap = function(divMap, center=null, radius=null) {
                     pontosSelecionadosId.splice(index, 1)
                     marker.setIcon(icon)
                 }
+                console.log(pontosSelecionadosId.length)
                 displayActionsBtsMap()
             }
         })
         divMap.appendChild(markerModal)
         let markerInfo = {
             id: id,
+            icon: iconFormat.icon,
+            format: iconFormat.format,
             marker: marker
         }
         allMarkers.push(markerInfo)
+        visibleMarkers.push(markerInfo)
     }
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(createMarkerClickBt());
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(createLegendBt(divMap, formats, map));
+    createSearchBox(map)
     if (pontos.pontos.length > 0) {
         map.fitBounds(latlngbounds)
     }
@@ -2868,9 +2814,10 @@ function carregarPontos() {
             )
             pontos.pontos.push(ponto)
         })
+
         pontosSelecionadosId = []
         allMarkers = []
-        //console.log(allMarkers.length)
+        visibleMarkers = []
         visualizarPontos()
         displayActionsBts()
     })
@@ -3898,6 +3845,7 @@ export var mapaPontos = function() {
     cleanFilters()
     pontosSelecionadosId = []
     allMarkers = []
+    visibleMarkers = []
     pontos.length = 0
     pontos.pontos = []
     filtros.view = 'map'
