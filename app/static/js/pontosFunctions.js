@@ -281,6 +281,8 @@ var allMarkers = []
 var visibleMarkers = []
 
 function selectAllChecker() {
+    console.log(pontosSelecionadosId.length)
+    console.log(visibleMarkers.map(marker => [marker.marker.getPosition().lat(), marker.marker.getPosition().lng()]))
     let selectAll = document.querySelector('#selectAll')
     if (visibleMarkers.length == 0) {
         selectAll.checked = false
@@ -331,6 +333,8 @@ function createLegendBt(div, formats, map) {
     button.removeEventListener('click', event)
     button.addEventListener('click', event = () => {
         $('#legendView').modal('show')
+        let modalBody = document.querySelector('#iconModalBody')
+        modalBody.appendChild(divModalBody)
     })
     let divModalBody = document.createElement('div')
     divModalBody.className = 'divModalBody'
@@ -424,10 +428,6 @@ function createLegendBt(div, formats, map) {
     </div>
     `
     div.appendChild(modal)
-    
-    let modalBody = document.querySelector('#iconModalBody')
-    console.log(modalBody)
-    modalBody.appendChild(divModalBody)
     
     return button
 }
@@ -1128,12 +1128,14 @@ function selectAllMarkers() {
                 markerClickAction = 'select'
             }
             pontosSelecionadosId.push(parseInt(el.id))
+            el.marker.clicked = true
             el.marker.setIcon('/static/media/icons/cinza.png')
         } else {
             if (index == 0) {
                 viewBtMap.classList.remove('select')
                 markerClickAction = 'view'
             }
+            el.marker.clicked = false
             el.marker.setIcon(el.icon)
         }
     })
@@ -1290,7 +1292,7 @@ var initMap = function(divMap, center=null, radius=null) {
         let marker = new google.maps.Marker({
             position: coordenadas,//seta posição
             map: map,//Objeto mapa
-            title: `${ponto.basic.address} / ${ponto.basic.format}`, //string que será exibida quando passar o mouse no marker
+            title: `${ponto.basic.address}\n${texts.format}: ${ponto.basic.format}`, //string que será exibida quando passar o mouse no marker
             icon: icon,
             clicked: false
         });
@@ -1419,6 +1421,7 @@ var initMap = function(divMap, center=null, radius=null) {
         </div>
         `
         google.maps.event.addListener(marker, 'click', () => {
+            console.log('clicou')
             if (markerClickAction == 'view') {
                 $('#markerModal' + id).modal('show')
             } else if (markerClickAction == 'select') {
@@ -1437,6 +1440,7 @@ var initMap = function(divMap, center=null, radius=null) {
                 }
                 displayActionsBtsMap()
             }
+            selectAllChecker()
         })
         divMap.appendChild(markerModal)
         let markerInfo = {
