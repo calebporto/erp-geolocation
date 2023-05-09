@@ -384,10 +384,10 @@ function createLegendBt(div, formats, map) {
 
                         // Retirar seleção do marcador e da lista de pontos selecionados
                         markerObj.marker.setIcon(markerObj.icon)
+                        markerObj.marker.clicked = false
                         if (pontosSelecionadosId.indexOf(markerObj.id) != -1) {
                             pontosSelecionadosId.splice(pontosSelecionadosId.indexOf(markerObj.id), 1)
                         }
-                        console.log(pontosSelecionadosId.length)
                         let index = temp.indexOf(markerObj)
                         temp.splice(index, 1)
                     }
@@ -396,8 +396,6 @@ function createLegendBt(div, formats, map) {
             }
             displayActionsBtsMap()
             selectAllChecker()
-            console.log(visibleMarkers.length)
-            console.log(pontosSelecionadosId.length)
         })
         divDescriptionView.appendChild(checkbox)
         divDescriptionView.appendChild(img)
@@ -428,6 +426,7 @@ function createLegendBt(div, formats, map) {
     div.appendChild(modal)
     
     let modalBody = document.querySelector('#iconModalBody')
+    console.log(modalBody)
     modalBody.appendChild(divModalBody)
     
     return button
@@ -1090,7 +1089,6 @@ function cleanFilters() {
     }
 }
 function selectAllCheckbox() {
-    console.log('allCheckbox')
     let selectAll = document.querySelector('#selectAll')
     let allCheckbox = document.getElementsByClassName('linhaCheckbox')
     if (selectAll.checked == true) {
@@ -1139,8 +1137,6 @@ function selectAllMarkers() {
             el.marker.setIcon(el.icon)
         }
     })
-    console.log(visibleMarkers.length)
-    console.log(pontosSelecionadosId.length)
     displayActionsBtsMap()
 }
 function displayActionsBtsMap() {
@@ -1295,7 +1291,8 @@ var initMap = function(divMap, center=null, radius=null) {
             position: coordenadas,//seta posição
             map: map,//Objeto mapa
             title: `${ponto.basic.address} / ${ponto.basic.format}`, //string que será exibida quando passar o mouse no marker
-            icon: icon
+            icon: icon,
+            clicked: false
         });
         latlngbounds.extend(marker.position);
         let markerModal = document.createElement('div')
@@ -1421,28 +1418,23 @@ var initMap = function(divMap, center=null, radius=null) {
             </div>
         </div>
         `
-        let markerClicked = false
         google.maps.event.addListener(marker, 'click', () => {
-            console.log('clicou')
             if (markerClickAction == 'view') {
                 $('#markerModal' + id).modal('show')
             } else if (markerClickAction == 'select') {
-                console.log(markerClicked)
                 if (pontosSelecionadosId.indexOf(id) != -1) {
-                    markerClicked = true
+                    marker.clicked = true
                 }
-                if (markerClicked == false) {
-                    console.log('clicou3')
-                    markerClicked = true
+                if (marker.clicked == false) {
+                    marker.clicked = true
                     pontosSelecionadosId.push(id)
                     marker.setIcon('/static/media/icons/cinza.png')
                 } else {
-                    markerClicked = false
+                    marker.clicked = false
                     let index = pontosSelecionadosId.indexOf(id)
                     pontosSelecionadosId.splice(index, 1)
                     marker.setIcon(icon)
                 }
-                console.log(pontosSelecionadosId.length)
                 displayActionsBtsMap()
             }
         })
@@ -4001,5 +3993,4 @@ export var mapaPontos = function() {
     divOptions.appendChild(divMapActions)
     divOptions.appendChild(divResultOpt)
     divOptions.appendChild(createDivActions(texts))
-
 }
