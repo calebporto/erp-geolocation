@@ -108,9 +108,9 @@ def get_pontos(filtros):
             else:
                 items = [Spot_Private_Info.empresa.ilike(f'%{term}%')for term in empresa]
                 query = query.filter(or_(*items))
-        
+
         count = query.count()
-        
+
         if order_by != 'ordId':
             if order_by == 'ordEmpresa':
                 query = query.order_by(Spot_Private_Info.empresa)
@@ -120,7 +120,7 @@ def get_pontos(filtros):
                 query = query.order_by(Spot.city)
             elif order_by == 'ordBairro':
                 query = query.order_by(Spot.district)
-            
+
             if int(filtros['offset']) > 0:
                 query = query.offset(filtros['offset'])
         else:
@@ -128,7 +128,7 @@ def get_pontos(filtros):
                 query = query.filter(Spot.id < int(filtros['id']))
             query = query.order_by(Spot.id.desc())
 
-        
+
         query = query.limit(200).all()
         print('até aqui ok')
         pontos = []
@@ -187,7 +187,7 @@ def get_pontos_by_id_list(id_list):
     .join(Spot_Private_Info, Spot.id == Spot_Private_Info.spot_id)\
     .add_columns(Spot_Commercial_Info, Spot_Private_Info)\
     .filter(Spot.id.in_(id_list)).all()
-    
+
 
     return query
 
@@ -261,7 +261,7 @@ def edit_pontos(lang, dados):
             message=messages
         )
         return response.json()
-    
+
 def delete_ponto(lang, id):
     messages = []
     try:
@@ -294,14 +294,14 @@ def delete_ponto(lang, id):
             message=messages
         )
         return response.json()
-    
+
 def delete_pontos(lang, idList):
     messages = []
     query = Spot.query.filter(Spot.id.in_(idList)).all()
     for spot in query:
         db.session.delete(spot)
     db.session.commit()
-    
+
     if lang == 'es' or lang == 'es-ar':
         messages.append('Puntos removidos con exito.')
     elif lang == 'en':
@@ -314,14 +314,21 @@ def delete_pontos(lang, idList):
     )
     return response.json()
 
-def get_point_in_radius(lat, lng, radius):
+def get_point_in_radius(coordinateList, radius):
     earth_radius = 6371
 
     query = Spot.query\
             .join(Spot_Commercial_Info, Spot.id == Spot_Commercial_Info.spot_id)\
             .join(Spot_Private_Info, Spot.id == Spot_Private_Info.spot_id)\
-            .add_columns(Spot_Commercial_Info, Spot_Private_Info)\
-            .filter((
+            .add_columns(Spot_Commercial_Info, Spot_Private_Info)
+
+
+    if len(coordinateList) == 0:
+        return []
+    elif len(coordinateList) == 1:
+        lat = coordinateList[0]['lat']
+        lng = coordinateList[0]['lng']
+        query = query.filter((
                 earth_radius *\
                 func.acos(
                     func.cos(func.radians(lat)) *\
@@ -331,6 +338,18 @@ def get_point_in_radius(lat, lng, radius):
                     func.sin(func.radians(Spot.latitude))
                 )
             ) <= radius)
+    else:
+        items = [(earth_radius *\
+                func.acos(
+                    func.cos(func.radians(coordinate['lat'])) *\
+                    func.cos(func.radians(Spot.latitude)) *\
+                    func.cos(func.radians(coordinate['lng']) - func.radians(Spot.longitude)) +\
+                    func.sin(func.radians(coordinate['lat'])) *\
+                    func.sin(func.radians(Spot.latitude))
+                )
+            ) <= radius for coordinate in coordinateList]
+        query = query.filter(or_(*items))
+
     count = query.count()
     query = query.all()
     pontos = []

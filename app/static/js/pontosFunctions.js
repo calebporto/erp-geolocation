@@ -259,7 +259,7 @@ var pontos = {
 var filtros = {
     'view': 'list',
     'type': 'all',
-    'coordinates': {'lat': null, 'lng': null},
+    'coordinates': [],
     'radius': null,
     'order_by': 'ordId',
     'id': 0,
@@ -510,18 +510,22 @@ function createDivActions() {
             if (!response.ok) {
                 divGerarExcel.innerHTML = divGerarExcelText
                 if (lang == 'es' || lang == 'es-ar') {
-                    alertGenerate(body, 'Erro del servidor.')
+                    let alert = alertGenerate(body, 'Erro del servidor.')
+                    alert.focus()
                 } else if (lang == 'en') {
-                    alertGenerate(body, 'Server error.')
+                    let alert = alertGenerate(body, 'Server error.')
+                    alert.focus()
                 } else {
-                    alertGenerate(body, 'Erro no servidor.')
+                    let alert = alertGenerate(body, 'Erro no servidor.')
+                    alert.focus()
                 }
             } else {
                 return response.json()
                 .then((dados) => {
                     divGerarExcel.innerHTML = divGerarExcelText
                     dados.message.forEach(message => {
-                        alertGenerate(body, message)
+                        let alert = alertGenerate(body, message)
+                        alert.focus()
                     })
                     window.open(`/painel/conversor/kml/download/${dados.data}`)
                 })
@@ -562,11 +566,14 @@ function createDivActions() {
             }
             if (bookColumnList.length > 15) {
                 if (lang == 'es' || lang == 'es-ar'){
-                    alertGenerate(modalBody, 'Máximo 15 columnas')
+                    let alert = alertGenerate(modalBody, 'Máximo 15 columnas')
+                    alert.focus()
                 } else if (lang == 'en'){
-                    alertGenerate(modalBody, 'Máximum 15 columns')
+                    let alert = alertGenerate(modalBody, 'Máximum 15 columns')
+                    alert.focus()
                 } else {
-                    alertGenerate(modalBody, '15 colunas no máximo')
+                    let alert = alertGenerate(modalBody, '15 colunas no máximo')
+                    alert.focus()
                 }
                 modalTitle.focus()
                 sendBookBt.innerHTML = texts.confirmarBt
@@ -577,11 +584,14 @@ function createDivActions() {
             let clientName = document.querySelector('#clientName').value
             if (!bookName) {
                 if (lang == 'es' || lang == 'es-ar'){
-                    alertGenerate(modalBody, 'Elije um nombre para el book')
+                    let alert = alertGenerate(modalBody, 'Elije um nombre para el book')
+                    alert.focus()
                 } else if (lang == 'en'){
-                    alertGenerate(modalBody, 'Choose a name for the book')
+                    let alert = alertGenerate(modalBody, 'Choose a name for the book')
+                    alert.focus()
                 } else {
-                    alertGenerate(modalBody, 'Escolha um nome para o book')
+                    let alert = alertGenerate(modalBody, 'Escolha um nome para o book')
+                    alert.focus()
                 }
                 modalTitle.focus()
                 sendBookBt.innerHTML = texts.confirmarBt
@@ -604,11 +614,14 @@ function createDivActions() {
                     cancelBookEvent()
                     $('#criarBookModal').modal('hide')
                     if (lang == 'es' || lang == 'es-ar') {
-                        alertGenerate(body, 'Erro del servidor.')
+                        let alert = alertGenerate(body, 'Erro del servidor.')
+                        alert.focus()
                     } else if (lang == 'en') {
-                        alertGenerate(body, 'Server error.')
+                        let alert = alertGenerate(body, 'Server error.')
+                        alert.focus()
                     } else {
-                        alertGenerate(body, 'Erro no servidor.')
+                        let alert = alertGenerate(body, 'Erro no servidor.')
+                        alert.focus()
                     }
                     carregarPontos()
                 } else {
@@ -618,7 +631,8 @@ function createDivActions() {
                         cancelBookEvent()
                         $('#criarBookModal').modal('hide')
                         dados.message.forEach(message => {
-                            alertGenerate(body, message)
+                            let alert = alertGenerate(body, message)
+                            alert.focus()
                         })
                         carregarPontos()
                         
@@ -851,11 +865,14 @@ function createDivActions() {
                     editarGrupoCancelarBtEvent()
                     $('#editarGrupoModal').modal('hide')
                     if (lang == 'es' || lang == 'es-ar') {
-                        alertGenerate(body, 'Erro del servidor.')
+                        let alert = alertGenerate(body, 'Erro del servidor.')
+                        alert.focus()
                     } else if (lang == 'en') {
-                        alertGenerate(body, 'Server error.')
+                        let alert = alertGenerate(body, 'Server error.')
+                        alert.focus()
                     } else {
-                        alertGenerate(body, 'Erro no servidor.')
+                        let alert = alertGenerate(body, 'Erro no servidor.')
+                        alert.focus()
                     }
                     carregarPontos()
                 } else {
@@ -865,7 +882,8 @@ function createDivActions() {
                         editarGrupoCancelarBtEvent()
                         $('#editarGrupoModal').modal('hide')
                         dados.message.forEach(message => {
-                            alertGenerate(body, message)
+                            let alert = alertGenerate(body, message)
+                            alert.focus()
                         })
                         carregarPontos()
                     })
@@ -1019,11 +1037,14 @@ function createDivActions() {
                     excluirGrupoModalConfirmarBt.innerHTML = texts.confirmarBt
                     $('#excluirGrupoModal').modal('hide')
                     if (lang == 'es' || lang == 'es-ar') {
-                        alertGenerate(body, 'Erro del servidor.')
+                        let alert = alertGenerate(body, 'Erro del servidor.')
+                        alert.focus()
                     } else if (lang == 'en') {
-                        alertGenerate(body, 'Server error.')
+                        let alert = alertGenerate(body, 'Server error.')
+                        alert.focus()
                     } else {
-                        alertGenerate(body, 'Erro no servidor.')
+                        let alert = alertGenerate(body, 'Erro no servidor.')
+                        alert.focus()
                     }
                     carregarPontos()
                 } else {
@@ -1032,7 +1053,8 @@ function createDivActions() {
                         excluirGrupoModalConfirmarBt.innerHTML = texts.confirmarBt
                         $('#excluirGrupoModal').modal('hide')
                         dados.message.forEach(message => {
-                            alertGenerate(body, message)
+                            let alert = alertGenerate(body, message)
+                            alert.focus()
                         })
                         carregarPontos()
                     })
@@ -1072,7 +1094,7 @@ function cleanFilters() {
     filtros = {
         'view': 'list',
         'type': 'all',
-        'coordinates': {'lat': null, 'lng': null},
+        'coordinates': [],
         'radius': null,
         'order_by': 'ordId',
         'id': 0,
@@ -1263,18 +1285,35 @@ var initMap = function(divMap, center=null, radius=null) {
     var map = new google.maps.Map(divMap, mapOptions)
     var latlngbounds = new google.maps.LatLngBounds() // Adequar o zoom para ver todos os pontos
     if (center) {
-        map.setCenter(center)
-        let flag = new google.maps.Marker({
-            position: center,
-            map:map,
-            title: 'Center',
-            icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
-        });
-        let circle = new google.maps.Circle({
-            map: map,
-            center: center,
-            radius: radius * 1000
-          });
+        if (center.length == 1) {
+            map.setCenter(center[0])
+            let flag = new google.maps.Marker({
+                position: center[0],
+                map:map,
+                title: 'Center',
+                icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+            });
+            let circle = new google.maps.Circle({
+                map: map,
+                center: center[0],
+                radius: radius * 1000
+              });
+        } else if (center.length > 1) {
+            center.forEach(coordinate => {
+                let flag = new google.maps.Marker({
+                    position: coordinate,
+                    map:map,
+                    title: 'Center',
+                    icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+                });
+                let circle = new google.maps.Circle({
+                    map: map,
+                    center: coordinate,
+                    radius: radius * 1000
+                });
+                latlngbounds.extend(coordinate);
+            })
+        }
     }
     var formats = []
     for (let i = 0; i < pontos.pontos.length; i++) {
@@ -1460,7 +1499,7 @@ var initMap = function(divMap, center=null, radius=null) {
     }
     return map
 }
-function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBtEvent) {
+function getPointsByMarkerPosition(map) {
 
     let drawingManager = new google.maps.drawing.DrawingManager({
         map: map,
@@ -1470,87 +1509,28 @@ function getPointsByMarkerPosition(map, raioRangeElement, raioSearchBt, searchBt
         }
     })
     google.maps.event.addListener(drawingManager, 'markercomplete', function(marker) {
-        cleanFilters()
-        filtros.view = 'map'
-        raioSearchBt.removeEventListener('click', searchBtEvent)
-        raioSearchBt.addEventListener('click', () => {
-            if (lang == 'es' || lang == 'es-ar') {
-                alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
-            } else if (lang == 'es') {
-                alertGenerate(body, 'Clean the search to fetch again')
+        if (filtros.coordinates.length >= 15) {
+            if (lang == 'es' || 'es-ar'){
+                let alert = alertGenerate(body, 'Puedes seleccionar hasta 15 puntos diferentes.')
+                alert.focus()
+                alert.focus()
+            } else if (lang == 'en') {
+                let alert = alertGenerate(body, 'You can select up to 15 different points.')
+                alert.focus()
+                alert.focus()
             } else {
-                alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
+                let alert = alertGenerate(body, 'Você pode selecionar até 15 pontos diferentes.')
+                alert.focus()
+                alert.focus()
             }
-        })
+            marker.setMap(null)
+            marker = null
+            return
+        }
+        filtros.view = 'map'
         let latitude = marker.getPosition().lat()
         let longitude = marker.getPosition().lng()
-        let radius = raioRangeElement.value
-        filtros.radius = radius
-        filtros.coordinates.lat = latitude
-        filtros.coordinates.lng = longitude
-        drawingManager.setMap(null)
-        filtros.type = 'getPointsByMarkerPosition'
-        fetch(`/painel/pontos/visualizar?filter=${JSON.stringify(filtros)}`)
-        .then((response) => {
-            return response.json()
-        })
-        .then((dados) => {
-            pontos.length = dados.length
-            dados.pontos.forEach((dado) => {
-                let ponto = {
-                    'basic': null,
-                    'commercial': null,
-                    'private': null
-                }
-                ponto.basic = new Ponto_Basic(
-                    dado.basic.id,
-                    dado.basic.code,
-                    dado.basic.address,
-                    dado.basic.latitude,
-                    dado.basic.longitude,
-                    dado.basic.image_link,
-                    dado.basic.reference,
-                    dado.basic.district,
-                    dado.basic.city,
-                    dado.basic.zone,
-                    dado.basic.state,
-                    dado.basic.country,
-                    dado.basic.format,
-                    dado.basic.measure
-                )
-                ponto.commercial = new Ponto_Commercial(
-                    dado.commercial.id,
-                    dado.commercial.spot_id,
-                    dado.commercial.impacto,
-                    dado.commercial.valor_tabela_comm,
-                    dado.commercial.valor_negociado_comm,
-                    dado.commercial.producao,
-                    dado.commercial.observacoes,
-                    dado.commercial.outros
-                )
-                ponto.private = new Ponto_Private(
-                    dado.private.id,
-                    dado.private.spot_id,
-                    dado.private.empresa,
-                    dado.private.valor_negociado_int,
-                    dado.private.custo_liq,
-                    dado.private.medida_int,
-                    dado.private.observacoes,
-                    dado.private.outros
-                )
-                pontos.pontos.push(ponto)
-            })
-            let divMap = document.querySelector('#divMap')
-            divMap.innerHTML = ''
-            let resultText = document.querySelector('#resultText')
-            resultText.innerHTML = pontos.length + texts.resultText
-            let resultLimparBt = document.querySelector('#resultLimparBt')
-            resultLimparBt.disabled = false
-            let center = {lat: latitude, lng: longitude}
-            let selectAll = document.querySelector('#selectAll')
-            selectAll.checked = false
-            let resultMap = initMap(divMap, center=center, radius=radius)
-        })
+        filtros.coordinates.push({lat: latitude, lng: longitude})
     })
     return drawingManager
 }
@@ -1558,13 +1538,15 @@ function removeMapMarkerPosition(drawingManager) {
     drawingManager.setOptions({ drawingControl: false })
 }
 function getPointsByLatLng(latitude, longitude, radius, bt) {
-    latitude.disabled = true
-    longitude.disabled = true
+    console.log(filtros.coordinates)
     radius.disabled = true
     bt.disabled = true
     filtros.radius = radius.value
-    filtros.coordinates.lat = latitude.value
-    filtros.coordinates.lng = longitude.value
+    if (latitude && longitude) {
+        latitude.disabled = true
+        longitude.disabled = true
+        filtros.coordinates.push({lat:latitude.value, lng:longitude.value})
+    }
     filtros.type = 'getPointsByMarkerPosition'
     fetch(`/painel/pontos/visualizar?filter=${JSON.stringify(filtros)}`)
     .then((response) => {
@@ -1623,7 +1605,7 @@ function getPointsByLatLng(latitude, longitude, radius, bt) {
         resultText.innerHTML = pontos.length + texts.resultText
         let resultLimparBt = document.querySelector('#resultLimparBt')
         resultLimparBt.disabled = false
-        let center = {lat: parseFloat(latitude.value), lng: parseFloat(longitude.value)}
+        let center = filtros.coordinates
         let selectAll = document.querySelector('#selectAll')
         selectAll.checked = false
         let resultMap = initMap(divMap, center=center, radius=parseFloat(radius.value))
@@ -1976,11 +1958,14 @@ function gerarLista(index) {
                     confirmarEditBt.innerHTML = texts.confirmarBt
                     $(`#editar${id}`).modal('hide')
                     if (lang == 'es' || lang == 'es-ar') {
-                        alertGenerate(body, 'Algún campo obligatorio no está lleno.')
+                        let alert = alertGenerate(body, 'Algún campo obligatorio no está lleno.')
+                        alert.focus()
                     } else if (lang == 'en') {
-                        alertGenerate(body, 'Some mandatory field is not filled.')
+                        let alert = alertGenerate(body, 'Some mandatory field is not filled.')
+                        alert.focus()
                     } else {
-                        alertGenerate(body, 'Algum campo obrigatório não foi preenchido.')
+                        let alert = alertGenerate(body, 'Algum campo obrigatório não foi preenchido.')
+                        alert.focus()
                     }
                     return
                 }
@@ -1988,11 +1973,14 @@ function gerarLista(index) {
                     confirmarEditBt.innerHTML = texts.confirmarBt
                     $(`#editar${id}`).modal('hide')
                     if (lang == 'es' || lang == 'es-ar') {
-                        alertGenerate(body, 'Latitud o longitud inválida.')
+                        let alert = alertGenerate(body, 'Latitud o longitud inválida.')
+                        alert.focus()
                     } else if (lang == 'en') {
-                        alertGenerate(body, 'Invalid latitude or longitude.')
+                        let alert = alertGenerate(body, 'Invalid latitude or longitude.')
+                        alert.focus()
                     } else {
-                        alertGenerate(body, 'Latitude ou longitude inválida.')
+                        let alert = alertGenerate(body, 'Latitude ou longitude inválida.')
+                        alert.focus()
                     }
                     return
                 }
@@ -2033,11 +2021,14 @@ function gerarLista(index) {
                         confirmarEditBt.innerHTML = texts.confirmarBt
                         $(`#editar${id}`).modal('hide')
                         if (lang == 'es' || lang == 'es-ar') {
-                            alertGenerate(body, 'Erro del servidor.')
+                            let alert = alertGenerate(body, 'Erro del servidor.')
+                            alert.focus()
                         } else if (lang == 'en') {
-                            alertGenerate(body, 'Server error.')
+                            let alert = alertGenerate(body, 'Server error.')
+                            alert.focus()
                         } else {
-                            alertGenerate(body, 'Erro no servidor.')
+                            let alert = alertGenerate(body, 'Erro no servidor.')
+                            alert.focus()
                         }
                     } else {
                         return response.json()
@@ -2045,7 +2036,8 @@ function gerarLista(index) {
                             confirmarEditBt.innerHTML = texts.confirmarBt
                             $(`#editar${id}`).modal('hide')
                             dados.message.forEach(message => {
-                                alertGenerate(body, message)
+                                let alert = alertGenerate(body, message)
+                                alert.focus()
                                 carregarPontos()
                             })
                             
@@ -2216,11 +2208,14 @@ function gerarLista(index) {
                         confirmarExcluirBt.innerHTML = texts.confirmarBt
                         $(`#excluir${id}`).modal('hide')
                         if (lang == 'es' || lang == 'es-ar') {
-                            alertGenerate(body, 'Erro del servidor.')
+                            let alert = alertGenerate(body, 'Erro del servidor.')
+                            alert.focus()
                         } else if (lang == 'en') {
-                            alertGenerate(body, 'Server error.')
+                            let alert = alertGenerate(body, 'Server error.')
+                            alert.focus()
                         } else {
-                            alertGenerate(body, 'Erro no servidor.')
+                            let alert = alertGenerate(body, 'Erro no servidor.')
+                            alert.focus()
                         }
                     } else {
                         return response.json()
@@ -2228,7 +2223,8 @@ function gerarLista(index) {
                             confirmarExcluirBt.innerHTML = texts.confirmarBt
                             $(`#excluir${id}`).modal('hide')
                             dados.message.forEach(message => {
-                                alertGenerate(body, message)
+                                let alert = alertGenerate(body, message)
+                                alert.focus()
                                 carregarPontos()
                             })
                             
@@ -2841,7 +2837,8 @@ export var listaPontos = function() {
     fetch(`/painel/pontos/visualizar?lang=${lang}`)
     .then((response) => {
         if (!response.ok) {
-            alertGenerate(body, 'Não foi possível concluir a solicitação.')
+            let alert = alertGenerate(body, 'Não foi possível concluir a solicitação.')
+            alert.focus()
         } else {
             return response.json()
             .then((textContent) => {
@@ -2883,11 +2880,14 @@ export var listaPontos = function() {
                             if (checkFiltroSelecionado == false) {
                                 confirmarBt.innerHTML = textContent.adicionarFiltroConfirmarBt
                                 if (lang == 'es' || lang == 'es-ar') {
-                                    alertGenerate(modalBody, 'Filtro inválido.')
+                                    let alert = alertGenerate(modalBody, 'Filtro inválido.')
+                                    alert.focus()
                                 } else if (lang == 'en') {
-                                    alertGenerate(modalBody, 'Invalid filter.')
+                                    let alert = alertGenerate(modalBody, 'Invalid filter.')
+                                    alert.focus()
                                 } else {
-                                    alertGenerate(modalBody, 'Filtro inválido.')
+                                    let alert = alertGenerate(modalBody, 'Filtro inválido.')
+                                    alert.focus()
                                 }
                                 return
                             }
@@ -3363,7 +3363,8 @@ export var importarZip = function() {
     fetch(`/painel/pontos/importar-zip?lang=${lang}`)
     .then(response => {
         if (!response.ok) {
-            alertGenerate(body, 'Não foi possível concluir a solicitação. Verifique a sua conexão e tente novamente.')
+            let alert = alertGenerate(body, 'Não foi possível concluir a solicitação. Verifique a sua conexão e tente novamente.')
+            alert.focus()
         } else {
             return response.json()
             .then((textContent) => {
@@ -3641,38 +3642,46 @@ export var importarZip = function() {
                 buttonCriarBt.innerHTML = textContent.enviarBt
                 buttonCriarBt.addEventListener('click', () => {
                     if (fileInput.files.length == 0) {
-                        alertGenerate(body, 'Selecione um arquivo.')
+                        let alert = alertGenerate(body, 'Selecione um arquivo.')
+                        alert.focus()
                         importarZip()
                         return
                     }
                     if (fileInput.files.length != 1) {
-                        alertGenerate(body, 'Selecione somente 1 arquivo.')
+                        let alert = alertGenerate(body, 'Selecione somente 1 arquivo.')
+                        alert.focus()
                         importarZip()
                         return
                     }
                     let pais = paisSelect.options[paisSelect.selectedIndex].value
                     if (pais == 'default' || !pais) {
                         if (lang == 'es' || lang == 'es-ar') {
-                            alertGenerate(body, 'Seleccionar país.')
+                            let alert = alertGenerate(body, 'Seleccionar país.')
+                            alert.focus()
                             body_header.focus()
                         } else if (lang == 'en') {
-                            alertGenerate(body, 'Select country.')
+                            let alert = alertGenerate(body, 'Select country.')
+                            alert.focus()
                             body_header.focus()
                         } else {
-                            alertGenerate(body, 'Selecione o país.')
+                            let alert = alertGenerate(body, 'Selecione o país.')
+                            alert.focus()
                             body_header.focus()
                         }
                         return
                     }
                     if (fileInput.files[0].size > 10485760){
                         if (lang == 'es' || lang == 'es-ar') {
-                            alertGenerate(body, 'El archivo debe tener un máximo de 10MB.')
+                            let alert = alertGenerate(body, 'El archivo debe tener un máximo de 10MB.')
+                            alert.focus()
                             body_header.focus()
                         } else if (lang == 'en') {
-                            alertGenerate(body, 'The file must be a maximum of 10MB.')
+                            let alert = alertGenerate(body, 'The file must be a maximum of 10MB.')
+                            alert.focus()
                             body_header.focus()
                         } else {
-                            alertGenerate(body, 'O arquivo deve ter no máximo 10MB.')
+                            let alert = alertGenerate(body, 'O arquivo deve ter no máximo 10MB.')
+                            alert.focus()
                             body_header.focus()
                         }
                         return
@@ -3700,7 +3709,8 @@ export var importarZip = function() {
                     .then((response) => {
                         if (!response.ok) {
                             buttonCriarBt.innerHTML = textContent.enviarBt
-                            alertGenerate(body, 'Erro no servidor. Tente novamente.')
+                            let alert = alertGenerate(body, 'Erro no servidor. Tente novamente.')
+                            alert.focus()
                             importarZip()
                             body_header.focus()
                         } else {
@@ -3708,7 +3718,8 @@ export var importarZip = function() {
                             .then((data) => {
                                 buttonCriarBt.innerHTML = textContent.enviarBt
                                 data.message.forEach(element => {
-                                    alertGenerate(body, element)
+                                    let alert = alertGenerate(body, element)
+                                    alert.focus()
                                 });
                                 importarZip()
                                 body_header.focus()
@@ -3749,7 +3760,8 @@ export var importarPontos = function() {
     fetch(`/painel/pontos/importar?lang=${lang}`)
     .then(response => {
         if (!response.ok) {
-            alertGenerate(body, 'Não foi possível concluir a solicitação. Verifique a sua conexão e tente novamente.')
+            let alert = alertGenerate(body, 'Não foi possível concluir a solicitação. Verifique a sua conexão e tente novamente.')
+            alert.focus()
         } else {
             return response.json()
             .then(function(textContent) {
@@ -3779,12 +3791,14 @@ export var importarPontos = function() {
                 buttonImportarBt.innerHTML = textContent.enviarBt
                 buttonImportarBt.addEventListener('click', () => {
                     if (fileInput.files.length == 0) {
-                        alertGenerate(body, 'Selecione uma planilha.')
+                        let alert = alertGenerate(body, 'Selecione uma planilha.')
+                        alert.focus()
                         importarPontos()
                         return
                     }
                     if (fileInput.files.length != 1) {
-                        alertGenerate(body, 'Selecione somente 1 arquivo.')
+                        let alert = alertGenerate(body, 'Selecione somente 1 arquivo.')
+                        alert.focus()
                         importarPontos()
                         return
                     } else {
@@ -3805,11 +3819,14 @@ export var importarPontos = function() {
                             if (!response.ok) {
                                 $('#selectModal').modal('hide')
                                 if (lang == 'es' || lang == 'es-ar') {
-                                    alertGenerate(body, 'Algo salió mal. Inténtalo de nuevo.')
+                                    let alert = alertGenerate(body, 'Algo salió mal. Inténtalo de nuevo.')
+                                    alert.focus()
                                 } else if (lang == 'en') {
-                                    alertGenerate(body, 'Something went wrong. Try again.')
+                                    let alert = alertGenerate(body, 'Something went wrong. Try again.')
+                                    alert.focus()
                                 } else {
-                                    alertGenerate(body, 'Algo deu errado. Tente novamente.')
+                                    let alert = alertGenerate(body, 'Algo deu errado. Tente novamente.')
+                                    alert.focus()
                                 }
                                 importarPontos()
                             } else {
@@ -3817,7 +3834,8 @@ export var importarPontos = function() {
                                 .then(function(data) {
                                     $('#selectModal').modal('hide')
                                     data.message.forEach((message) => {
-                                        alertGenerate(body, message)
+                                        let alert = alertGenerate(body, message)
+                                        alert.focus()
                                     })
                                     importarPontos()
                                 })
@@ -3955,14 +3973,15 @@ export var mapaPontos = function() {
             raioSearchBt.className = 'searchBt gold-bt'
             searchLatitudeInput.disabled = true
             searchLongitudeInput.disabled = true
-            coordenadasSearchBt.disabled = true
-            drawingManager = getPointsByMarkerPosition(map, raioRange, raioSearchBt, searchBtEvent)
+            searchLatitudeInput.value = ''
+            searchLongitudeInput.value = ''
+            drawingManager = getPointsByMarkerPosition(map)
         } else {
             raioSearchBtClicked = false
             raioSearchBt.className = 'searchBt btn btn-secondary'
             searchLatitudeInput.disabled = false
             searchLongitudeInput.disabled = false
-            coordenadasSearchBt.disabled = false
+            filtros.coordinates = []
             removeMapMarkerPosition(drawingManager)
         }
     })
@@ -3970,14 +3989,21 @@ export var mapaPontos = function() {
         raioSearchBt.removeEventListener('click', searchBtEvent)
         raioSearchBt.addEventListener('click', () => {
             if (lang == 'es' || lang == 'es-ar') {
-                alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
+                let alert = alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
+                alert.focus()
             } else if (lang == 'es') {
-                alertGenerate(body, 'Clean the search to fetch again')
+                let alert = alertGenerate(body, 'Clean the search to fetch again')
+                alert.focus()
             } else {
-                alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
+                let alert = alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
+                alert.focus()
             }
         })
-        getPointsByLatLng(searchLatitudeInput, searchLongitudeInput, raioRange, coordenadasSearchBt)
+        if (searchLatitudeInput.value && searchLongitudeInput.value) {
+            getPointsByLatLng(searchLatitudeInput, searchLongitudeInput, raioRange, coordenadasSearchBt)
+        } else {
+            getPointsByLatLng(null, null, raioRange, coordenadasSearchBt)
+        }
     })
     let divResultOpt = document.createElement('div')
     divResultOpt.className = 'divResultOpt'

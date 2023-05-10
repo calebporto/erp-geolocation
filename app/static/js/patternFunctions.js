@@ -5,11 +5,12 @@ export function alertGenerate(parentElement, text) {
     let alert = document.createElement('div')
         alert.className = 'alert alert-warning alert-dismissible fade show'
         alert.role = 'alert'
-        alert.focus()
+        alert.tabIndex = 1
         alert.innerHTML = `
             ${text}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `
         
         parentElement.insertAdjacentElement('afterbegin', alert)
+    return alert
 }
