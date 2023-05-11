@@ -163,7 +163,10 @@ visualizar_pontos_content_text = {
         'ordEmpresa': 'Empresa',
         'ordFormato': 'Formato',
         'ordCidade': 'Cidade',
-        'ordBairro': 'Bairro'
+        'ordBairro': 'Bairro',
+        'ordEndereco': 'Endereço',
+        'ascendente': 'Crescente',
+        'descendente': 'Decrescente'
     }, 'es': {
         'adicionarFiltro': 'Añadir Filtro',
         'ordenar': 'Ordenar por',
@@ -188,7 +191,10 @@ visualizar_pontos_content_text = {
         'ordEmpresa': 'Empresa',
         'ordFormato': 'Formato',
         'ordCidade': 'Ciudad',
-        'ordBairro': 'Barrio'
+        'ordBairro': 'Barrio',
+        'ordEndereco': 'Dirección',
+        'ascendente': 'Creciente',
+        'descendente': 'Decreciente'
     }, 'en': {
         'adicionarFiltro': 'Add Filter',
         'ordenar': 'Order by',
@@ -213,7 +219,10 @@ visualizar_pontos_content_text = {
         'ordEmpresa': 'Company',
         'ordFormato': 'Format',
         'ordCidade': 'City',
-        'ordBairro': 'District'
+        'ordBairro': 'District',
+        'ordEndereco': 'Address',
+        'ascendente': 'Rising',
+        'descendente': 'Falling'
     }
 }
 #Books

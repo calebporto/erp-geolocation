@@ -353,7 +353,7 @@ def visualizar_pontos():
                 return response
             elif request_filter['type'] == 'getPointsByMarkerPosition':
                 coordinateList = request_filter['coordinates']
-                radius = int(request_filter['radius'])
+                radius = float(request_filter['radius'])
                 return get_point_in_radius(coordinateList, radius)
         texto = visualizar_pontos_content_text
         if lang == 'es-ar' or lang == 'es':

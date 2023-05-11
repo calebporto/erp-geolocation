@@ -54,6 +54,7 @@ def get_pontos(filtros):
         formato = filtros['formato']
         empresa = filtros['empresa']
         order_by = filtros['order_by']
+        sentido = filtros['guidance']
         if len(codigo) > 0:
             if len(codigo) == 1:
                 query = query.filter(Spot.code.ilike('%'+ codigo[0] +'%'))
@@ -113,21 +114,42 @@ def get_pontos(filtros):
 
         if order_by != 'ordId':
             if order_by == 'ordEmpresa':
-                query = query.order_by(Spot_Private_Info.empresa)
+                if sentido == 'descendente':
+                    query = query.order_by(Spot_Private_Info.empresa.desc())
+                else:
+                    query = query.order_by(Spot_Private_Info.empresa)
             elif order_by == 'ordFormato':
-                query = query.order_by(Spot.format)
+                if sentido == 'descendente':
+                    query = query.order_by(Spot.format.desc())
+                else:
+                    query = query.order_by(Spot.format)
             elif order_by == 'ordCidade':
-                query = query.order_by(Spot.city)
+                if sentido == 'descendente':
+                    query = query.order_by(Spot.city.desc())
+                else:
+                    query = query.order_by(Spot.city)
             elif order_by == 'ordBairro':
-                query = query.order_by(Spot.district)
+                if sentido == 'descendente':
+                    query = query.order_by(Spot.district.desc())
+                else:
+                    query = query.order_by(Spot.district)
+            elif order_by == 'ordEndereco':
+                if sentido == 'descendente':
+                    query = query.order_by(Spot.address.desc())
+                else:
+                    query = query.order_by(Spot.address)
 
             if int(filtros['offset']) > 0:
                 query = query.offset(filtros['offset'])
+            
         else:
-            if int(filtros['id']) > 0:
-                query = query.filter(Spot.id < int(filtros['id']))
-            query = query.order_by(Spot.id.desc())
-
+            if sentido == 'descendente':
+                if int(filtros['id']) > 0:
+                    query = query.filter(Spot.id < int(filtros['id']))
+                query = query.order_by(Spot.id.desc())
+            else:
+                if int(filtros['id']) > 0:
+                    query = query.filter(Spot.id > int(filtros['id']))
 
         query = query.limit(200).all()
         print('até aqui ok')
@@ -315,6 +337,7 @@ def delete_pontos(lang, idList):
     return response.json()
 
 def get_point_in_radius(coordinateList, radius):
+    print(radius)
     earth_radius = 6371
 
     query = Spot.query\

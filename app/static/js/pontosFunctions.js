@@ -262,6 +262,7 @@ var filtros = {
     'coordinates': [],
     'radius': null,
     'order_by': 'ordId',
+    'guidance': 'ascendente',
     'id': 0,
     'offset': 0,
     'codigo': [],
@@ -1097,6 +1098,7 @@ function cleanFilters() {
         'coordinates': [],
         'radius': null,
         'order_by': 'ordId',
+        'guidance': 'ascendente',
         'id': 0,
         'offset': 0,
         'codigo': [],
@@ -1296,7 +1298,7 @@ var initMap = function(divMap, center=null, radius=null) {
             let circle = new google.maps.Circle({
                 map: map,
                 center: center[0],
-                radius: radius * 1000
+                radius: radius * 500
               });
         } else if (center.length > 1) {
             center.forEach(coordinate => {
@@ -1309,7 +1311,7 @@ var initMap = function(divMap, center=null, radius=null) {
                 let circle = new google.maps.Circle({
                     map: map,
                     center: coordinate,
-                    radius: radius * 1000
+                    radius: radius * 500
                 });
                 latlngbounds.extend(coordinate);
             })
@@ -1537,16 +1539,43 @@ function getPointsByMarkerPosition(map) {
 function removeMapMarkerPosition(drawingManager) {
     drawingManager.setOptions({ drawingControl: false })
 }
-function getPointsByLatLng(latitude, longitude, radius, bt) {
-    console.log(filtros.coordinates)
-    radius.disabled = true
-    bt.disabled = true
-    filtros.radius = radius.value
+function getPointsByLatLng(latitude, longitude, radius, buscarBt, raioSearchBt) {
+    filtros.radius = radius.value * .5
     if (latitude && longitude) {
         latitude.disabled = true
         longitude.disabled = true
         filtros.coordinates.push({lat:latitude.value, lng:longitude.value})
     }
+    console.log(filtros.coordinates.length)
+    if (filtros.coordinates.length == 0) {
+        console.log('ok')
+        if (lang == 'es' || lang == 'es-ar') {
+            let alert = alertGenerate(body, 'Seleccione al menos un punto para buscar.')
+            alert.focus()
+        } else if (lang == 'es') {
+            let alert = alertGenerate(body, 'Select at least one point to search.')
+            alert.focus()
+        } else {
+            let alert = alertGenerate(body, 'Selecione ao menos um ponto para realizar a busca.')
+            alert.focus()
+        }
+        return
+    }
+    radius.disabled = true
+    buscarBt.disabled = true
+    raioSearchBt.removeEventListener('click', searchBtEvent)
+    raioSearchBt.addEventListener('click', () => {
+        if (lang == 'es' || lang == 'es-ar') {
+            let alert = alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
+            alert.focus()
+        } else if (lang == 'es') {
+            let alert = alertGenerate(body, 'Clean the search to fetch again')
+            alert.focus()
+        } else {
+            let alert = alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
+            alert.focus()
+        }
+    })
     filtros.type = 'getPointsByMarkerPosition'
     fetch(`/painel/pontos/visualizar?filter=${JSON.stringify(filtros)}`)
     .then((response) => {
@@ -3198,15 +3227,25 @@ export var listaPontos = function() {
                         }
                         option.removeEventListener('click', optionsEventList[i])
                         option.addEventListener('click', optionsEventList[i] = () => {
-                            if (option.id != filtros.order_by) {
+                            if (option.id != filtros.order_by && option.id != filtros.guidance) {
+                                if (option.id == 'ascendente') {
+                                    filtros.guidance = 'ascendente'
+                                    option.classList.add('select')
+                                } else if (option.id == 'descendente') {
+                                    filtros.guidance = 'descendente'
+                                    option.classList.add('select')
+                                } else {
+                                    filtros.order_by = option.id
+                                }
                                 for (let x = 0; x < options.length; x++) {
-                                    if (options[x].id != option.id) {
-                                        options[x].classList.remove('select')
-                                    } else {
+                                    if (options[x].id == filtros.order_by) {
                                         options[x].classList.add('select')
+                                    } else {
+                                        if (options[x].id != filtros.guidance) {
+                                            options[x].classList.remove('select')
+                                        }
                                     }
                                 }
-                                filtros.order_by = option.id
                                 $('#ordenarModal').modal('hide')
                                 carregarPontos()
                                 return
@@ -3270,6 +3309,11 @@ export var listaPontos = function() {
                                 <div class="ordenarItem" id="ordFormato">${textContent.ordFormato}</div>
                                 <div class="ordenarItem" id="ordCidade">${textContent.ordCidade}</div>
                                 <div class="ordenarItem" id="ordBairro">${textContent.ordBairro}</div>
+                                <div class="ordenarItem" id="ordEndereco">${textContent.ordEndereco}</div>
+                                </div>
+                            <div class="ordenarModalBody">
+                                <div class="ordenarItem select" id="ascendente">${textContent.ascendente}</div>
+                                <div class="ordenarItem" id="descendente">${textContent.descendente}</div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -3913,7 +3957,7 @@ export var mapaPontos = function() {
     raioRangeLabel.innerHTML = texts.raioRangeLabel
     divRaioRange.appendChild(raioRangeLabel)
     let raioRangeValue = document.createElement('p')
-    raioRangeValue.innerHTML = '1 Km'
+    raioRangeValue.innerHTML = '0.5 Km'
     raioRangeValue.id = 'raioRangeValue'
     raioRangeValue.className = 'raioRangeValue'
     divRaioRange.appendChild(raioRangeValue)
@@ -3921,11 +3965,11 @@ export var mapaPontos = function() {
     raioRange.type = 'range'
     raioRange.className = 'form-range'
     raioRange.min = 1
-    raioRange.max = 50
+    raioRange.max = 100
     raioRange.value = 1
     raioRange.id = 'raioRange'
     raioRange.addEventListener('change', () => {
-        raioRangeValue.innerHTML = `${raioRange.value} Km`
+        raioRangeValue.innerHTML = `${raioRange.value * .5} Km`
     })
     divRaioRange.appendChild(raioRange)
 
@@ -3986,23 +4030,10 @@ export var mapaPontos = function() {
         }
     })
     coordenadasSearchBt.addEventListener('click', () => {
-        raioSearchBt.removeEventListener('click', searchBtEvent)
-        raioSearchBt.addEventListener('click', () => {
-            if (lang == 'es' || lang == 'es-ar') {
-                let alert = alertGenerate(body, 'Limpia la búsqueda para volver a buscar')
-                alert.focus()
-            } else if (lang == 'es') {
-                let alert = alertGenerate(body, 'Clean the search to fetch again')
-                alert.focus()
-            } else {
-                let alert = alertGenerate(body, 'Limpe a pesquisa para buscar novamente')
-                alert.focus()
-            }
-        })
         if (searchLatitudeInput.value && searchLongitudeInput.value) {
             getPointsByLatLng(searchLatitudeInput, searchLongitudeInput, raioRange, coordenadasSearchBt)
         } else {
-            getPointsByLatLng(null, null, raioRange, coordenadasSearchBt)
+            getPointsByLatLng(null, null, raioRange, coordenadasSearchBt, raioSearchBt)
         }
     })
     let divResultOpt = document.createElement('div')

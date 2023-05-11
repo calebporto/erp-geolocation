@@ -541,9 +541,10 @@
     flex-wrap: wrap;
     width: 100%;
     padding: .5rem;
+    margin-top: 1rem;
 }
 .ordenarItem {
-    width: 18%;
+    width: 15%;
     padding: 3px;
     border-radius: 5px;
     background-color: rgb(230, 230, 230);
