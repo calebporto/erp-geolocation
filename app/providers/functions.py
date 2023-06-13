@@ -387,6 +387,26 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                         texto_pptx1_text.font.name = 'Helvetica'
                         texto_pptx1_text.font.size = Mm(10)
 
+            legenda_content = '* Todos os pontos estão sujeitos a consulta de disponiblidade no ato da reserva.'
+            if (lang == 'en'):
+                legenda_content = '* All points are subject to availability consultation at the time of booking.'
+            elif (lang == 'es' or lang == 'es-ar'):
+               legenda_content = '* Todos los puntos están sujetos a consulta de disponibilidad en el momento de la reserva.'
+            
+
+            pdf.setFont('Helvetica', 5*mm)
+            pdf.drawString(105*mm, 12*mm, legenda_content)
+
+            legenda = slide.shapes.add_textbox(Mm(102), Mm(203), Mm(200), Mm(10))
+            legenda_text_frame = legenda.text_frame
+            legenda_text_frame.clear()
+            legenda_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.LEFT
+            legenda_text = legenda_text_frame.paragraphs[0].add_run()
+            legenda_text.text = legenda_content
+            legenda_text.font.name = 'Helvetica'
+            legenda_text.font.size = Mm(5)
+                
+
         pdf.showPage()
 
         for i, linha in enumerate(linhas):
