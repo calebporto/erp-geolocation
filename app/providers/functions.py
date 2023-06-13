@@ -394,7 +394,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                legenda_content = '* Todos los puntos están sujetos a consulta de disponibilidad en el momento de la reserva.'
             
 
-            pdf.setFont('Helvetica', 5*mm)
+            pdf.setFont('Helvetica', 3*mm)
             pdf.drawString(105*mm, 12*mm, legenda_content)
 
             legenda = slide.shapes.add_textbox(Mm(102), Mm(203), Mm(200), Mm(10))
@@ -404,7 +404,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             legenda_text = legenda_text_frame.paragraphs[0].add_run()
             legenda_text.text = legenda_content
             legenda_text.font.name = 'Helvetica'
-            legenda_text.font.size = Mm(5)
+            legenda_text.font.size = Mm(3)
                 
 
         pdf.showPage()
