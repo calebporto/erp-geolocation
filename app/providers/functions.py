@@ -410,9 +410,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
         pdf.showPage()
 
         for i, linha in enumerate(linhas):
-            print('gerando linha')
             foto_link = str(linha[foto_column])
-            print(foto_link)
             valid_image = True
             if str(foto_link) == 'nan':
                 valid_image = False
@@ -452,7 +450,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             template_fundo = slide.shapes.add_picture('app/static/media/pdf_provider_images/template_pdf.jpg', Mm(0), Mm(0), height=Mm(220), width=Mm(400))
 
             # Endereço PDF
-            pdf.setFont('Helvetica-Bold', 7*mm)
+            pdf.setFont('Helvetica-Bold', 5*mm)
             pdf.setFillColor(colors.white)
             pdf.drawCentredString(190*mm,207*mm, str(linha[endereco_column]))
 
@@ -465,7 +463,7 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
             endereco_text.text = str(linha[endereco_column])
             endereco_text.font.name = 'Helvetica'
             endereco_text.font.bold = True
-            endereco_text.font.size = Mm(7)
+            endereco_text.font.size = Mm(5)
             endereco_text.font.color.rgb = RGBColor(255,255,255)
 
             if valid_image == True:
