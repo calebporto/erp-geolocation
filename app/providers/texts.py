@@ -10,6 +10,7 @@ main_pt_texts = {
         'aside-sair': 'Sair',
         'pontos': 'Pontos',
         'books': 'Books',
+        'propostas': 'Propostas',
         'fornecedores': 'Fornecedores',
         'conversor': 'Conversor',
         'equipe': 'Equipe'
@@ -24,6 +25,7 @@ main_es_texts = {
         'aside-sair': 'Salir',
         'pontos': 'Lugares',
         'books': 'Books',
+        'propostas': 'Propuestas',
         'fornecedores': 'Proveedores',
         'conversor': 'Convertidor',
         'equipe': 'Equipo'
@@ -38,6 +40,7 @@ main_en_texts = {
         'aside-sair': 'Exit',
         'pontos': 'Spots',
         'books': 'Books',
+        'propostas': 'Proposal',
         'fornecedores': 'Providers',
         'conversor': 'Converter',
         'equipe': 'Team'
@@ -256,7 +259,19 @@ criar_content_text = {
         'criarBt': 'Generate Book'
     }
 }
-
+# Propostas
+propostas_menu_texts = {
+    'pt-br': {
+        'painel': 'Painel',
+        'nova': 'Nova Proposta'
+    }, 'en': {
+        'painel': 'Panel',
+        'nova': 'New Proposal'
+    }, 'es': {
+        'painel': 'Panel',
+        'nova': 'Nueva Propuesta',
+    }
+}
 # Fornecedores
 fornecedores_menu_texts = {
     'pt-br': {

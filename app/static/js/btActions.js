@@ -8,6 +8,11 @@ booksOption.addEventListener('click', () => {
     window.location.href = '/painel/books'
 })
 
+var propostasOption = document.querySelector('#propostas')
+propostasOption.addEventListener('click', () => {
+    window.location.href = '/painel/propostas'
+})
+
 var fornecedoresOption = document.querySelector('#fornecedores')
 fornecedoresOption.addEventListener('click', () => {
     window.location.href = '/painel/fornecedores'

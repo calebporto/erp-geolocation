@@ -38,6 +38,8 @@ from app.views.pontos import pontos_bp
 app.register_blueprint(pontos_bp)
 from app.views.books import books_bp
 app.register_blueprint(books_bp)
+from app.views.propostas import propostas_bp
+app.register_blueprint(propostas_bp)
 from app.views.fornecedores import fornecedores_bp
 app.register_blueprint(fornecedores_bp)
 from app.views.conversor import conversor_bp
