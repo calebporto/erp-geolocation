@@ -1,4 +1,4 @@
-import { importarZip, importarPontos, listaPontos, mapaPontos } from "./pontosFunctions.js"
+import { painelPropostas, novaProposta } from "./propostasFunctions.js"
 
 export var propostasOpt = function() {
     fetch(`/painel/propostas?arg=top-menu`)

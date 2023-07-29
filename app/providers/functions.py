@@ -555,10 +555,11 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 conteudo = ''
                 if coluna in linha and str(linha[coluna]) != 'nan':
                     conteudo = str(linha[coluna])
+                    if conteudo.isdigit():
+                        conteudo = f'{int(conteudo):,}'.replace(',', '.')
                 
                 # Se não tiver conteúdo, pula a linha
                 if not conteudo.strip() or conteudo.strip() == '':
-                    print(titulo)
                     continue
                 # Outras Colunas PDF
                 pdf.setFont('Helvetica-Bold', 5.5*mm)

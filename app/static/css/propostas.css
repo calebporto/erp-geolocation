@@ -1,0 +1,24 @@
+.divHeader {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: .5rem;
+    border-radius: 1rem;
+}
+.divHeaderInput {
+    width: 50%;
+    padding: .5rem;
+}
+.divHeaderInput p {
+    height: auto;
+    margin: .5rem 0;
+    font-weight: bold;
+}
+.divHeaderInput input {
+    width: 100%;
+    padding: .3rem;
+}
+.divAgencia {
+    display: flex;
+}
