@@ -1,8 +1,8 @@
-export var painelPropostas = function() {
+export var novaProposta = function() {
     let painelPropostasOpt = document.querySelector('#painelPropostasOpt')
     let novaPropostaOpt = document.querySelector('#novaPropostaOpt')
-    painelPropostasOpt.classList.add('select')
-    novaPropostaOpt.classList.remove('select')
+    novaPropostaOpt.classList.add('select')
+    painelPropostasOpt.classList.remove('select')
 
     let body_content = document.querySelector('#body-content')
     body_content.innerHTML = ''
@@ -55,9 +55,25 @@ export var painelPropostas = function() {
 
     let divAgencia = document.createElement('div')
     divAgencia.className = 'divAgencia'
+    let divAgenciaCheck = document.createElement('div')
+    divAgenciaCheck.className = 'form-check form-switch divAgenciaCheck'
     let agenciaCheck = document.createElement('input')
     agenciaCheck.type = 'checkbox'
+    agenciaCheck.className = 'form-check-input'
     agenciaCheck.id = 'agenciaCheck'
+    agenciaCheck.checked = false
+    agenciaCheck.addEventListener('click', () => {
+        if (agenciaCheck.checked == false) {
+            agenciaNameInput.disabled = true
+            agenciaNameInput.value = ''
+            agenciaComissaoInput.disabled = true
+            agenciaComissaoInput.value = ''
+        } else {
+            agenciaNameInput.disabled = false
+            agenciaComissaoInput.disabled = false
+        }
+    })
+    divAgenciaCheck.appendChild(agenciaCheck)
     let divAgenciaName = document.createElement('div')
     divAgenciaName.className = 'divAgenciaName'
     let agenciaNameTitle = document.createElement('p')
@@ -65,28 +81,41 @@ export var painelPropostas = function() {
     divAgenciaName.appendChild(agenciaNameTitle)
     let agenciaNameInput = document.createElement('input')
     agenciaNameInput.id = 'agenciaNameInput'
+    agenciaNameInput.disabled = true
     divAgenciaName.appendChild(agenciaNameInput)
     let divAgenciaComissao = document.createElement('div')
     divAgenciaComissao.className = 'divAgenciaComissao'
     let agenciaComissaoTitle = document.createElement('p')
-    agenciaComissaoTitle.innerHTML = 'Nome da agência'
+    agenciaComissaoTitle.innerHTML = 'Porcentagem de comissão:'
     divAgenciaComissao.appendChild(agenciaComissaoTitle)
     let agenciaComissaoInput = document.createElement('input')
+    agenciaComissaoInput.disabled = true
     agenciaComissaoInput.id = 'agenciaComissaoInput'
     divAgenciaComissao.appendChild(agenciaComissaoInput)
     
-    divAgencia.appendChild(agenciaCheck)
+    divAgencia.appendChild(divAgenciaCheck)
     divAgencia.appendChild(divAgenciaName)
     divAgencia.appendChild(divAgenciaComissao)
     body_content.appendChild(divAgencia)
+
+    let divAddItem = document.createElement('div')
+    divAddItem.className = 'divAddItem'
+    let divAddItemTitle = document.createElement('div')
+    divAddItemTitle.className = 'divAddItemTitle'
+    let addItemTitle = document.createElement('span')
+    addItemTitle.innerHTML = 'Adicionar Item'
+    divAddItemTitle.appendChild(addItemTitle)
+    divAddItem.appendChild(divAddItemTitle)
+
+    body_content.appendChild(divAddItem)
     
 }
 
-export var novaProposta = function() {
+export var painelPropostas = function() {
     let painelPropostasOpt = document.querySelector('#painelPropostasOpt')
     let novaPropostaOpt = document.querySelector('#novaPropostaOpt')
-    novaPropostaOpt.classList.add('select')
-    painelPropostasOpt.classList.remove('select')
+    painelPropostasOpt.classList.add('select')
+    novaPropostaOpt.classList.remove('select')
 
     let body_content = document.querySelector('#body-content')
     body_content.innerHTML = ''

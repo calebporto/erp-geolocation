@@ -21,4 +21,61 @@
 }
 .divAgencia {
     display: flex;
+    padding: 1rem;
+    margin: 1rem 0;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 1rem;
+}
+.divAgenciaCheck {
+    width: 5%;
+    display: flex;
+    justify-content: center;
+}
+.divAgenciaCheck input {
+    margin: auto;
+    cursor: pointer;
+}
+.divAgenciaName {
+    width: 70%;
+    padding: 0 .5rem;
+}
+.divAgenciaName p {
+    font-weight: bold;
+}
+.divAgenciaName input {
+    width: 100%;
+    padding: 3px;
+}
+.divAgenciaComissao {
+    width: 25%;
+    padding: 0 .5rem;
+}
+.divAgenciaComissao p {
+    font-weight: bold;
+}
+.divAgenciaComissao input {
+    width: 100%;
+    padding: 3px;
+}
+.divAddItem {
+    width: 100%;
+    padding: .5rem;
+    margin: 1rem 0;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.divAddItemTitle {
+    width: 50%;
+    display: flex;
+    padding: .5rem 1rem;
+    border-radius: .5rem;
+    margin: .5rem auto;
+    background-color: black;
+}
+.divAddItemTitle span {
+    margin: auto;
+    font-weight: bold;
+    color: white;
 }
