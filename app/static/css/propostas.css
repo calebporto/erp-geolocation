@@ -61,21 +61,102 @@
     width: 100%;
     padding: .5rem;
     margin: 1rem 0;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(0, 0, 0, 0.384);
     border-radius: 1rem;
     display: flex;
     flex-direction: column;
 }
 .divAddItemTitle {
-    width: 50%;
+    width: 100%;
     display: flex;
     padding: .5rem 1rem;
     border-radius: .5rem;
     margin: .5rem auto;
-    background-color: black;
+    background-color: white;
 }
 .divAddItemTitle span {
     margin: auto;
     font-weight: bold;
-    color: white;
+    font-size: 20px;
+}
+.divAddItemParam {
+    display: flex;
+    background-color: white;
+    padding: .5rem;
+    height: 3rem;
+}
+.divAddItemParamTitle {
+    width: 15%;
+    display: flex;
+}
+.divAddItemParamTitle span {
+    margin: auto;
+    margin-left: 0;
+    font-weight: bold;
+}
+.divAddItemParamInput {
+    width: 60%;
+    display: flex;
+    justify-content: space-around;
+}
+.addMidiaSelect, .midiaOutrosInput {
+    width: 48%!important;
+    padding: 3px;
+}
+.divAddItemParamInput input, .divAddItemParamInput select {
+    width: 100%;
+    padding: 3px;
+}
+.divAddItemParamShow {
+    width: 25%;
+    display: flex;
+}
+.divAddItemParamShow span {
+    font-weight: bold;
+    width: auto;
+    margin: auto;
+    word-wrap: break-word;
+}
+.bookShowSpan {
+    font-weight: normal!important;
+}
+.divMultiParams {
+    width: 100%;
+    display: flex;
+    background-color: white;
+    padding: .5rem;
+    margin: .1rem 0;
+    height: auto;
+}
+.divMiniParam {
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    padding: .5rem .3rem;
+}
+.divMiniParam span {
+    font-weight: bold;
+    margin: 0 auto;
+}
+.divMiniParam input {
+    width: 100%;
+    padding: 3px;
+}
+.divMiniParam p {
+    height: auto;
+    width: auto;
+    margin: .5rem auto auto auto;
+}
+.addButton {
+    width: 100%;
+    height: 2.5rem;
+    font-weight: bold;
+    margin: .5rem 0;
+    box-shadow: 0px 3px 3px rgb(99, 99, 99);
+}
+.addButton:active {
+    position: relative;
+    top: 3px;
+    box-shadow: 0px 0px 3px rgb(99, 99, 99);
+
 }

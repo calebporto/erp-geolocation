@@ -71,3 +71,18 @@ export class Ponto_Private {
         this.outros = outros
     }
 }
+export class ItemProposta {
+    constructor(media = null, place = null, book = null, period = null, format = null,
+                faces = null, periodQuant = null, tabValue = null, negValue = null, production = null) {
+        this.media = media
+        this.place = place
+        this.book = book
+        this.period = period
+        this.format = format
+        this.faces = faces
+        this.periodQuant = periodQuant
+        this.tabValue = tabValue
+        this.negValue = negValue
+        this.production = production
+    }
+}
