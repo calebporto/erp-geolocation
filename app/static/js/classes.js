@@ -84,5 +84,39 @@ export class ItemProposta {
         this.tabValue = tabValue
         this.negValue = negValue
         this.production = production
+        this.totalNegValue = null
+        this.totalProduction = null
+        this.total = null
+        this.taxTabValue = null
+        this.taxNegValue = null
+        this.taxTotalNegValue = null
+        this.taxTotal = null
     }
+
+    calcularTotais() {
+        this.totalNegValue = this.negValue * this.faces * this.periodQuant
+        this.totalProduction = this.production * this.faces
+        this.total = this.totalNegValue + this.totalProduction
+    }
+    calcularComissao(comissao) {
+        this.taxTabValue = this.tabValue + (this.tabValue * comissao / 100)
+        this.taxNegValue = this.negValue + (this.negValue * comissao / 100)
+        this.taxTotalNegValue = this.totalNegValue + (this.totalNegValue * comissao / 100)
+        this.taxTotal = this.totalProduction + this.taxTotalNegValue
+    }
+}
+export class Proposta {
+    constructor(date = null, client = null, clientPerson = null, campaign = null, agencyName = null, agencyTax = 0,
+                employeeName = null, items = [], total = null) {
+        this.date = date
+        this.client = client
+        this.clientPerson = clientPerson
+        this.campaign = campaign
+        this.agencyName = agencyName
+        this.agencyTax = agencyTax
+        this.employeeName = employeeName
+        this.items = items
+        this.total = total
+    }
+    
 }

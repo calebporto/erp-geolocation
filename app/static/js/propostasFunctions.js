@@ -1,4 +1,4 @@
-import { ItemProposta } from "./classes.js"
+import { ItemProposta, Proposta } from "./classes.js"
 import { alertGenerate, allFirstUppercase } from './patternFunctions.js'
 
 function populateMidiaOptions(selectElement) {
@@ -90,11 +90,136 @@ export var novaProposta = function() {
         } else if (!currentItem.production) {
             alertGenerate(divAddItem, 'Preencha o valor de produção.').focus()
         } else{
+            currentItem.calcularTotais()
+            currentItem.calcularComissao(proposta.agencyTax)
+            proposta.items.push(currentItem)
+            renderizarProposta()
             zerarCampos()
             currentItem = new ItemProposta()
+
         }
     }
+    function renderizarProposta() {
+        divShowItemsBody.innerHTML = ''
+        if (proposta.items.length > 0) {
+            let items = proposta.items
+            items.forEach((item, index) => {
+                console.log(item)
+                let lineDiv = document.createElement('div')
+                lineDiv.className = 'lineDiv'
+                let divLineDelete = document.createElement('div')
+                divLineDelete.className = 'deleteLineDiv'
+                let lineDeleteButton = document.createElement('button')
+                lineDeleteButton.className = 'btn btn-danger'
+                lineDeleteButton.innerHTML = 'x'
+                lineDeleteButton.id = index
+                lineDeleteButton.addEventListener('click', e => {
+                    deleteLineItem(e.target.id)
+                })
+                divLineDelete.appendChild(lineDeleteButton)
+                lineDiv.appendChild(divLineDelete)
+                let divLineMidia = document.createElement('div')
+                divLineMidia.className = 'lineDivItem mdLineDiv'
+                let lineMidiaValue = document.createElement('span')
+                lineMidiaValue.innerHTML = item.media
+                divLineMidia.appendChild(lineMidiaValue)
+                lineDiv.appendChild(divLineMidia)
+                let divLinePraca = document.createElement('div')
+                divLinePraca.className = 'lineDivItem mdLineDiv'
+                let linePracaValue = document.createElement('span')
+                linePracaValue.innerHTML = item.place
+                divLinePraca.appendChild(linePracaValue)
+                lineDiv.appendChild(divLinePraca)
+                let divLineBook = document.createElement('div')
+                divLineBook.className = 'lineDivItem lgLineDiv'
+                let lineBookValue = document.createElement('a')
+                lineBookValue.innerHTML = item.book
+                lineBookValue.href = item.book
+                divLineBook.appendChild(lineBookValue)
+                lineDiv.appendChild(divLineBook)
+                let divLinePeriodo = document.createElement('div')
+                divLinePeriodo.className = 'lineDivItem periodoLineDiv'
+                let linePeriodoValue = document.createElement('span')
+                linePeriodoValue.innerHTML = item.period
+                divLinePeriodo.appendChild(linePeriodoValue)
+                lineDiv.appendChild(divLinePeriodo)
+                let divLineFormato = document.createElement('div')
+                divLineFormato.className = 'lineDivItem mdLineDiv'
+                let lineFormatoValue = document.createElement('span')
+                lineFormatoValue.innerHTML = item.format
+                divLineFormato.appendChild(lineFormatoValue)
+                lineDiv.appendChild(divLineFormato)
+                let divLineFaces = document.createElement('div')
+                divLineFaces.className = 'lineDivItem smLineDiv'
+                let lineFacesValue = document.createElement('span')
+                lineFacesValue.innerHTML = item.faces
+                divLineFaces.appendChild(lineFacesValue)
+                lineDiv.appendChild(divLineFaces)
+                let divLinePeriodos = document.createElement('div')
+                divLinePeriodos.className = 'lineDivItem smLineDiv'
+                let linePeriodosValue = document.createElement('span')
+                linePeriodosValue.innerHTML = item.periodQuant
+                divLinePeriodos.appendChild(linePeriodosValue)
+                lineDiv.appendChild(divLinePeriodos)
+                let divLineTabValue = document.createElement('div')
+                divLineTabValue.className = 'lineDivItem mdLineDiv'
+                let lineTabValueValue = document.createElement('span')
+                lineTabValueValue.innerHTML = (item.taxTabValue).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                divLineTabValue.appendChild(lineTabValueValue)
+                lineDiv.appendChild(divLineTabValue)
+                let divLineNegValue = document.createElement('div')
+                divLineNegValue.className = 'lineDivItem mdLineDiv'
+                let lineNegValueValue = document.createElement('span')
+                lineNegValueValue.innerHTML = (item.taxNegValue).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                divLineNegValue.appendChild(lineNegValueValue)
+                lineDiv.appendChild(divLineNegValue)
+                let divLineProduction = document.createElement('div')
+                divLineProduction.className = 'lineDivItem mdLineDiv'
+                let lineProductionValue = document.createElement('span')
+                lineProductionValue.innerHTML = (item.production).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                divLineProduction.appendChild(lineProductionValue)
+                lineDiv.appendChild(divLineProduction)
+                let divLineTotalNegValue = document.createElement('div')
+                divLineTotalNegValue.className = 'lineDivItem mdLineDiv'
+                let lineTotalNegValueValue = document.createElement('span')
+                lineTotalNegValueValue.innerHTML = (item.taxTotalNegValue).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                divLineTotalNegValue.appendChild(lineTotalNegValueValue)
+                lineDiv.appendChild(divLineTotalNegValue)
+                let divLineTotalProduction = document.createElement('div')
+                divLineTotalProduction.className = 'lineDivItem mdLineDiv'
+                let lineTotalProductionValue = document.createElement('span')
+                lineTotalProductionValue.innerHTML = (item.totalProduction).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                divLineTotalProduction.appendChild(lineTotalProductionValue)
+                lineDiv.appendChild(divLineTotalProduction)
+                let divLineTotal = document.createElement('div')
+                divLineTotal.className = 'lineDivItem mdLineDiv lineTotal'
+                let lineTotalValue = document.createElement('span')
+                lineTotalValue.innerHTML = (item.taxTotal).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                divLineTotal.appendChild(lineTotalValue)
+                lineDiv.appendChild(divLineTotal)
 
+                divShowItemsBody.appendChild(lineDiv)
+            })
+        } else {
+            let emptyText = document.createElement('span')
+            emptyText.innerHTML = 'Não há itens a mostrar.'
+            emptyText.className = 'emptyText'
+            emptyText.id = 'emptyText'
+            divShowItemsBody.appendChild(emptyText)
+        }
+    }
+    function recalcularComissao(comissao) {
+        proposta.items.forEach(item => {
+            item.calcularComissao(comissao)
+        })
+        renderizarProposta()
+    }
+    function deleteLineItem(index) {
+        proposta.items.splice(index, 1)
+        renderizarProposta()
+    }
+
+    let proposta = new Proposta()
     let currentItem = new ItemProposta()
 
     let painelPropostasOpt = document.querySelector('#painelPropostasOpt')
@@ -113,10 +238,14 @@ export var novaProposta = function() {
     divClienteInput.className = 'divHeaderInput'
     divClienteInput.id = 'divClienteInput'
     let clienteInputTitle = document.createElement('p')
-    clienteInputTitle.innerHTML = 'Empresa:'
+    clienteInputTitle.innerHTML = 'Cliente:'
     let clienteInputInput = document.createElement('input')
     clienteInputInput.id = 'clienteInput'
     clienteInputInput.maxLength = 50
+    clienteInputInput.addEventListener('input', e => {
+        proposta.client = allFirstUppercase(e.currentTarget.value) || null
+        showClienteValue.innerHTML = allFirstUppercase(e.currentTarget.value) || null
+    })
     divClienteInput.appendChild(clienteInputTitle)
     divClienteInput.appendChild(clienteInputInput)
     
@@ -124,10 +253,14 @@ export var novaProposta = function() {
     divACInput.className = 'divHeaderInput'
     divACInput.id = 'divACInput'
     let ACInputTitle = document.createElement('p')
-    ACInputTitle.innerHTML = 'A/C (Executivo da empresa):'
+    ACInputTitle.innerHTML = 'A/C (Executivo do Cliente):'
     let ACInputInput = document.createElement('input')
     ACInputInput.id = 'acInput'
     ACInputInput.maxLength = 50
+    ACInputInput.addEventListener('input', e => {
+        proposta.clientPerson = allFirstUppercase(e.currentTarget.value) || null
+        showACValue.innerHTML = allFirstUppercase(e.currentTarget.value) || null
+    })
     divACInput.appendChild(ACInputTitle)
     divACInput.appendChild(ACInputInput)
     
@@ -139,6 +272,10 @@ export var novaProposta = function() {
     let campanhaInputInput = document.createElement('input')
     campanhaInputInput.id = 'campanhaInput'
     campanhaInputInput.maxLength = 50
+    campanhaInputInput.addEventListener('input', e => {
+        proposta.campaign = allFirstUppercase(e.currentTarget.value) || null
+        showCampanhaValue.innerHTML = allFirstUppercase(e.currentTarget.value) || null
+    })
     divCampanhaInput.appendChild(campanhaInputTitle)
     divCampanhaInput.appendChild(campanhaInputInput)
     
@@ -147,9 +284,25 @@ export var novaProposta = function() {
     divHeader.appendChild(divCampanhaInput)
     body_content.appendChild(divHeader)
 
-    let divMiddle = document.createElement('div')
-    divMiddle.className = 'divMiddle'
-    divMiddle.id = 'divMiddle'
+    let divEmployee = document.createElement('div')
+    divEmployee.className = 'divEmployee'
+    let divEmployeeTitle = document.createElement('div')
+    divEmployeeTitle.className = 'divEmployeeTitle'
+    let employeeTitle = document.createElement('span')
+    employeeTitle.innerHTML = 'Executivo Responsável (M Souza):'
+    divEmployeeTitle.appendChild(employeeTitle)
+    divEmployee.appendChild(divEmployeeTitle)
+    let divEmployeeInput = document.createElement('div')
+    divEmployeeInput.className = 'divEmployeeInput'
+    let employeeInput = document.createElement('input')
+    employeeInput.id = 'employeeInput'
+    employeeInput.addEventListener('input', e => {
+        proposta.employeeName = allFirstUppercase(e.currentTarget.value) || null
+        showExecutivoValue.innerHTML = allFirstUppercase(e.currentTarget.value) || null
+    })
+    divEmployeeInput.appendChild(employeeInput)
+    divEmployee.appendChild(divEmployeeInput)
+    body_content.appendChild(divEmployee)
 
     let divAgencia = document.createElement('div')
     divAgencia.className = 'divAgencia'
@@ -164,12 +317,20 @@ export var novaProposta = function() {
         if (agenciaCheck.checked == false) {
             agenciaNameInput.disabled = true
             agenciaNameInput.value = ''
+            proposta.agencyName = ''
+            showAgenciaNameValue.innerHTML = ''
             agenciaComissaoInput.disabled = true
             agenciaComissaoInput.value = ''
+            proposta.agencyTax = 0
+            showAgenciaTaxValue.innerHTML = ''
+            recalcularComissao(Number(proposta.agencyTax))
         } else {
             agenciaNameInput.disabled = false
             agenciaComissaoInput.disabled = false
             agenciaComissaoInput.value = 50
+            proposta.agencyTax = 50
+            showAgenciaTaxValue.innerHTML = 50
+            recalcularComissao(Number(proposta.agencyTax))
         }
     })
     divAgenciaCheck.appendChild(agenciaCheck)
@@ -181,6 +342,10 @@ export var novaProposta = function() {
     let agenciaNameInput = document.createElement('input')
     agenciaNameInput.id = 'agenciaNameInput'
     agenciaNameInput.disabled = true
+    agenciaNameInput.addEventListener('input', e => {
+        proposta.agencyName = allFirstUppercase(e.currentTarget.value) || null
+        showAgenciaNameValue.innerHTML = allFirstUppercase(e.currentTarget.value) || null
+    })
     divAgenciaName.appendChild(agenciaNameInput)
     let divAgenciaComissao = document.createElement('div')
     divAgenciaComissao.className = 'divAgenciaComissao'
@@ -188,8 +353,14 @@ export var novaProposta = function() {
     agenciaComissaoTitle.innerHTML = 'Porcentagem de comissão:'
     divAgenciaComissao.appendChild(agenciaComissaoTitle)
     let agenciaComissaoInput = document.createElement('input')
+    agenciaComissaoInput.type = 'number'
     agenciaComissaoInput.disabled = true
     agenciaComissaoInput.id = 'agenciaComissaoInput'
+    agenciaComissaoInput.addEventListener('change', e => {
+        proposta.agencyTax = Number(e.target.value || 0)
+        showAgenciaTaxValue.innerHTML = allFirstUppercase(e.target.value) || null
+        recalcularComissao(Number(proposta.agencyTax))
+    })
     divAgenciaComissao.appendChild(agenciaComissaoInput)
     
     divAgencia.appendChild(divAgenciaCheck)
@@ -452,8 +623,6 @@ export var novaProposta = function() {
         addItem(e.target, currentItem)
     })
 
-
-
     divAddItem.appendChild(divAddItemTitle)
     divAddItem.appendChild(divAddItemMidia)
     divAddItem.appendChild(divAddItemPraca)
@@ -464,7 +633,176 @@ export var novaProposta = function() {
     divAddItem.appendChild(addButton)
     
     body_content.appendChild(divAddItem)
+
+    let divShow = document.createElement('div')
+    divShow.className = 'divShow'
     
+    let divShowProposta = document.createElement('div')
+    divShowProposta.className = 'divAddItem divShowProposta'
+    
+    let divShowPropostaTitle = document.createElement('div')
+    divShowPropostaTitle.className = 'divAddItemTitle'
+    let divShowPropostaTitleText = document.createElement('span')
+    divShowPropostaTitleText.innerHTML = 'Pré-Visualização'
+    divShowPropostaTitle.appendChild(divShowPropostaTitleText)
+    divShowProposta.appendChild(divShowPropostaTitle)
+
+    let divShowPropostaCliente = document.createElement('div')
+    divShowPropostaCliente.className = 'divHeaderItemShow'
+    let showClienteTitle = document.createElement('span')
+    showClienteTitle.innerHTML = 'Cliente:'
+    let showClienteValue = document.createElement('p')
+    showClienteValue.innerHTML = ''
+    divShowPropostaCliente.appendChild(showClienteTitle)
+    divShowPropostaCliente.appendChild(showClienteValue)
+    divShowProposta.appendChild(divShowPropostaCliente)
+    
+    let divShowPropostaAC = document.createElement('div')
+    divShowPropostaAC.className = 'divHeaderItemShow'
+    let showACTitle = document.createElement('span')
+    showACTitle.innerHTML = 'A/C:'
+    let showACValue = document.createElement('p')
+    showACValue.innerHTML = ''
+    divShowPropostaAC.appendChild(showACTitle)
+    divShowPropostaAC.appendChild(showACValue)
+    divShowProposta.appendChild(divShowPropostaAC)
+    
+    let divShowPropostaCampanha = document.createElement('div')
+    divShowPropostaCampanha.className = 'divHeaderItemShow'
+    let showCampanhaTitle = document.createElement('span')
+    showCampanhaTitle.innerHTML = 'Campanha:'
+    let showCampanhaValue = document.createElement('p')
+    showCampanhaValue.innerHTML = 'nsdovcnsdvo sdfs sdf'
+    divShowPropostaCampanha.appendChild(showCampanhaTitle)
+    divShowPropostaCampanha.appendChild(showCampanhaValue)
+    divShowProposta.appendChild(divShowPropostaCampanha)
+    
+    let divShowPropostaExecutivo = document.createElement('div')
+    divShowPropostaExecutivo.className = 'divHeaderItemShow'
+    let showExecutivoTitle = document.createElement('span')
+    showExecutivoTitle.innerHTML = 'Executivo:'
+    let showExecutivoValue = document.createElement('p')
+    showExecutivoValue.innerHTML = ''
+    divShowPropostaExecutivo.appendChild(showExecutivoTitle)
+    divShowPropostaExecutivo.appendChild(showExecutivoValue)
+    divShowProposta.appendChild(divShowPropostaExecutivo)
+    
+    let divShowPropostaAgenciaName = document.createElement('div')
+    divShowPropostaAgenciaName.className = 'divHeaderItemShow'
+    let showAgenciaNameTitle = document.createElement('span')
+    showAgenciaNameTitle.innerHTML = 'Agência:'
+    let showAgenciaNameValue = document.createElement('p')
+    showAgenciaNameValue.innerHTML = ''
+    divShowPropostaAgenciaName.appendChild(showAgenciaNameTitle)
+    divShowPropostaAgenciaName.appendChild(showAgenciaNameValue)
+    divShowProposta.appendChild(divShowPropostaAgenciaName)
+    
+    let divShowPropostaAgenciaTax = document.createElement('div')
+    divShowPropostaAgenciaTax.className = 'divHeaderItemShow'
+    let showAgenciaTaxTitle = document.createElement('span')
+    showAgenciaTaxTitle.innerHTML = 'Comissão:'
+    let showAgenciaTaxValue = document.createElement('p')
+    showAgenciaTaxValue.innerHTML = ''
+    divShowPropostaAgenciaTax.appendChild(showAgenciaTaxTitle)
+    divShowPropostaAgenciaTax.appendChild(showAgenciaTaxValue)
+    divShowProposta.appendChild(divShowPropostaAgenciaTax)
+
+    let divShowItems = document.createElement('div')
+    divShowItems.className = 'divShowItems'
+    let divShowItemsHeader = document.createElement('div')
+    divShowItemsHeader.className = 'divShowItemsHeader'
+    let divItemHeaderDelete = document.createElement('div')
+    divItemHeaderDelete.className = 'deleteHeader'
+    divShowItemsHeader.appendChild(divItemHeaderDelete)
+    let divItemHeaderMidia = document.createElement('div')
+    divItemHeaderMidia.className = 'mdHeader'
+    let divItemHeaderMidiaText = document.createElement('span')
+    divItemHeaderMidiaText.innerHTML = 'Mídia'
+    divItemHeaderMidia.appendChild(divItemHeaderMidiaText)
+    divShowItemsHeader.appendChild(divItemHeaderMidia)
+    let divItemHeaderPraca = document.createElement('div')
+    divItemHeaderPraca.className = 'mdHeader'
+    let divItemHeaderPracaText = document.createElement('span')
+    divItemHeaderPracaText.innerHTML = 'Praça'
+    divItemHeaderPraca.appendChild(divItemHeaderPracaText)
+    divShowItemsHeader.appendChild(divItemHeaderPraca)
+    let divItemHeaderBook = document.createElement('div')
+    divItemHeaderBook.className = 'lgHeader'
+    let divItemHeaderBookText = document.createElement('span')
+    divItemHeaderBookText.innerHTML = 'Book'
+    divItemHeaderBook.appendChild(divItemHeaderBookText)
+    divShowItemsHeader.appendChild(divItemHeaderBook)
+    let divItemHeaderPeriodo = document.createElement('div')
+    divItemHeaderPeriodo.className = 'periodoHeader'
+    let divItemHeaderPeriodoText = document.createElement('span')
+    divItemHeaderPeriodoText.innerHTML = 'Período'
+    divItemHeaderPeriodo.appendChild(divItemHeaderPeriodoText)
+    divShowItemsHeader.appendChild(divItemHeaderPeriodo)
+    let divItemHeaderFormato = document.createElement('div')
+    divItemHeaderFormato.className = 'mdHeader'
+    let divItemHeaderFormatoText = document.createElement('span')
+    divItemHeaderFormatoText.innerHTML = 'Formato'
+    divItemHeaderFormato.appendChild(divItemHeaderFormatoText)
+    divShowItemsHeader.appendChild(divItemHeaderFormato)
+    let divItemHeaderFaces = document.createElement('div')
+    divItemHeaderFaces.className = 'smHeader'
+    let divItemHeaderFacesText = document.createElement('span')
+    divItemHeaderFacesText.innerHTML = 'Faces'
+    divItemHeaderFaces.appendChild(divItemHeaderFacesText)
+    divShowItemsHeader.appendChild(divItemHeaderFaces)
+    let divItemHeaderPeriodos = document.createElement('div')
+    divItemHeaderPeriodos.className = 'smHeader'
+    let divItemHeaderPeriodosText = document.createElement('span')
+    divItemHeaderPeriodosText.innerHTML = 'Períodos'
+    divItemHeaderPeriodos.appendChild(divItemHeaderPeriodosText)
+    divShowItemsHeader.appendChild(divItemHeaderPeriodos)
+    let divItemHeaderTabValue = document.createElement('div')
+    divItemHeaderTabValue.className = 'mdHeader'
+    let divItemHeaderTabValueText = document.createElement('span')
+    divItemHeaderTabValueText.innerHTML = 'Veiculação Tab'
+    divItemHeaderTabValue.appendChild(divItemHeaderTabValueText)
+    divShowItemsHeader.appendChild(divItemHeaderTabValue)
+    let divItemHeaderNegValue = document.createElement('div')
+    divItemHeaderNegValue.className = 'mdHeader'
+    let divItemHeaderNegValueText = document.createElement('span')
+    divItemHeaderNegValueText.innerHTML = 'Veiculação Neg'
+    divItemHeaderNegValue.appendChild(divItemHeaderNegValueText)
+    divShowItemsHeader.appendChild(divItemHeaderNegValue)
+    let divItemHeaderProducao = document.createElement('div')
+    divItemHeaderProducao.className = 'mdHeader'
+    let divItemHeaderProducaoText = document.createElement('span')
+    divItemHeaderProducaoText.innerHTML = 'Produção'
+    divItemHeaderProducao.appendChild(divItemHeaderProducaoText)
+    divShowItemsHeader.appendChild(divItemHeaderProducao)
+    let divItemHeaderTotalNeg = document.createElement('div')
+    divItemHeaderTotalNeg.className = 'mdHeader'
+    let divItemHeaderTotalNegText = document.createElement('span')
+    divItemHeaderTotalNegText.innerHTML = 'Total Veiculação Neg'
+    divItemHeaderTotalNeg.appendChild(divItemHeaderTotalNegText)
+    divShowItemsHeader.appendChild(divItemHeaderTotalNeg)
+    let divItemHeaderTotalProcucao = document.createElement('div')
+    divItemHeaderTotalProcucao.className = 'mdHeader'
+    let divItemHeaderTotalProcucaoText = document.createElement('span')
+    divItemHeaderTotalProcucaoText.innerHTML = 'Total Produção'
+    divItemHeaderTotalProcucao.appendChild(divItemHeaderTotalProcucaoText)
+    divShowItemsHeader.appendChild(divItemHeaderTotalProcucao)
+    let divItemHeaderTotal = document.createElement('div')
+    divItemHeaderTotal.className = 'mdHeader'
+    let divItemHeaderTotalText = document.createElement('span')
+    divItemHeaderTotalText.innerHTML = 'Total'
+    divItemHeaderTotal.appendChild(divItemHeaderTotalText)
+    divShowItemsHeader.appendChild(divItemHeaderTotal)
+    divShowItems.appendChild(divShowItemsHeader)
+    
+    let divShowItemsBody = document.createElement('div')
+    divShowItemsBody.className = 'divShowItemsBody'
+    divShowItems.appendChild(divShowItemsBody)
+
+    divShowProposta.appendChild(divShowItems)
+    divShow.appendChild(divShowProposta)
+    body_content.appendChild(divShow)
+
+    renderizarProposta()
 }
 
 export var painelPropostas = function() {

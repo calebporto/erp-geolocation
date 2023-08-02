@@ -19,6 +19,29 @@
     width: 100%;
     padding: .3rem;
 }
+.divEmployee {
+    display: flex;
+    padding: 1rem;
+    margin: 1rem 0;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 1rem;
+}
+.divEmployeeTitle {
+    width: 30%;
+    display: flex;
+}
+.divEmployeeTitle span {
+    margin: auto auto auto 0;
+    font-weight: bold;
+}
+.divEmployeeInput {
+    width: 70%;
+    display: flex;
+}
+.divEmployeeInput input {
+    width: 100%;
+    padding: 3px;
+}
 .divAgencia {
     display: flex;
     padding: 1rem;
@@ -158,5 +181,138 @@
     position: relative;
     top: 3px;
     box-shadow: 0px 0px 3px rgb(99, 99, 99);
-
+}
+.divShow {
+    overflow-x: auto;
+}
+.divShowProposta {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 200%;
+}
+.divHeaderItemShow {
+    width: 16.66%;
+    padding: .5rem;
+    display: flex;
+    background-color: white;
+    margin: .5px 0;
+}
+.divHeaderItemShow span {
+    width: 30%;
+    height: auto;
+    text-align: start;
+    margin: auto 0;
+    font-weight: bold;
+}
+.divHeaderItemShow p {
+    width: 70%;
+    height: auto;
+    margin: auto;
+    text-align: start;
+}
+.divShowItems {
+    width: 100%;
+}
+.divShowItemsHeader {
+    width: 100%;
+    display: flex;
+    padding: .5rem 0;
+    background-color: black;
+    color: white;
+    margin: .5rem 0 0 0;
+}
+.lgHeader {
+    width: 15.076%;
+    display: flex;
+}
+.lgHeader span {
+    margin: auto;
+    font-weight: bold;
+    font-size: 12px;
+}
+.mdHeader {
+    width: 7.692%;
+    display: flex;
+}
+.mdHeader span {
+    margin: auto;
+    font-weight: bold;
+    font-size: 12px;
+}
+.smHeader {
+    width: 4%;
+    display: flex;
+}
+.smHeader span {
+    margin: auto;
+    font-weight: bold;
+    font-size: 12px;
+}
+.periodoHeader {
+    width: 4.692%;
+    display: flex;
+}
+.periodoHeader span {
+    margin: auto;
+    font-weight: bold;
+    font-size: 12px;
+}
+.deleteHeader {
+    width: 3%;
+    display: flex;
+}
+.divShowItemsBody {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 5rem;
+    background-color: white;
+}
+.emptyText {
+    width: auto;
+    margin: auto auto auto 10rem;
+}
+.lineDiv {
+    width: 100%;
+    display: flex;
+    height: auto;
+}
+.lineDivItem {
+    min-height: 2.5rem;
+    display: flex;
+    border: solid .5px gray;
+}
+.lineDivItem span {
+    margin: auto;
+}
+.lineDivItem a {
+    margin: auto;
+}
+.mdLineDiv {
+    width: 7.692%;
+}
+.lgLineDiv {
+    width: 15.076%;
+}
+.smLineDiv {
+    width: 4%;
+}
+.periodoLineDiv {
+    width: 4.692%;
+}
+.deleteLineDiv {
+    width: 3%;
+    display: flex;
+}
+.deleteLineDiv button {
+    font-size: 12px;
+    width: 75%;
+    height: 75%;
+    margin: auto;
+    font-weight: bold;
+    padding: 0;
+}
+.lineTotal {
+    font-weight: bold;
 }
