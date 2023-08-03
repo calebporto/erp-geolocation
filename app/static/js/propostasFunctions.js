@@ -44,7 +44,7 @@ function populatePeriodoOptions(selectElement) {
         selectElement.appendChild(option)
     })
 }
-export var novaProposta = function() {
+export var novaProposta = function () {
     function zerarCampos() {
         addMidiaSelect.selectedIndex = 0
         addMidiaOutros.value = ''
@@ -89,7 +89,7 @@ export var novaProposta = function() {
             alertGenerate(divAddItem, 'Preencha o valor negociado.').focus()
         } else if (!currentItem.production) {
             alertGenerate(divAddItem, 'Preencha o valor de produção.').focus()
-        } else{
+        } else {
             currentItem.calcularTotais()
             currentItem.calcularComissao(proposta.agencyTax)
             proposta.items.push(currentItem)
@@ -104,7 +104,6 @@ export var novaProposta = function() {
         if (proposta.items.length > 0) {
             let items = proposta.items
             items.forEach((item, index) => {
-                console.log(item)
                 let lineDiv = document.createElement('div')
                 lineDiv.className = 'lineDiv'
                 let divLineDelete = document.createElement('div')
@@ -164,37 +163,37 @@ export var novaProposta = function() {
                 let divLineTabValue = document.createElement('div')
                 divLineTabValue.className = 'lineDivItem mdLineDiv'
                 let lineTabValueValue = document.createElement('span')
-                lineTabValueValue.innerHTML = (item.taxTabValue).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                lineTabValueValue.innerHTML = (item.taxTabValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 divLineTabValue.appendChild(lineTabValueValue)
                 lineDiv.appendChild(divLineTabValue)
                 let divLineNegValue = document.createElement('div')
                 divLineNegValue.className = 'lineDivItem mdLineDiv'
                 let lineNegValueValue = document.createElement('span')
-                lineNegValueValue.innerHTML = (item.taxNegValue).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                lineNegValueValue.innerHTML = (item.taxNegValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 divLineNegValue.appendChild(lineNegValueValue)
                 lineDiv.appendChild(divLineNegValue)
                 let divLineProduction = document.createElement('div')
                 divLineProduction.className = 'lineDivItem mdLineDiv'
                 let lineProductionValue = document.createElement('span')
-                lineProductionValue.innerHTML = (item.production).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                lineProductionValue.innerHTML = (item.production).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 divLineProduction.appendChild(lineProductionValue)
                 lineDiv.appendChild(divLineProduction)
                 let divLineTotalNegValue = document.createElement('div')
                 divLineTotalNegValue.className = 'lineDivItem mdLineDiv'
                 let lineTotalNegValueValue = document.createElement('span')
-                lineTotalNegValueValue.innerHTML = (item.taxTotalNegValue).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                lineTotalNegValueValue.innerHTML = (item.taxTotalNegValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 divLineTotalNegValue.appendChild(lineTotalNegValueValue)
                 lineDiv.appendChild(divLineTotalNegValue)
                 let divLineTotalProduction = document.createElement('div')
                 divLineTotalProduction.className = 'lineDivItem mdLineDiv'
                 let lineTotalProductionValue = document.createElement('span')
-                lineTotalProductionValue.innerHTML = (item.totalProduction).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                lineTotalProductionValue.innerHTML = (item.totalProduction).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 divLineTotalProduction.appendChild(lineTotalProductionValue)
                 lineDiv.appendChild(divLineTotalProduction)
                 let divLineTotal = document.createElement('div')
                 divLineTotal.className = 'lineDivItem mdLineDiv lineTotal'
                 let lineTotalValue = document.createElement('span')
-                lineTotalValue.innerHTML = (item.taxTotal).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+                lineTotalValue.innerHTML = (item.taxTotal).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 divLineTotal.appendChild(lineTotalValue)
                 lineDiv.appendChild(divLineTotal)
 
@@ -217,6 +216,32 @@ export var novaProposta = function() {
     function deleteLineItem(index) {
         proposta.items.splice(index, 1)
         renderizarProposta()
+    }
+    function gerarProposta(button) {
+        console.log('clicou')
+        proposta.calcularTotal()
+        proposta.proposal_date = new Date()
+        sending = true
+        button.innerHTML = `
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        `
+        fetch('/painel/propostas/nova-proposta', {
+            method: 'POST',
+            body: JSON.stringify(proposta)
+        }).then(response => {
+            if(!response.ok) {
+                alertGenerate(body_content, 'Algo deu errado').focus()
+                button.innerHTML = 'Gerar Proposta'
+                sending = false
+            } else {
+                return response.json().then(data => {
+                    button.innerHTML = 'Gerar Proposta'
+                    sending = false
+                })
+            }
+        })
     }
 
     let proposta = new Proposta()
@@ -248,7 +273,7 @@ export var novaProposta = function() {
     })
     divClienteInput.appendChild(clienteInputTitle)
     divClienteInput.appendChild(clienteInputInput)
-    
+
     let divACInput = document.createElement('div')
     divACInput.className = 'divHeaderInput'
     divACInput.id = 'divACInput'
@@ -263,7 +288,7 @@ export var novaProposta = function() {
     })
     divACInput.appendChild(ACInputTitle)
     divACInput.appendChild(ACInputInput)
-    
+
     let divCampanhaInput = document.createElement('div')
     divCampanhaInput.className = 'divHeaderInput'
     divCampanhaInput.id = 'divCampanhaInput'
@@ -278,7 +303,7 @@ export var novaProposta = function() {
     })
     divCampanhaInput.appendChild(campanhaInputTitle)
     divCampanhaInput.appendChild(campanhaInputInput)
-    
+
     divHeader.appendChild(divClienteInput)
     divHeader.appendChild(divACInput)
     divHeader.appendChild(divCampanhaInput)
@@ -329,7 +354,7 @@ export var novaProposta = function() {
             agenciaComissaoInput.disabled = false
             agenciaComissaoInput.value = 50
             proposta.agencyTax = 50
-            showAgenciaTaxValue.innerHTML = 50
+            showAgenciaTaxValue.innerHTML = '50 %'
             recalcularComissao(Number(proposta.agencyTax))
         }
     })
@@ -358,11 +383,11 @@ export var novaProposta = function() {
     agenciaComissaoInput.id = 'agenciaComissaoInput'
     agenciaComissaoInput.addEventListener('change', e => {
         proposta.agencyTax = Number(e.target.value || 0)
-        showAgenciaTaxValue.innerHTML = allFirstUppercase(e.target.value) || null
+        showAgenciaTaxValue.innerHTML = e.target.value ? `${e.target.value} %` : null
         recalcularComissao(Number(proposta.agencyTax))
     })
     divAgenciaComissao.appendChild(agenciaComissaoInput)
-    
+
     divAgencia.appendChild(divAgenciaCheck)
     divAgencia.appendChild(divAgenciaName)
     divAgencia.appendChild(divAgenciaComissao)
@@ -419,7 +444,7 @@ export var novaProposta = function() {
     divAddItemMidia.appendChild(divAddItemMidiaTitle)
     divAddItemMidia.appendChild(divAddMidiaInput)
     divAddItemMidia.appendChild(divAddItemMidiaShow)
-    
+
     let divAddItemPraca = document.createElement('div')
     divAddItemPraca.className = 'divAddItemParam'
     let divAddItemPracaTitle = document.createElement('div')
@@ -443,7 +468,7 @@ export var novaProposta = function() {
     divAddItemPraca.appendChild(divAddItemPracaTitle)
     divAddItemPraca.appendChild(divAddPracaInput)
     divAddItemPraca.appendChild(divAddItemPracaShow)
-    
+
     let divAddItemBook = document.createElement('div')
     divAddItemBook.className = 'divAddItemParam'
     let divAddItemBookTitle = document.createElement('div')
@@ -468,7 +493,7 @@ export var novaProposta = function() {
     divAddItemBook.appendChild(divAddItemBookTitle)
     divAddItemBook.appendChild(divAddBookInput)
     divAddItemBook.appendChild(divAddItemBookShow)
-    
+
     let divAddItemPeriodo = document.createElement('div')
     divAddItemPeriodo.className = 'divAddItemParam'
     let divAddItemPeriodoTitle = document.createElement('div')
@@ -538,7 +563,7 @@ export var novaProposta = function() {
     let divFacesResult = document.createElement('p')
     divFaces.appendChild(divFacesResult)
     divMultiParams.appendChild(divFaces)
-    
+
     let divPeriodos = document.createElement('div')
     divPeriodos.className = 'divMiniParam'
     let divPeriodosTitle = document.createElement('span')
@@ -557,7 +582,7 @@ export var novaProposta = function() {
     let divPeriodosResult = document.createElement('p')
     divPeriodos.appendChild(divPeriodosResult)
     divMultiParams.appendChild(divPeriodos)
-    
+
     let divVeiculacaoTab = document.createElement('div')
     divVeiculacaoTab.className = 'divMiniParam'
     let divVeiculacaoTabTitle = document.createElement('span')
@@ -569,14 +594,14 @@ export var novaProposta = function() {
     divVeiculacaoTabInput.max = 10000
     divVeiculacaoTabInput.id = 'veiculacaoTabInput'
     divVeiculacaoTabInput.addEventListener('input', (e) => {
-        divVeiculacaoTabResult.innerHTML = Number(e.currentTarget.value).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+        divVeiculacaoTabResult.innerHTML = Number(e.currentTarget.value).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
         currentItem.tabValue = e.currentTarget.value != 0 ? Number(e.currentTarget.value) : null
     })
     divVeiculacaoTab.appendChild(divVeiculacaoTabInput)
     let divVeiculacaoTabResult = document.createElement('p')
     divVeiculacaoTab.appendChild(divVeiculacaoTabResult)
     divMultiParams.appendChild(divVeiculacaoTab)
-    
+
     let divVeiculacaoNeg = document.createElement('div')
     divVeiculacaoNeg.className = 'divMiniParam'
     let divVeiculacaoNegTitle = document.createElement('span')
@@ -588,14 +613,14 @@ export var novaProposta = function() {
     divVeiculacaoNegInput.max = 10000
     divVeiculacaoNegInput.id = 'veiculacaoNegInput'
     divVeiculacaoNegInput.addEventListener('input', (e) => {
-        divVeiculacaoNegResult.innerHTML = Number(e.currentTarget.value).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+        divVeiculacaoNegResult.innerHTML = Number(e.currentTarget.value).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
         currentItem.negValue = e.currentTarget.value != 0 ? Number(e.currentTarget.value) : null
     })
     divVeiculacaoNeg.appendChild(divVeiculacaoNegInput)
     let divVeiculacaoNegResult = document.createElement('p')
     divVeiculacaoNeg.appendChild(divVeiculacaoNegResult)
     divMultiParams.appendChild(divVeiculacaoNeg)
-    
+
     let divProducao = document.createElement('div')
     divProducao.className = 'divMiniParam'
     let divProducaoTitle = document.createElement('span')
@@ -607,7 +632,7 @@ export var novaProposta = function() {
     divProducaoInput.max = 10000
     divProducaoInput.id = 'producaoInput'
     divProducaoInput.addEventListener('input', (e) => {
-        divProducaoResult.innerHTML = Number(e.currentTarget.value).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})
+        divProducaoResult.innerHTML = Number(e.currentTarget.value).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
         currentItem.production = e.currentTarget.value != 0 ? Number(e.currentTarget.value) : null
     })
     divProducao.appendChild(divProducaoInput)
@@ -631,15 +656,15 @@ export var novaProposta = function() {
     divAddItem.appendChild(divAddItemFormato)
     divAddItem.appendChild(divMultiParams)
     divAddItem.appendChild(addButton)
-    
+
     body_content.appendChild(divAddItem)
 
     let divShow = document.createElement('div')
     divShow.className = 'divShow'
-    
+
     let divShowProposta = document.createElement('div')
     divShowProposta.className = 'divAddItem divShowProposta'
-    
+
     let divShowPropostaTitle = document.createElement('div')
     divShowPropostaTitle.className = 'divAddItemTitle'
     let divShowPropostaTitleText = document.createElement('span')
@@ -656,7 +681,7 @@ export var novaProposta = function() {
     divShowPropostaCliente.appendChild(showClienteTitle)
     divShowPropostaCliente.appendChild(showClienteValue)
     divShowProposta.appendChild(divShowPropostaCliente)
-    
+
     let divShowPropostaAC = document.createElement('div')
     divShowPropostaAC.className = 'divHeaderItemShow'
     let showACTitle = document.createElement('span')
@@ -666,7 +691,7 @@ export var novaProposta = function() {
     divShowPropostaAC.appendChild(showACTitle)
     divShowPropostaAC.appendChild(showACValue)
     divShowProposta.appendChild(divShowPropostaAC)
-    
+
     let divShowPropostaCampanha = document.createElement('div')
     divShowPropostaCampanha.className = 'divHeaderItemShow'
     let showCampanhaTitle = document.createElement('span')
@@ -676,7 +701,7 @@ export var novaProposta = function() {
     divShowPropostaCampanha.appendChild(showCampanhaTitle)
     divShowPropostaCampanha.appendChild(showCampanhaValue)
     divShowProposta.appendChild(divShowPropostaCampanha)
-    
+
     let divShowPropostaExecutivo = document.createElement('div')
     divShowPropostaExecutivo.className = 'divHeaderItemShow'
     let showExecutivoTitle = document.createElement('span')
@@ -686,7 +711,7 @@ export var novaProposta = function() {
     divShowPropostaExecutivo.appendChild(showExecutivoTitle)
     divShowPropostaExecutivo.appendChild(showExecutivoValue)
     divShowProposta.appendChild(divShowPropostaExecutivo)
-    
+
     let divShowPropostaAgenciaName = document.createElement('div')
     divShowPropostaAgenciaName.className = 'divHeaderItemShow'
     let showAgenciaNameTitle = document.createElement('span')
@@ -696,7 +721,7 @@ export var novaProposta = function() {
     divShowPropostaAgenciaName.appendChild(showAgenciaNameTitle)
     divShowPropostaAgenciaName.appendChild(showAgenciaNameValue)
     divShowProposta.appendChild(divShowPropostaAgenciaName)
-    
+
     let divShowPropostaAgenciaTax = document.createElement('div')
     divShowPropostaAgenciaTax.className = 'divHeaderItemShow'
     let showAgenciaTaxTitle = document.createElement('span')
@@ -793,7 +818,7 @@ export var novaProposta = function() {
     divItemHeaderTotal.appendChild(divItemHeaderTotalText)
     divShowItemsHeader.appendChild(divItemHeaderTotal)
     divShowItems.appendChild(divShowItemsHeader)
-    
+
     let divShowItemsBody = document.createElement('div')
     divShowItemsBody.className = 'divShowItemsBody'
     divShowItems.appendChild(divShowItemsBody)
@@ -802,10 +827,35 @@ export var novaProposta = function() {
     divShow.appendChild(divShowProposta)
     body_content.appendChild(divShow)
 
+    let gerarBt = document.createElement('div')
+    gerarBt.className = 'btn btn-warning gerarBt'
+    gerarBt.innerHTML = 'Gerar Proposta'
+    let sending = false
+    gerarBt.addEventListener('click', e => {
+        if (!sending) {
+            if (!proposta.client || proposta.client == '') {
+                alertGenerate(body_content, 'Preencha o nome do cliente.').focus()
+            } else if (!proposta.campaign || proposta.campaign == '') {
+                alertGenerate(body_content, 'Preencha o nome da campanha.').focus()
+            } else if (agenciaCheck.checked == true && !proposta.agencyName || agenciaCheck.checked == true && proposta.agencyName == '') {
+                alertGenerate(body_content, 'Preencha o nome da agência.').focus()
+            } else if (agenciaCheck.checked == true && proposta.agencyTax == null) {
+                alertGenerate(body_content, 'Preencha o valor da comissão, mesmo que seja 0.').focus()
+            } else if (!proposta.employeeName || proposta.employeeName == '') {
+                alertGenerate(body_content, 'Preencha o nome do executivo responsável pela proposta.').focus()
+            } else if (proposta.items.length == 0) {
+                alertGenerate(divAddItem, 'Você deve inserir ao menos 1 item na proposta.').focus()
+            } else {
+                gerarProposta(e.target)
+            }
+        }
+    })
+    body_content.appendChild(gerarBt)
+
     renderizarProposta()
 }
 
-export var painelPropostas = function() {
+export var painelPropostas = function () {
     let painelPropostasOpt = document.querySelector('#painelPropostasOpt')
     let novaPropostaOpt = document.querySelector('#novaPropostaOpt')
     painelPropostasOpt.classList.add('select')

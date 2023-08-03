@@ -15,6 +15,7 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     is_collaborator = db.Column(db.Boolean, nullable=False, default=False)
     worksheet_content_user_id = db.relationship("Worksheet_Content")
+    proposal_user_id = db.relationship("Proposal")
 
     def __init__(self, alternative_id, name, email, password, is_admin, is_collaborator):
         self.name = name
@@ -145,3 +146,47 @@ class Person(db.Model):
         self.tel2 = tel2
         self.relation_level = relation_level
         self.person_type = person_type
+
+class Proposal(db.Model):
+    __tablename__ = 'proposal'
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete='SET NULL'))
+    proposal_date = db.Column(db.Date, nullable=False)
+    client = db.Column(db.String(255), nullable=False)
+    clientPerson = db.Column(db.String(255))
+    agencyName = db.Column(db.String(255))
+    agencyTax = db.Column(db.Float)
+    employeeName = db.Column(db.String(255), nullable=False)
+    items = db.Column(db.JSON, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    taxTotal = db.Column(db.Float, nullable=False)
+    status = db.Column(db.Integer, nullable=False)
+    file_id = db.Column(db.String(255), unique=True, nullable=False)
+
+    def __init__(
+        self,
+        user_id, 
+        proposal_date, 
+        client,
+        clientPerson,
+        agencyName,
+        agencyTax,
+        employeeName,
+        items,
+        total,
+        taxTotal,
+        status,
+        file_id
+    ):
+        self.user_id = user_id
+        self.proposal_date = proposal_date
+        self.client = client
+        self.clientPerson = clientPerson
+        self.agencyName = agencyName
+        self.agencyTax = agencyTax
+        self.employeeName = employeeName
+        self.items = items
+        self.total = total
+        self.taxTotal = taxTotal
+        self.status = status
+        self.file_id = file_id

@@ -1,9 +1,13 @@
+from datetime import datetime
 from json import dumps
 from math import acos, cos, radians, sin
 import os
+from secrets import token_urlsafe
+
+from flask_login import current_user
 from app import db
 from app.models.basemodels import Register_Response_, Spot_Commercial_For_View_, Spot_For_View_, Spot_Private_For_View_
-from app.models.tables import Person, Spot, Spot_Commercial_Info, Spot_Private_Info
+from app.models.tables import Person, Proposal, Spot, Spot_Commercial_Info, Spot_Private_Info
 from sqlalchemy import or_, select
 from sqlalchemy.sql.functions import func
 from sqlalchemy.orm import declarative_base, Session
@@ -442,3 +446,38 @@ def get_fornecedores_list_off_context():
         fornecedores.append(item)
 
     return fornecedores
+
+def proposal_register(dados):
+    user_id = current_user.id
+    data = datetime.strptime(dados['proposal_date'], '%Y-%m-%dT%H:%M:%S.%fZ').date()
+    client = dados['client']
+    clientPerson = dados['clientPerson']
+    agencyName = dados['agencyName']
+    agencyTax = dados['agencyTax']
+    employeeName = dados['employeeName']
+    items = dados['items']
+    total = dados['total']
+    taxTotal = dados['taxTotal']
+    status = 1
+    file_id = token_urlsafe(40)
+
+    if len(items) == 0:
+        return False
+
+    nova_proposta = Proposal(
+        user_id,
+        data,
+        client,
+        clientPerson,
+        agencyName,
+        agencyTax,
+        employeeName,
+        items,
+        total,
+        taxTotal,
+        status,
+        file_id
+    )
+    db.session.add(nova_proposta)
+    db.session.commit()
+    return file_id

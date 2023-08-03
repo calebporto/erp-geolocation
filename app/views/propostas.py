@@ -1,6 +1,9 @@
-from json import dumps
-from flask import Blueprint, flash, redirect, render_template, request
+from datetime import datetime
+from json import dumps, loads
+from secrets import token_urlsafe
+from flask import Blueprint, Response, flash, redirect, render_template, request
 from flask_login import current_user, login_required
+from app.providers.db_services import proposal_register
 from app.providers.redis_services import get_redis_msg
 from app.providers.texts import propostas_menu_texts, main_en_texts, main_es_texts, main_pt_texts
 
@@ -39,3 +42,15 @@ def propostas():
             if len(message) > 2:
                 flash(message)
     return render_template('propostas.html', texts=texts)
+
+@propostas_bp.route('/nova-proposta', methods=['POST'])
+@login_required
+def nova_proposta():
+    dados = loads(request.data)
+    response = proposal_register(dados)
+    if response:
+        print('ok')
+        return Response(dumps(response), 200)
+    else:
+        return Response(dumps('Dados Inválidos'), 400)
+        

@@ -316,3 +316,15 @@
 .lineTotal {
     font-weight: bold;
 }
+.gerarBt {
+    width: 100%;
+    font-weight: bold;
+    margin-top: 2rem;
+    box-shadow: 0px 3px 3px rgb(99, 99, 99);
+    height: 2.5rem;
+}
+.gerarBt:active {
+    position: relative;
+    top: 3px;
+    box-shadow: 0px 0px 3px rgb(99, 99, 99);
+}

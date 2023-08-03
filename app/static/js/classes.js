@@ -106,9 +106,9 @@ export class ItemProposta {
     }
 }
 export class Proposta {
-    constructor(date = null, client = null, clientPerson = null, campaign = null, agencyName = null, agencyTax = 0,
-                employeeName = null, items = [], total = null) {
-        this.date = date
+    constructor(proposal_date = null, client = null, clientPerson = null, campaign = null, agencyName = null, agencyTax = 0,
+                employeeName = null, items = []) {
+        this.proposal_date = proposal_date
         this.client = client
         this.clientPerson = clientPerson
         this.campaign = campaign
@@ -116,7 +116,18 @@ export class Proposta {
         this.agencyTax = agencyTax
         this.employeeName = employeeName
         this.items = items
-        this.total = total
+        this.total = 0
+        this.taxTotal = 0
+    }
+    calcularTotal() {
+        this.total = 0
+        this.taxTotal = 0
+        if (this.items.length > 0) {
+            this.items.forEach(item => {
+                this.total = Number(this.total) + Number(item.total)
+                this.taxTotal = Number(this.taxTotal) + Number(item.taxTotal)
+            })
+        }
     }
     
 }
