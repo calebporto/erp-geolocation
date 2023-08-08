@@ -72,11 +72,12 @@ export class Ponto_Private {
     }
 }
 export class ItemProposta {
-    constructor(media = null, place = null, book = null, period = null, format = null,
+    constructor(media = null, place = null, book = null, isMediaKit = false, period = null, format = null,
                 faces = null, periodQuant = null, tabValue = null, negValue = null, production = null) {
         this.media = media
         this.place = place
         this.book = book
+        this.isMediaKit = isMediaKit
         this.period = period
         this.format = format
         this.faces = faces
@@ -108,6 +109,8 @@ export class ItemProposta {
 export class Proposta {
     constructor(proposal_date = null, client = null, clientPerson = null, campaign = null, agencyName = null, agencyTax = 0,
                 employeeName = null, items = []) {
+        this.id = null
+        this.user_id = null
         this.proposal_date = proposal_date
         this.client = client
         this.clientPerson = clientPerson
@@ -124,10 +127,32 @@ export class Proposta {
         this.taxTotal = 0
         if (this.items.length > 0) {
             this.items.forEach(item => {
-                this.total = Number(this.total) + Number(item.total)
-                this.taxTotal = Number(this.taxTotal) + Number(item.taxTotal)
+                this.total = item.total ? Number(this.total) + Number(item.total) : this.total
+                this.taxTotal = item.taxTotal ? Number(this.taxTotal) + Number(item.taxTotal) : this.taxTotal
             })
         }
     }
     
+}
+ export class QueryParams {
+    constructor(
+        filter = 'null',
+        filter_by = 'null',
+        order_by = 'date',
+        guidance = 'asc',
+        offset = 0
+    ) {
+        this.filter = filter
+        this.filter_by = filter_by
+        this.order_by = order_by
+        this.guidance = guidance
+        this.offset = offset
+    }
+    resetParams() {
+        this.filter = null
+        this.filter_by = null
+        this.order_by = 'date'
+        this.guidance = 'asc'
+        this.offset = ''
+    }
 }

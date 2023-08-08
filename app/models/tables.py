@@ -154,6 +154,7 @@ class Proposal(db.Model):
     proposal_date = db.Column(db.Date, nullable=False)
     client = db.Column(db.String(255), nullable=False)
     clientPerson = db.Column(db.String(255))
+    campaign = db.Column(db.String(255))
     agencyName = db.Column(db.String(255))
     agencyTax = db.Column(db.Float)
     employeeName = db.Column(db.String(255), nullable=False)
@@ -169,6 +170,7 @@ class Proposal(db.Model):
         proposal_date, 
         client,
         clientPerson,
+        campaign,
         agencyName,
         agencyTax,
         employeeName,
@@ -182,6 +184,7 @@ class Proposal(db.Model):
         self.proposal_date = proposal_date
         self.client = client
         self.clientPerson = clientPerson
+        self.campaign = campaign
         self.agencyName = agencyName
         self.agencyTax = agencyTax
         self.employeeName = employeeName

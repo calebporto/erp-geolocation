@@ -1,50 +1,50 @@
-import { ItemProposta, Proposta } from "./classes.js"
-import { alertGenerate, allFirstUppercase } from './patternFunctions.js'
+import { ItemProposta, Proposta, QueryParams } from "./classes.js"
+import { alertGenerate, allFirstUppercase, body } from './patternFunctions.js'
 
-function populateMidiaOptions(selectElement) {
-    let options = [
-        ['empena', 'Empena'],
-        ['outdoor', 'Outdoor'],
-        ['painelLed', 'Painel de Led'],
-        ['mub', 'MUB'],
-        ['banca', 'Banca de Jornal'],
-        ['outro', 'Outro']
-    ]
-    let disabledOption = document.createElement('option')
-    disabledOption.innerHTML = '-- Selecione --'
-    disabledOption.disabled = true
-    disabledOption.selected = true
-    selectElement.appendChild(
-        disabledOption
-    )
-    options.forEach(([value, text]) => {
-        let option = document.createElement('option')
-        option.value = value
-        option.innerHTML = text
-        selectElement.appendChild(option)
-    })
-}
-function populatePeriodoOptions(selectElement) {
-    let options = [
-        ['semanal', 'Semanal'],
-        ['biSemanal', 'Bi Semanal'],
-        ['mensal', 'Mensal']
-    ]
-    let disabledOption = document.createElement('option')
-    disabledOption.innerHTML = '-- Selecione --'
-    disabledOption.disabled = true
-    disabledOption.selected = true
-    selectElement.appendChild(
-        disabledOption
-    )
-    options.forEach(([value, text]) => {
-        let option = document.createElement('option')
-        option.value = value
-        option.innerHTML = text
-        selectElement.appendChild(option)
-    })
-}
 export var novaProposta = function () {
+    function populateMidiaOptions(selectElement) {
+        let options = [
+            ['empena', 'Empena'],
+            ['outdoor', 'Outdoor'],
+            ['painelLed', 'Painel de Led'],
+            ['mub', 'MUB'],
+            ['banca', 'Banca de Jornal'],
+            ['outro', 'Outro']
+        ]
+        let disabledOption = document.createElement('option')
+        disabledOption.innerHTML = '-- Selecione --'
+        disabledOption.disabled = true
+        disabledOption.selected = true
+        selectElement.appendChild(
+            disabledOption
+        )
+        options.forEach(([value, text]) => {
+            let option = document.createElement('option')
+            option.value = value
+            option.innerHTML = text
+            selectElement.appendChild(option)
+        })
+    }
+    function populatePeriodoOptions(selectElement) {
+        let options = [
+            ['semanal', 'Semanal'],
+            ['biSemanal', 'Bi Semanal'],
+            ['mensal', 'Mensal']
+        ]
+        let disabledOption = document.createElement('option')
+        disabledOption.innerHTML = '-- Selecione --'
+        disabledOption.disabled = true
+        disabledOption.selected = true
+        selectElement.appendChild(
+            disabledOption
+        )
+        options.forEach(([value, text]) => {
+            let option = document.createElement('option')
+            option.value = value
+            option.innerHTML = text
+            selectElement.appendChild(option)
+        })
+    }
     function zerarCampos() {
         addMidiaSelect.selectedIndex = 0
         addMidiaOutros.value = ''
@@ -53,6 +53,10 @@ export var novaProposta = function () {
         divAddItemPracaShowText.innerHTML = ''
         addBook.value = ''
         divAddItemBookShowText.innerHTML = ''
+        isBlankValueCheck.checked = false
+        isMediaKitCheck.checked = false
+        isMediaKitCheck.disabled = true
+        isMediaKitCheck.style.color = 'gray'
         selectPeriodo.selectedIndex = 0
         divAddItemPeriodoShowText.innerHTML = ''
         addFormato.value = ''
@@ -73,30 +77,30 @@ export var novaProposta = function () {
             alertGenerate(divAddItem, 'Selecione um tipo de mídia.').focus()
         } else if (!currentItem.place) {
             alertGenerate(divAddItem, 'Preencha a praça.').focus()
-        } else if (!currentItem.book) {
-            alertGenerate(divAddItem, 'Insira o link do book.').focus()
-        } else if (!currentItem.period) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.period) {
             alertGenerate(divAddItem, 'Selecione o período.').focus()
-        } else if (!currentItem.format) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.format) {
             alertGenerate(divAddItem, 'Preencha o formato.').focus()
-        } else if (!currentItem.faces) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.faces) {
             alertGenerate(divAddItem, 'Selecione o número de faces.').focus()
-        } else if (!currentItem.periodQuant) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.periodQuant) {
             alertGenerate(divAddItem, 'Selecione a quantidade de períodos.').focus()
-        } else if (!currentItem.tabValue) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.tabValue) {
             alertGenerate(divAddItem, 'Preencha o valor de tabela.').focus()
-        } else if (!currentItem.negValue) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.negValue) {
             alertGenerate(divAddItem, 'Preencha o valor negociado.').focus()
-        } else if (!currentItem.production) {
+        } else if (isBlankValueCheck.checked == false && !currentItem.production) {
             alertGenerate(divAddItem, 'Preencha o valor de produção.').focus()
         } else {
-            currentItem.calcularTotais()
-            currentItem.calcularComissao(proposta.agencyTax)
+            if (isBlankValueCheck.checked == false) {
+                currentItem.calcularTotais()
+                currentItem.calcularComissao(proposta.agencyTax)
+            }
             proposta.items.push(currentItem)
             renderizarProposta()
             zerarCampos()
             currentItem = new ItemProposta()
-
+            resetAndBlockItemValues(false)
         }
     }
     function renderizarProposta() {
@@ -132,68 +136,68 @@ export var novaProposta = function () {
                 let divLineBook = document.createElement('div')
                 divLineBook.className = 'lineDivItem lgLineDiv'
                 let lineBookValue = document.createElement('a')
-                lineBookValue.innerHTML = item.book
-                lineBookValue.href = item.book
+                lineBookValue.innerHTML = item.book ? 'Link' : ''
+                lineBookValue.href = item.book || ''
                 divLineBook.appendChild(lineBookValue)
                 lineDiv.appendChild(divLineBook)
                 let divLinePeriodo = document.createElement('div')
                 divLinePeriodo.className = 'lineDivItem periodoLineDiv'
                 let linePeriodoValue = document.createElement('span')
-                linePeriodoValue.innerHTML = item.period
+                linePeriodoValue.innerHTML = item.period || ''
                 divLinePeriodo.appendChild(linePeriodoValue)
                 lineDiv.appendChild(divLinePeriodo)
                 let divLineFormato = document.createElement('div')
                 divLineFormato.className = 'lineDivItem mdLineDiv'
                 let lineFormatoValue = document.createElement('span')
-                lineFormatoValue.innerHTML = item.format
+                lineFormatoValue.innerHTML = item.format || ''
                 divLineFormato.appendChild(lineFormatoValue)
                 lineDiv.appendChild(divLineFormato)
                 let divLineFaces = document.createElement('div')
                 divLineFaces.className = 'lineDivItem smLineDiv'
                 let lineFacesValue = document.createElement('span')
-                lineFacesValue.innerHTML = item.faces
+                lineFacesValue.innerHTML = item.faces || ''
                 divLineFaces.appendChild(lineFacesValue)
                 lineDiv.appendChild(divLineFaces)
                 let divLinePeriodos = document.createElement('div')
                 divLinePeriodos.className = 'lineDivItem smLineDiv'
                 let linePeriodosValue = document.createElement('span')
-                linePeriodosValue.innerHTML = item.periodQuant
+                linePeriodosValue.innerHTML = item.periodQuant || ''
                 divLinePeriodos.appendChild(linePeriodosValue)
                 lineDiv.appendChild(divLinePeriodos)
                 let divLineTabValue = document.createElement('div')
                 divLineTabValue.className = 'lineDivItem mdLineDiv'
                 let lineTabValueValue = document.createElement('span')
-                lineTabValueValue.innerHTML = (item.taxTabValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+                lineTabValueValue.innerHTML = item.taxTabValue ? (item.taxTabValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) : ''
                 divLineTabValue.appendChild(lineTabValueValue)
                 lineDiv.appendChild(divLineTabValue)
                 let divLineNegValue = document.createElement('div')
                 divLineNegValue.className = 'lineDivItem mdLineDiv'
                 let lineNegValueValue = document.createElement('span')
-                lineNegValueValue.innerHTML = (item.taxNegValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+                lineNegValueValue.innerHTML = item.taxNegValue ? (item.taxNegValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) : ''
                 divLineNegValue.appendChild(lineNegValueValue)
                 lineDiv.appendChild(divLineNegValue)
                 let divLineProduction = document.createElement('div')
                 divLineProduction.className = 'lineDivItem mdLineDiv'
                 let lineProductionValue = document.createElement('span')
-                lineProductionValue.innerHTML = (item.production).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+                lineProductionValue.innerHTML = item.production ? (item.production).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) : ''
                 divLineProduction.appendChild(lineProductionValue)
                 lineDiv.appendChild(divLineProduction)
                 let divLineTotalNegValue = document.createElement('div')
                 divLineTotalNegValue.className = 'lineDivItem mdLineDiv'
                 let lineTotalNegValueValue = document.createElement('span')
-                lineTotalNegValueValue.innerHTML = (item.taxTotalNegValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+                lineTotalNegValueValue.innerHTML = item.taxTotalNegValue ? (item.taxTotalNegValue).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) : ''
                 divLineTotalNegValue.appendChild(lineTotalNegValueValue)
                 lineDiv.appendChild(divLineTotalNegValue)
                 let divLineTotalProduction = document.createElement('div')
                 divLineTotalProduction.className = 'lineDivItem mdLineDiv'
                 let lineTotalProductionValue = document.createElement('span')
-                lineTotalProductionValue.innerHTML = (item.totalProduction).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+                lineTotalProductionValue.innerHTML = item.totalProduction ? (item.totalProduction).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) : ''
                 divLineTotalProduction.appendChild(lineTotalProductionValue)
                 lineDiv.appendChild(divLineTotalProduction)
                 let divLineTotal = document.createElement('div')
                 divLineTotal.className = 'lineDivItem mdLineDiv lineTotal'
                 let lineTotalValue = document.createElement('span')
-                lineTotalValue.innerHTML = (item.taxTotal).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+                lineTotalValue.innerHTML = item.taxTotal ? (item.taxTotal).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }) : ''
                 divLineTotal.appendChild(lineTotalValue)
                 lineDiv.appendChild(divLineTotal)
 
@@ -217,8 +221,74 @@ export var novaProposta = function () {
         proposta.items.splice(index, 1)
         renderizarProposta()
     }
+    function resetAndBlockItemValues(status) {
+        if (status == true) {
+            selectPeriodo.selectedIndex = 0
+            divAddItemPeriodoShowText.innerHTML = ''
+            currentItem.period = null
+            selectPeriodo.disabled = true
+            
+            addFormato.value = ''
+            divAddItemFormatoShowText.innerHTML = ''
+            currentItem.format = null
+            addFormato.disabled = true
+
+            divFacesInput.value = ''
+            divFacesResult.innerHTML = ''
+            currentItem.faces = null
+            divFacesInput.disabled = true
+            
+            divPeriodosInput.value = ''
+            divPeriodosResult.innerHTML = ''
+            currentItem.periodQuant = null
+            divPeriodosInput.disabled = true
+            
+            divVeiculacaoTabInput.value = ''
+            divVeiculacaoTabResult.innerHTML = ''
+            currentItem.tabValue = null
+            divVeiculacaoTabInput.disabled = true
+            
+            divVeiculacaoNegInput.value = ''
+            divVeiculacaoNegResult.innerHTML = ''
+            currentItem.negValue = null
+            divVeiculacaoNegInput.disabled = true
+            
+            divProducaoInput.value = ''
+            divProducaoResult.innerHTML = ''
+            currentItem.production = null
+            divProducaoInput.disabled = true
+        } else {
+            currentItem.isMediaKit = false
+            selectPeriodo.disabled = false
+            addFormato.disabled = false
+            divFacesInput.disabled = false
+            divPeriodosInput.disabled = false
+            divVeiculacaoTabInput.disabled = false
+            divVeiculacaoNegInput.disabled = false
+            divProducaoInput.disabled = false
+        }
+    }
+    function resetarProposta() {
+        proposta = new Proposta
+        currentItem = new ItemProposta
+        clienteInputInput.value = ''
+        showClienteValue.innerHTML = ''
+        ACInputInput.value = ''
+        showACValue.innerHTML = ''
+        campanhaInputInput.value = ''
+        showCampanhaValue.innerHTML = ''
+        employeeInput.value = ''
+        showExecutivoValue.innerHTML = ''
+        agenciaCheck.checked = false
+        agenciaNameInput.disabled = true
+        agenciaNameInput.value = ''
+        showAgenciaNameValue.innerHTML = ''
+        agenciaComissaoInput.disabled = true
+        agenciaComissaoInput.value = ''
+        showAgenciaTaxValue.innerHTML = ''
+        renderizarProposta()
+    }
     function gerarProposta(button) {
-        console.log('clicou')
         proposta.calcularTotal()
         proposta.proposal_date = new Date()
         sending = true
@@ -237,13 +307,18 @@ export var novaProposta = function () {
                 sending = false
             } else {
                 return response.json().then(data => {
-                    button.innerHTML = 'Gerar Proposta'
+                    // alertGenerate(body, 'Proposta gerada com sucesso').focus()
+                    // painelPropostas()
                     sending = false
+                    fileIdProvisorio = data
+                    button.innerHTML = 'Gerar Proposta'
+                    resetarProposta()
+                    $(`#okModal`).modal('show')
                 })
             }
         })
     }
-
+    let fileIdProvisorio;
     let proposta = new Proposta()
     let currentItem = new ItemProposta()
 
@@ -254,6 +329,39 @@ export var novaProposta = function () {
 
     let body_content = document.querySelector('#body-content')
     body_content.innerHTML = ''
+
+    // Modal provisório
+    let okModal = document.createElement('div')
+    okModal.className = 'modal fade'
+    okModal.id = `okModal`
+    okModal.tabIndex = '-1'
+    okModal.ariaLabel = `exampleModal`
+    okModal.ariaHidden = true
+    okModal.innerHTML = `
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModal">Proposta Cadastrada com Sucesso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-warning" id="okModalDownload">Download PDF</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+    `
+    body_content.appendChild(okModal)
+    
+    let pdfDownloadBt = document.querySelector('#okModalDownload')
+    pdfDownloadBt.addEventListener('click', () => {
+        if (fileIdProvisorio) {
+            window.open(`/painel/propostas/pdfview/${fileIdProvisorio}.pdf`)
+        }
+    })
+
 
     let divHeader = document.createElement('div')
     divHeader.className = 'divHeader'
@@ -481,7 +589,7 @@ export var novaProposta = function () {
     let addBook = document.createElement('input')
     addBook.id = 'bookInput'
     addBook.addEventListener('change', (e) => {
-        divAddItemBookShowText.innerHTML = e.target.value
+        //divAddItemBookShowText.innerHTML = e.target.value
         currentItem.book = e.target.value
     })
     divAddBookInput.appendChild(addBook)
@@ -493,6 +601,55 @@ export var novaProposta = function () {
     divAddItemBook.appendChild(divAddItemBookTitle)
     divAddItemBook.appendChild(divAddBookInput)
     divAddItemBook.appendChild(divAddItemBookShow)
+
+    let divBlankData = document.createElement('div')
+    divBlankData.className = 'divBlankData'
+    let divIsBlankData = document.createElement('div')
+    divIsBlankData.className = 'isBlankDiv'
+    let divBlankValueCheck = document.createElement('div')
+    divBlankValueCheck.className = 'form-check form-switch divAgenciaCheck'
+    let isBlankValueCheck = document.createElement('input')
+    isBlankValueCheck.type = 'checkbox'
+    isBlankValueCheck.className = 'form-check-input'
+    isBlankValueCheck.id = 'isBlankValueCheck'
+    isBlankValueCheck.checked = false
+    isBlankValueCheck.addEventListener('click', (e) => {
+        if (e.target.checked == false) {
+            isMediaKitCheck.checked = false
+            isMediaKitCheck.disabled = true
+            isMediaKitLabel.style.color = 'gray'
+            resetAndBlockItemValues(false)
+        } else {
+            isMediaKitCheck.disabled = false
+            isMediaKitLabel.style.color = 'black'
+            resetAndBlockItemValues(true)
+        }
+    })
+    divBlankValueCheck.appendChild(isBlankValueCheck)
+    let isBlankValueLabel = document.createElement('span')
+    isBlankValueLabel.innerHTML = 'Deixar valores em branco'
+    divIsBlankData.appendChild(divBlankValueCheck)
+    divIsBlankData.appendChild(isBlankValueLabel)
+    let divIsMediaKit = document.createElement('div')
+    divIsMediaKit.className = 'isBlankDiv'
+    let divMediaKitCheck = document.createElement('div')
+    divMediaKitCheck.className = 'form-check form-switch divAgenciaCheck'
+    let isMediaKitCheck = document.createElement('input')
+    isMediaKitCheck.type = 'checkbox'
+    isMediaKitCheck.className = 'form-check-input'
+    isMediaKitCheck.id = 'isMediaKitCheck'
+    isMediaKitCheck.disabled = true
+    isMediaKitCheck.checked = false
+    isMediaKitCheck.addEventListener('click', (e) => {
+        e.target.checked == true ? currentItem.isMediaKit = true : currentItem.isMediaKit = false
+    })
+    divMediaKitCheck.appendChild(isMediaKitCheck)
+    let isMediaKitLabel = document.createElement('span')
+    isMediaKitLabel.innerHTML = 'Valores no media kit'
+    divIsMediaKit.appendChild(divMediaKitCheck)
+    divIsMediaKit.appendChild(isMediaKitLabel)
+    divBlankData.appendChild(divIsBlankData)
+    divBlankData.appendChild(divIsMediaKit)
 
     let divAddItemPeriodo = document.createElement('div')
     divAddItemPeriodo.className = 'divAddItemParam'
@@ -652,6 +809,7 @@ export var novaProposta = function () {
     divAddItem.appendChild(divAddItemMidia)
     divAddItem.appendChild(divAddItemPraca)
     divAddItem.appendChild(divAddItemBook)
+    divAddItem.appendChild(divBlankData)
     divAddItem.appendChild(divAddItemPeriodo)
     divAddItem.appendChild(divAddItemFormato)
     divAddItem.appendChild(divMultiParams)
@@ -697,7 +855,7 @@ export var novaProposta = function () {
     let showCampanhaTitle = document.createElement('span')
     showCampanhaTitle.innerHTML = 'Campanha:'
     let showCampanhaValue = document.createElement('p')
-    showCampanhaValue.innerHTML = 'nsdovcnsdvo sdfs sdf'
+    showCampanhaValue.innerHTML = ''
     divShowPropostaCampanha.appendChild(showCampanhaTitle)
     divShowPropostaCampanha.appendChild(showCampanhaValue)
     divShowProposta.appendChild(divShowPropostaCampanha)
@@ -856,6 +1014,30 @@ export var novaProposta = function () {
 }
 
 export var painelPropostas = function () {
+    let propostas = []
+    let queryParams = new QueryParams()
+
+    function carregarPropostas() {
+        let qp = queryParams
+        fetch(
+            `/painel/propostas/buscar?filter=${qp.filter}&filter_by=${qp.filter_by}&order_by=${qp.order_by}&guidance=${qp.guidance}&offset=${qp.offset}`
+        ).then(response => {
+            if (!response.ok) {
+                alertGenerate(body, 'Algo deu errado. Tente novamente mais tarde.')
+            } else {
+                return response.json().then((data) => {
+                    data.forEach(item => {
+                        let proposta = new Proposta(
+                            ...item
+                        )
+                        propostas.push(proposta)
+                    })
+                    console.log(propostas)
+                })
+            }
+        })
+    }
+
     let painelPropostasOpt = document.querySelector('#painelPropostasOpt')
     let novaPropostaOpt = document.querySelector('#novaPropostaOpt')
     painelPropostasOpt.classList.add('select')
@@ -863,4 +1045,10 @@ export var painelPropostas = function () {
 
     let body_content = document.querySelector('#body-content')
     body_content.innerHTML = ''
+
+    let divPainel = document.createElement('div')
+    divPainel.className = 'divPainel'
+
+    //carregarPropostas()
+
 }

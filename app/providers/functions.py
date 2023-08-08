@@ -1,6 +1,11 @@
+import datetime
+import locale
+import math
 import time
+from flask_login import current_user
 from openpyxl import Workbook
-from app.models.basemodels import Register_Response_
+import urllib3
+from app.models.basemodels import Proposal_, Proposal_Item_, Register_Response_
 from app.models.tables import Person as Flask_Person, Spot as Flask_Spot, Spot_Commercial_Info as Flask_Spot_Comm, Spot_Private_Info as Flask_Spot_Int, User, Worksheet_Content as Flask_Worksheet_Content
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, create_engine
 from app.providers.db_services import get_fornecedores_list, get_fornecedores_list_off_context, get_pontos_by_id_list
@@ -29,6 +34,8 @@ import requests
 import os
 from sqlalchemy.orm import relationship
 import googlemaps
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import ParagraphStyle
 
 gmaps = googlemaps.Client(key='AIzaSyAdLDJ7M8krlagfM-HOHUxxfgr9N6_nto8')
 Base = declarative_base()
@@ -1409,3 +1416,259 @@ def gerar_excel(ids, lang):
         data=nome_planilha
     )
     return response.json()
+
+def parseReais(value):
+    locale.setlocale(locale.LC_MONETARY, 'en_US.UTF-8')
+
+    parsed = locale.currency(float(value), grouping=True)
+
+    return parsed.replace('$', 'R$ ').replace(',', '-').replace('.', ',').replace('-','.')
+
+def proposal_files_generator(dados: Proposal_):
+    def patternData(dados: Proposal_, pdf, page):
+        #Imagem header
+        pdf.drawImage('app/static/media/pdf_provider_images/backgroundproposta.jpg', 0, 0, 700*mm, 300*mm)
+
+        # Cliente
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.setFillColor(colors.black)
+        pdf.drawString(15*mm, 240*mm, 'Cliente:')
+
+        pdf.setFont('Helvetica', 5.5*mm)
+        pdf.drawString(40*mm, 240*mm, str(dados['client']).title())
+
+        # AC
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawString(15*mm, 232*mm, 'A/C:')
+
+        pdf.setFont('Helvetica', 5.5*mm)
+        pdf.drawString(40*mm, 232*mm, str(dados['clientPerson']).title())
+
+        # Agência
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawString(120*mm, 240*mm, 'Agência:')
+
+        pdf.setFont('Helvetica', 5.5*mm)
+        pdf.drawString(145*mm, 240*mm, str(dados['agencyName']).title() if dados['agencyName'] else '')
+
+        # Data
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawString(225*mm, 240*mm, 'Data:')
+
+        proposal_date = ''
+        if dados['proposal_date']:
+            proposal_date = datetime.datetime.strptime(
+                dados['proposal_date'], '%Y-%m-%dT%H:%M:%S.%fZ'
+            ).strftime('%d/%m/%Y')
+
+        pdf.setFont('Helvetica', 5.5*mm)
+        pdf.drawString(240*mm, 240*mm, proposal_date)
+
+        # Campanha
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawString(225*mm, 232*mm, 'Campanha:')
+
+        pdf.setFont('Helvetica', 5.5*mm)
+        pdf.drawString(258*mm, 232*mm, str(dados['campaign']).title() if dados['campaign'] else '')
+
+        # Executivo
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawString(580*mm, 240*mm, 'Executivo:')
+
+        pdf.setFont('Helvetica', 5.5*mm)
+        pdf.drawString(610*mm, 240*mm, str(dados['employeeName']).title() if dados['employeeName'] else '')
+
+        # Mídia header
+        pdf.setFont('Helvetica-Bold', 6.5*mm)
+        pdf.drawCentredString(60*mm, 217*mm, 'Mídia')
+
+        # Praça header
+        pdf.setFont('Helvetica-Bold', 6.5*mm)
+        pdf.drawCentredString(146.5*mm, 217*mm, 'Praça')
+
+        # Book header
+        pdf.setFont('Helvetica-Bold', 6.5*mm)
+        pdf.drawCentredString(205*mm, 217*mm, 'Book')
+
+        # Período header
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawCentredString(262.5*mm, 217*mm, 'Período/Veiculação')
+
+        # Período header
+        pdf.setFont('Helvetica-Bold', 6.5*mm)
+        pdf.drawCentredString(320.5*mm, 217*mm, 'Formato')
+
+        # Quantidade faces header
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawCentredString(365*mm, 217*mm, 'Nº Faces')
+
+        # Quantidade faces header
+        pdf.setFont('Helvetica-Bold', 4.5*mm)
+        pdf.drawCentredString(395.25*mm, 217*mm, 'Nº Períodos')
+
+        # Veiculação tabela header
+        pdf.setFont('Helvetica-Bold', 5.5*mm)
+        pdf.drawCentredString(429*mm, 220.5*mm, 'Veiculação')
+        pdf.drawCentredString(429*mm, 214.5*mm, 'Tabela')
+
+        # Veiculação negociado header
+        pdf.drawCentredString(468*mm, 220.5*mm, 'Veiculação')
+        pdf.drawCentredString(468*mm, 214.5*mm, 'Negociado')
+
+        # Veiculação total header
+        pdf.drawCentredString(506.5*mm, 220.5*mm, 'Total')
+        pdf.drawCentredString(506.5*mm, 214.5*mm, 'Veiculação')
+
+        # Produção header
+        pdf.drawCentredString(549.2*mm, 217*mm, 'Produção')
+
+        # Total produção header
+        pdf.drawCentredString(597.5*mm, 220.5*mm, 'Total')
+        pdf.drawCentredString(597.5*mm, 214.5*mm, 'Produção')
+
+        # Total Item Header
+        pdf.setFont('Helvetica-Bold', 6.5*mm)
+        pdf.drawCentredString(660*mm, 217*mm, 'Total')
+
+        # Observações
+        pdf.setFont('Helvetica-Bold', 4.5*mm)
+        pdf.drawString(15*mm, 45*mm, 'Observações:')
+
+        pdf.setFont('Helvetica', 4.5*mm)
+        pdf.drawString(15*mm, 35*mm, '1 - Bi Semana 14 Dias, Mensal 30 Dias e Semanal 7 Dias')
+        pdf.drawString(15*mm, 30*mm, '2 - O envio do pós-venda ( Checking)  é feito em até 5 dias úteis do inicio da campanha.')
+        pdf.drawString(15*mm, 25*mm, '3 - Forma de pagamento: 20 dias após início da campanha ( outras formas a negociar)')
+        pdf.setFont('Helvetica-Bold', 4.5*mm)
+        pdf.drawString(15*mm, 20*mm, '4 -  Todos locais estão sujeitos a consulta de disponibilidade.')
+        pdf.setFont('Helvetica', 4.5*mm)
+        pdf.drawString(15*mm, 15*mm, '5 - Quantidade de Faces: Sugerida para uma boa cobertura e impacto na praça.')
+
+        # Página
+        pdf.setFont('Helvetica-Bold', 6*mm)
+        pdf.drawString(685*mm, 7*mm, str(page))
+
+    def itemData(item: Proposal_Item_, pdf, vertical_position):
+        pdf.setFont('Helvetica', 5*mm)
+        pdf.drawCentredString(60*mm, vertical_position, str(item['media']) if item['media'] else '')
+
+        # Linha Item Praça
+        pracaStyle = ParagraphStyle(
+            'pracaStyle',
+            fontSize=5*mm,
+            alignment=1
+        )
+        textPraca = Paragraph(
+            str(item['place']) if item['place'] else '',
+            pracaStyle
+        )
+        textPraca.wrapOn(pdf, 56*mm, 20*mm)
+        textPraca.drawOn(pdf, 120*mm, (vertical_position + 5*mm) - (textPraca.height))
+
+        # Linha Item Book
+
+        bookStyle = ParagraphStyle(
+            'bookStyle',
+            fontSize=5*mm,
+            linkUnderline=True,
+            textColor='blue',
+            alignment=1
+        )
+        bookText = ''
+        if item['book']:
+            string = str(item['book']).replace(' ','').replace('"', '')
+            bookText = f'<link href="{string}">Link</link>'
+        textBook = Paragraph(
+            bookText,
+            bookStyle
+        )
+        textBook.wrapOn(pdf, 56*mm, 20*mm)
+        textBook.drawOn(pdf, 176*mm, vertical_position)
+        
+        if item['isMediaKit'] == False:
+            #Linha Item Periodo
+            pdf.drawCentredString(262*mm, vertical_position, str(item['period']) if item['period'] else '')
+
+            #Linha Item Formato
+            pdf.drawCentredString(320.5*mm, vertical_position, str(item['format']) if item['format'] else '')
+
+            #Linha Item Faces
+            pdf.drawCentredString(365*mm, vertical_position, str(item['faces']) if item['faces'] else '')
+
+            #Linha Item Períodos
+            pdf.drawCentredString(395.25*mm, vertical_position, str(item['periodQuant']) if item['periodQuant'] else '')
+
+            #Linha Veiculação Tabela
+            pdf.drawCentredString(429*mm, vertical_position, parseReais(item['taxTabValue']) if item['taxTabValue'] else '')
+
+            #Linha Veiculação Negociado
+            pdf.drawCentredString(468*mm, vertical_position, parseReais(str(item['taxNegValue'])) if item['taxNegValue'] else '')
+
+            #Linha Total Veiculação
+            pdf.drawCentredString(506.5*mm, vertical_position, parseReais(str(item['taxTotalNegValue'])) if item['taxTotalNegValue'] else '')
+
+            #Linha Produção
+            pdf.drawCentredString(549.2*mm, vertical_position, parseReais(str(item['production'])) if item['production'] else '')
+
+            #Linha Total Produção
+            pdf.drawCentredString(597.5*mm, vertical_position, parseReais(str(item['totalProduction'])) if item['totalProduction'] else '')
+
+            #Linha Total
+            pdf.setFont('Helvetica-Bold', 5*mm)
+            pdf.drawCentredString(660*mm, vertical_position, parseReais(str(item['taxTotal'])) if item['taxTotal'] else '')
+        else:
+            pdf.drawCentredString(660*mm, vertical_position, 'VALORES NO MEDIA KIT')
+            
+
+    width = 700
+    height = 300
+    pdf_buffer = BytesIO()
+    pdf = canvas.Canvas(pdf_buffer, (width*mm, height*mm))
+
+    pagesCount = math.ceil(len(dados['items'])/6)
+
+    shortestIndex = 0
+    biggestIndex = 5
+    for i in range(1, pagesCount + 1):
+        patternData(dados, pdf, i)
+        vertical_position = 198*mm
+        for i in range(shortestIndex, biggestIndex + 1):
+            if i >= len(dados['items']):
+                pdf.setFont('Helvetica-Bold', 11*mm)
+                pdf.drawString(550*mm, 60*mm, 'Total:')
+                pdf.setFont('Helvetica', 11*mm)
+                pdf.drawRightString(690*mm, 60*mm, parseReais(dados['taxTotal']) if dados['taxTotal'] else '')
+                break
+            item = dados['items'][i]
+            itemData(item, pdf, vertical_position)
+            vertical_position -= 22.5*mm
+
+        pdf.showPage()
+        shortestIndex += 6
+        biggestIndex += 6
+    pdf.save()
+
+    with open('teste.pdf', 'wb') as file:
+        file.write(pdf_buffer.getvalue())
+
+    # with pdf_buffer as pdf_file:
+    #     pdf_upload = upload_file_to_s3(
+    #         pdf_file.getvalue(), f'propostaspdf/{filename}.pdf', 'application/pdf')
+    #     if pdf_upload == False:
+    #         message = 'Falha ao salvar o arquivo PDF. Apague o book e tente novamente.'
+    #         print(message)
+    #pdf_buffer.close()
+
+    return pdf_buffer
+
+
+def buffer_upload(buffer_file, path_to_upload, content_type):
+    status = False
+    with buffer_file as file:
+        file_upload = upload_file_to_s3(file.getvalue(), path_to_upload, content_type)
+        if file_upload == False:
+            message = 'Falha ao salvar o arquivo PDF. Apague o book e tente novamente.'
+            send_message = requests.get(f'{os.environ["APP_URL"]}/flash-message-generate?message={message}&user={current_user.id}', headers={'Secret-Key': os.environ['SECRET_KEY']})
+        else:
+            status = True
+    buffer_file.close()
+    return status

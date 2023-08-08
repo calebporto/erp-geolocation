@@ -143,6 +143,19 @@
 .bookShowSpan {
     font-weight: normal!important;
 }
+.divBlankData {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: white;
+    display: flex;
+}
+.isBlankDiv {
+    display: flex;
+    width: 50%;
+}
+.isBlankDiv span {
+    margin-left: 1rem;
+}
 .divMultiParams {
     width: 100%;
     display: flex;
