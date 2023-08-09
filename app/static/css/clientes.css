@@ -1,0 +1,104 @@
+.form {
+    padding: 1rem;
+}
+.input-item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+    padding-left: .5rem;
+    padding-right: .5rem;
+}
+.input-label {
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+.input-input {
+    padding: .2rem;
+    outline: none;
+    width: 100%;
+}
+.input-group {
+    margin-top: 2rem;
+    display: flex;
+}
+.input-group-item {
+    width: 50%;
+    padding-left: .5rem;
+    padding-right: .5rem;
+}
+.confirmar-bt {
+    width: 100%;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    margin-top: 2rem;
+}
+.confirmar-bt button {
+    width: 100%;
+    padding: .5rem;
+    font-weight: bold;
+    margin-top: .5rem;
+}
+.lista {
+    text-align: center;
+    width: 100%;
+    padding: 5px;
+}
+.linha-nome {
+    width: 55%;
+    margin: auto;
+}
+.visualizar-item {
+    width: 100%;
+}
+.label-item {
+    text-align: start;
+    font-weight: bold;
+    margin-bottom: 0!important;
+}
+.conteudo-item {
+    text-align: start;
+}
+.input-edit {
+    padding: 3px;
+    margin-top: .5rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+form {
+    width: 100%;
+}
+.adicionar {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    padding: 5px;
+    padding-bottom: 2rem;
+    border-bottom: solid 1px gray;
+}
+.adicionar-bt {
+    width: 100%;
+    border: none;
+}
+.title {
+    padding: 5px 15px;
+}
+.linha {
+    display: flex;
+    border-bottom: solid 1px gray;
+    padding: 3px 0;
+}
+.linha:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+.linha-bt {
+    min-width: 15%;
+    display: flex;
+    justify-content: end;
+    padding: 0 5px;
+}
+.linha-bt-bt {
+    width: 100%;
+}
+.linha-bt-bt:hover {
+    cursor: pointer!important;
+}

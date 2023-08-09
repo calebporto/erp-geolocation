@@ -20,6 +20,19 @@ export class Fornecedor {
         this.relation_level = relation_level
     }
 }
+
+export class Cliente {
+    constructor(id, name, site, person_name, email1, email2, tel1, tel2) {
+        this.id = id
+        this.name = name
+        this.site = site
+        this.person_name = person_name
+        this.email1 = email1
+        this.email2 = email2
+        this.tel1 = tel1
+        this.tel2 = tel2
+    }
+}
 export class Colaborador {
     constructor(id, name, email, is_admin, is_collaborator) {
         this.id = id;
