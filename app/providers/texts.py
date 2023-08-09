@@ -12,6 +12,7 @@ main_pt_texts = {
         'books': 'Books',
         'propostas': 'Propostas',
         'fornecedores': 'Fornecedores',
+        'clientes': 'Clientes',
         'conversor': 'Conversor',
         'equipe': 'Equipe'
     }
@@ -27,6 +28,7 @@ main_es_texts = {
         'books': 'Books',
         'propostas': 'Propuestas',
         'fornecedores': 'Proveedores',
+        'clientes': 'Clientes',
         'conversor': 'Convertidor',
         'equipe': 'Equipo'
     }
@@ -42,6 +44,7 @@ main_en_texts = {
         'books': 'Books',
         'propostas': 'Proposal',
         'fornecedores': 'Providers',
+        'clientes': 'Clients',
         'conversor': 'Converter',
         'equipe': 'Team'
     }
@@ -324,6 +327,20 @@ novo_fornecedor_texts = {
         'cancelarBt': 'Cancelar'
     }
 }
+# Clientes
+clientes_menu_texts = {
+    'pt-br': {
+        'lista': 'Lista',
+        'novo': 'Novo Cliente'
+    }, 'en': {
+        'lista': 'List',
+        'novo': 'New Client'
+    }, 'es': {
+        'lista': 'Lista',
+        'novo': 'Nuevo Cliente'
+    }
+}
+
 
 # Conversor
 conversor_menu_texts = {

@@ -17,6 +17,12 @@ var fornecedoresOption = document.querySelector('#fornecedores')
 fornecedoresOption.addEventListener('click', () => {
     window.location.href = '/painel/fornecedores'
 })
+
+var clientesOption = document.querySelector('#clientes')
+clientesOption.addEventListener('click', () => {
+    window.location.href = '/painel/clientes'
+})
+
 var conversorOption = document.querySelector('#conversor')
 conversorOption.addEventListener('click', () => {
     window.location.href = '/painel/conversor'

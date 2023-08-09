@@ -42,6 +42,8 @@ from app.views.propostas import propostas_bp
 app.register_blueprint(propostas_bp)
 from app.views.fornecedores import fornecedores_bp
 app.register_blueprint(fornecedores_bp)
+from app.views.clientes import clientes_bp
+app.register_blueprint(clientes_bp)
 from app.views.conversor import conversor_bp
 app.register_blueprint(conversor_bp)
 from app.views.equipe import equipe_bp
