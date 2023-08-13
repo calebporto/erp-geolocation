@@ -69,8 +69,7 @@ def nova_proposta():
 @propostas_bp.route('/buscar')
 @login_required
 def buscar():
-    get_proposal(request.args)
-    return Response(dumps('ok'), 200)
+    return get_proposal(request.args)
 
 @propostas_bp.route('/pdfview/<file_id>')
 @login_required

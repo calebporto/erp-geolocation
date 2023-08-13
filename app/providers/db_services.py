@@ -4,6 +4,7 @@ from json import dumps, loads
 from math import acos, cos, radians, sin
 import os
 from secrets import token_urlsafe
+from flask import Response
 
 from flask_login import current_user
 from app import db
@@ -497,8 +498,55 @@ def proposal_register(dados):
     return True
 
 def get_proposal(args):
-    filter = None if str(args['filter']) == 'null' else str(args['filter'])
-    filter_by = None if str(args['filter_by']) == 'null' else str(args['filter_by'])
-    order_by = args['order_by']
-    guidance = args['guidance']
-    offset = args['offset']
+    try:
+        filter = None if str(args['filter']) == 'null' or str(args['filter']) == '' else str(args['filter'])
+        filter_by = None if str(args['filter_by']) == 'null' or str(args['filter_by']) == '' else str(args['filter_by'])
+        order_by = args['order_by']
+        guidance = args['guidance']
+        offset = args['offset']
+
+        query = Proposal.query
+        if filter and filter_by:
+            if filter == 'date':
+                data = datetime.strptime(
+                    filter_by, '%Y-%m-%dT%H:%M:%S.%fZ').date()
+                query = query.filter(Proposal.proposal_date == data)
+            elif filter == 'client':
+                query = query.filter(Proposal.client.ilike(f'%{filter_by}%'))
+            elif filter == 'status':
+                query = query.filter(Proposal.status == filter_by)
+        
+        count = query.count()
+
+        if order_by == 'date':
+            if guidance == 'desc':
+                query = query.order_by(Proposal.proposal_date.desc())
+            else:
+                query = query.order_by(Proposal.proposal_date)
+        elif order_by == 'client':
+            if guidance == 'desc':
+                query = query.order_by(Proposal.client.desc())
+            else:
+                query = query.order_by(Proposal.client)
+        elif order_by == 'status':
+            if guidance == 'desc':
+                query = query.order_by(Proposal.status.desc())
+            else:
+                query = query.order_by(Proposal.status)
+
+        
+        lista = query.offset(int(offset)).limit(50).all()
+
+        
+        response = {
+            'lista': [],
+            'count': count
+        }
+        for item in lista:
+            response['lista'].append(Proposal_(**item.__dict__).dict())
+        
+        return Response(dumps(response, default=str), 200)
+    except Exception as error:
+        print(str(error))
+        return Response('Erro no servidor.', 500)
+    

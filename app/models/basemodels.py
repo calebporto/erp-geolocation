@@ -103,4 +103,4 @@ class Proposal_(BaseModel):
     total: Optional[int]
     taxTotal: Optional[int]
     status: Optional[int]
-    file_id: Optional[int]
+    file_id: Optional[str]

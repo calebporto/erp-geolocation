@@ -9,6 +9,7 @@
 .divHeaderInput {
     width: 50%;
     padding: .5rem;
+    position: relative;
 }
 .divHeaderInput p {
     height: auto;
@@ -18,6 +19,23 @@
 .divHeaderInput input {
     width: 100%;
     padding: .3rem;
+}
+.divClientSearch {
+    height: 5rem;
+    width: 97%;
+    background-color: white;
+    position: absolute;
+    z-index: 1;
+    box-shadow: 0px 3px 3px rgb(99, 99, 99);
+    border-radius: 0 0 .5rem .5rem;
+    padding-bottom: .5rem;
+}
+.searchItem {
+    height: 2rem;
+    width: 100%;
+}
+.searchItem span:hover {
+    background-color: rgba(0, 0, 0, 0.007);
 }
 .divEmployee {
     display: flex;
@@ -340,4 +358,61 @@
     position: relative;
     top: 3px;
     box-shadow: 0px 0px 3px rgb(99, 99, 99);
+}
+.lineTitle {
+    width: 100%;
+    padding: 3px 0;
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.04);
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+.lineDiv {
+    width: 100%;
+    display: flex;
+    border-bottom: solid 1px gray;
+    padding: 3px 0;
+}
+.lineDiv:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+.lineField {
+    margin: auto 0;
+    height: auto;
+    text-align: center;
+}
+.lineField.lineDateDiv {
+    width: 15%;
+}
+.lineField.lineClientDiv {
+    width: 50%;
+}
+.lineField.lineStatusDiv {
+    width: 15%;
+}
+.lineField.lineOptionsDiv {
+    width: 20%;
+}
+.lineOpt {
+    width: 15%;
+    padding: 0;
+    border-radius: 50%;
+    padding: 3px;
+    margin: 0 3px;
+    cursor: pointer;
+}
+.verMaisDiv {
+    width: 100%;
+    display: flex;
+    padding: 5px 0;
+    height: auto;
+}
+.verMaisDiv button {
+    margin: auto;
+    margin-top: 2rem;
+}
+.nadaMaisText {
+    width: 100%;
+    text-align: center;
+    margin-top: 2rem;
 }

@@ -120,10 +120,10 @@ export class ItemProposta {
     }
 }
 export class Proposta {
-    constructor(proposal_date = null, client = null, clientPerson = null, campaign = null, agencyName = null, agencyTax = 0,
+    constructor(id = null, user_id = null, proposal_date = null, client = null, clientPerson = null, campaign = null, agencyName = null, agencyTax = 0,
                 employeeName = null, items = []) {
-        this.id = null
-        this.user_id = null
+        this.id = id
+        this.user_id = user_id
         this.proposal_date = proposal_date
         this.client = client
         this.clientPerson = clientPerson
@@ -149,8 +149,8 @@ export class Proposta {
 }
  export class QueryParams {
     constructor(
-        filter = 'null',
-        filter_by = 'null',
+        filter = null,
+        filter_by = null,
         order_by = 'date',
         guidance = 'asc',
         offset = 0
