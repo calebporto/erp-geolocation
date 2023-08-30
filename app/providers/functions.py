@@ -561,6 +561,8 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 
                 conteudo = ''
                 if coluna in linha and str(linha[coluna]) != 'nan':
+                    if type(linha[coluna]) == float:
+                        linha[coluna] = int(linha[coluna])
                     conteudo = str(linha[coluna])
                     if conteudo.isdigit():
                         conteudo = f'{int(conteudo):,}'.replace(',', '.')

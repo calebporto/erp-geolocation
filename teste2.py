@@ -1,8 +1,5 @@
-from urllib.parse import quote_plus
+a = 05785.034
 
-
-a = 'https:/drive.google.com/drive/folders/0Byuw4Vz62NZLbWlZQkd1N2tNMGM?resourcekey=0-xdT2HOrHy8v-hzxgRcjCZA&usp=sharing'
-
-parse = quote_plus(a)
-
-print(parse)
+print(int(a))
+print (type(a) == float)
+print(str(a).isdigit())
