@@ -601,22 +601,22 @@ def pdf_generator(capa, content, image_id, lang, user_id, is_worker):
                 outros_content_text.font.size = Mm(5.5)
                 eixo_y_pptx += 17
             
-            # Página PDF
-            pdf.setFont('Helvetica-Bold', 5.5*mm)
-            pdf.setFillColor(colors.white)
-            pdf.drawCentredString(387*mm, 6.5*mm, str(pdf.getPageNumber()))
+            # # Página PDF
+            # pdf.setFont('Helvetica-Bold', 5.5*mm)
+            # pdf.setFillColor(colors.white)
+            # pdf.drawCentredString(387*mm, 6.5*mm, str(pdf.getPageNumber()))
 
-            # Página PPTX
-            pagina = slide.shapes.add_textbox(Mm(380), Mm(203.5), Mm(10), Mm(10))
-            pagina_text_frame = pagina.text_frame
-            pagina_text_frame.clear()
-            pagina_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
-            pagina_text = pagina_text_frame.paragraphs[0].add_run()
-            pagina_text.text = str(pdf.getPageNumber())
-            pagina_text.font.name = 'Helvetica'
-            pagina_text.font.bold = True
-            pagina_text.font.size = Mm(5.5)
-            pagina_text.font.color.rgb = RGBColor(255,255,255)
+            # # Página PPTX
+            # pagina = slide.shapes.add_textbox(Mm(380), Mm(203.5), Mm(10), Mm(10))
+            # pagina_text_frame = pagina.text_frame
+            # pagina_text_frame.clear()
+            # pagina_text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER
+            # pagina_text = pagina_text_frame.paragraphs[0].add_run()
+            # pagina_text.text = str(pdf.getPageNumber())
+            # pagina_text.font.name = 'Helvetica'
+            # pagina_text.font.bold = True
+            # pagina_text.font.size = Mm(5.5)
+            # pagina_text.font.color.rgb = RGBColor(255,255,255)
             
             pdf.showPage()
             
